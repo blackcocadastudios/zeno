@@ -136,6 +136,26 @@ class BrowserController(
         return copy.id
     }
 
+    /**
+     * Shows a renderer the engine created by itself (an extension opening its
+     * dashboard, for instance) in a new tab.
+     */
+    fun adoptSession(
+        session: EngineSession,
+        url: String,
+        private: Boolean,
+        origin: TabOrigin = TabOrigin.Extension,
+        select: Boolean = true,
+    ): String {
+        val tab = insertTab(url, private, select, parentId = null, origin = origin)
+        bind(tab.id, session)
+        if (select) onSelected(tab.id, previous = null)
+        return tab.id
+    }
+
+    /** The tab rendered by [session], if any. */
+    fun tabIdOf(session: EngineSession): String? = sessions.entries.firstOrNull { it.value === session }?.key
+
     /** Switches the home page between normal and private mode without selecting a tab. */
     fun showHome(private: Boolean) {
         val previous = state.value.selectedTabId

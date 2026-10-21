@@ -9,10 +9,14 @@ import com.blackcocadastudios.zeno.engine.ExtensionAction
 import com.blackcocadastudios.zeno.engine.ExtensionController
 import com.blackcocadastudios.zeno.engine.ExtensionInfo
 import com.blackcocadastudios.zeno.engine.ExtensionInstallRequest
+import com.blackcocadastudios.zeno.engine.ExtensionPopup
+import com.blackcocadastudios.zeno.engine.ExtensionTabs
 import com.blackcocadastudios.zeno.engine.HistoryTracker
 import com.blackcocadastudios.zeno.engine.LoadFlags
 import com.blackcocadastudios.zeno.engine.RequestInterceptor
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 
 /** In-memory engine that records what the controller asked of it. */
@@ -75,14 +79,15 @@ class FakeExtensions : ExtensionController {
     var lastActive: EngineSession? = null
     override val installed: StateFlow<List<ExtensionInfo>> = MutableStateFlow(emptyList())
     override val actions: StateFlow<Map<String, ExtensionAction>> = MutableStateFlow(emptyMap())
+    override val popups: SharedFlow<ExtensionPopup> = MutableSharedFlow()
     override var installPrompt: (suspend (ExtensionInstallRequest) -> Boolean)? = null
-    override var tabOpener: ((String, Boolean) -> EngineSession?)? = null
+    override var tabs: ExtensionTabs? = null
     override suspend fun install(url: String): Result<ExtensionInfo> = Result.failure(UnsupportedOperationException())
     override suspend fun uninstall(id: String): Result<Unit> = Result.success(Unit)
     override suspend fun setEnabled(id: String, enabled: Boolean): Result<ExtensionInfo> = Result.failure(UnsupportedOperationException())
     override suspend fun setAllowedInPrivate(id: String, allowed: Boolean): Result<ExtensionInfo> = Result.failure(UnsupportedOperationException())
     override suspend fun refresh() = Unit
-    override suspend fun clickAction(id: String): EngineSession? = null
+    override fun clickAction(id: String) = Unit
     override fun setActiveSession(session: EngineSession) {
         lastActive = session
     }

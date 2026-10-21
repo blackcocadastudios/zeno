@@ -1,28 +1,36 @@
 package com.blackcocadastudios.zeno.data.db
 
-import androidx.room.Dao
+import android.content.Context
 import androidx.room.Database
-import androidx.room.Entity
-import androidx.room.PrimaryKey
-import androidx.room.Query
+import androidx.room.Room
 import androidx.room.RoomDatabase
-import kotlinx.coroutines.flow.Flow
 
-@Entity(tableName = "history")
-data class HistoryEntity(
-    @PrimaryKey val url: String,
-    val title: String,
-    val visitCount: Int,
-    val lastVisitedAt: Long,
+@Database(
+    entities = [HistoryEntity::class, BookmarkEntity::class, DownloadEntity::class],
+    version = 1,
+    exportSchema = true,
 )
-
-@Dao
-interface HistoryDao {
-    @Query("SELECT * FROM history ORDER BY lastVisitedAt DESC LIMIT :limit")
-    fun recent(limit: Int): Flow<List<HistoryEntity>>
-}
-
-@Database(entities = [HistoryEntity::class], version = 1, exportSchema = true)
 abstract class ZenoDatabase : RoomDatabase() {
     abstract fun history(): HistoryDao
+
+    abstract fun bookmarks(): BookmarkDao
+
+    abstract fun downloads(): DownloadDao
+
+    companion object {
+        /** Schema changes need a migration; there is no destructive fallback on purpose. */
+        fun create(context: Context): ZenoDatabase =
+            Room.databaseBuilder(context.applicationContext, ZenoDatabase::class.java, "zeno.db").build()
+    }
+}
+
+/** Escapes LIKE wildcards so user input matches literally. */
+internal fun likePattern(query: String): String {
+    val escaped = buildString {
+        for (c in query.trim()) {
+            if (c == '%' || c == '_' || c == '\\') append('\\')
+            append(c)
+        }
+    }
+    return "%$escaped%"
 }

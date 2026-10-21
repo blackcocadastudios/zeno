@@ -277,3 +277,27 @@ class BrowserControllerTest {
         assertEquals(EngineSessionState("hist"), engine.created.last().restored)
     }
 }
+
+class ExtensionTabsTest {
+    @Test
+    fun `extensions open, focus and close tabs`() {
+        val engine = FakeEngine()
+        val controller = BrowserController(engine)
+        val tabs = BrowserExtensionTabs(controller)
+        val first = controller.newTab("https://a.example/")
+        val dashboard = FakeSession(isPrivate = false)
+
+        assertTrue(tabs.openTab(dashboard, "moz-extension://ublock/dashboard.html", private = false))
+        val id = controller.tabIdOf(dashboard)!!
+        assertEquals(id, controller.state.value.selectedTabId)
+        assertEquals(TabOrigin.Extension, controller.state.value.tab(id)!!.origin)
+
+        controller.selectTab(first)
+        tabs.selectTab(dashboard)
+        assertEquals(id, controller.state.value.selectedTabId)
+
+        assertTrue(tabs.closeTab(dashboard))
+        assertNull(controller.state.value.tab(id))
+        assertFalse(tabs.closeTab(dashboard))
+    }
+}
