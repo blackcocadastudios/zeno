@@ -153,6 +153,10 @@ class MainViewModel(val container: AppContainer) : ViewModel() {
         if (screen != this.screen) stack += screen
     }
 
+    private fun popToBrowser() {
+        while (stack.size > 1) stack.removeAt(stack.lastIndex)
+    }
+
     /** Returns false when there was nothing to go back to. */
     fun popScreen(): Boolean {
         if (stack.size <= 1) return false
@@ -197,7 +201,7 @@ class MainViewModel(val container: AppContainer) : ViewModel() {
     fun openUrl(url: String, newTab: Boolean = false, private: Boolean = state.value.privateMode) {
         if (newTab) controller.newTab(url, private = private) else controller.load(url)
         editing = false
-        while (popScreen()) Unit
+        popToBrowser()
     }
 
     /** A link from another app: a normal tab, and back on its first page returns to that app. */
@@ -205,7 +209,7 @@ class MainViewModel(val container: AppContainer) : ViewModel() {
         controller.newTab(url, private = false, origin = TabOrigin.External, flags = LoadFlags(external = true))
         closeOverlays()
         findOpen = false
-        while (popScreen()) Unit
+        popToBrowser()
     }
 
     suspend fun suggest(text: String): Suggestions {
@@ -228,7 +232,7 @@ class MainViewModel(val container: AppContainer) : ViewModel() {
         showTabs = false
         showMenu = false
         findOpen = false
-        while (popScreen()) Unit
+        popToBrowser()
         editing = true
     }
 

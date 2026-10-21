@@ -3,7 +3,6 @@ package com.blackcocadastudios.zeno.web
 import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
-import android.net.Uri
 import android.widget.Toast
 import com.blackcocadastudios.zeno.R
 import com.blackcocadastudios.zeno.engine.EngineSession
@@ -12,6 +11,7 @@ import com.blackcocadastudios.zeno.engine.LoadFlags
 import com.blackcocadastudios.zeno.engine.LoadRequest
 import com.blackcocadastudios.zeno.engine.RequestInterceptor
 import java.net.URISyntaxException
+import androidx.core.net.toUri
 
 /**
  * Hands non-web links (mailto:, tel:, intent:, market:…) to other apps.
@@ -24,13 +24,13 @@ class ExternalAppInterceptor(private val context: Context) : RequestInterceptor 
 
     override fun onLoadRequest(session: EngineSession, request: LoadRequest): Interception {
         val url = request.url
-        val scheme = Uri.parse(url).scheme?.lowercase() ?: return Interception.Allow
+        val scheme = url.toUri().scheme?.lowercase() ?: return Interception.Allow
         if (scheme in engineSchemes) return Interception.Allow
         if (!request.hasUserGesture && !request.isDirectNavigation) return Interception.Handled
 
         val intent = when (scheme) {
             "intent" -> parseIntentUri(url) ?: return Interception.Handled
-            else -> Intent(Intent.ACTION_VIEW, Uri.parse(url))
+            else -> Intent(Intent.ACTION_VIEW, url.toUri())
         }
         intent.addCategory(Intent.CATEGORY_BROWSABLE)
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)

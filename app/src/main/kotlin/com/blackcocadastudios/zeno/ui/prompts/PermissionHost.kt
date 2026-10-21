@@ -51,12 +51,17 @@ fun PermissionHost(request: PermissionRequest, onDone: (PermissionRequest) -> Un
     }
 }
 
-/** The engine needs an Android permission (camera, location…) before a site can use it. */
+/**
+ * The engine needs an Android permission (camera, location…) before a site can
+ * use it. [onDenied] tells the user why the site will not get it.
+ */
 @Composable
-fun AppPermissionHost(request: AppPermissionRequest, onDone: (AppPermissionRequest) -> Unit) {
+fun AppPermissionHost(request: AppPermissionRequest, onDenied: () -> Unit, onDone: (AppPermissionRequest) -> Unit) {
     val context = LocalContext.current
     val launcher = rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { results ->
-        request.complete(results.isNotEmpty() && results.values.all { it })
+        val granted = results.isNotEmpty() && results.values.all { it }
+        request.complete(granted)
+        if (!granted) onDenied()
         onDone(request)
     }
     LaunchedEffect(request) {

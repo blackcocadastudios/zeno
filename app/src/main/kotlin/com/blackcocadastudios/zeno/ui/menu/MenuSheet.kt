@@ -18,6 +18,7 @@ import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.blackcocadastudios.zeno.R
@@ -169,7 +170,7 @@ fun MenuContent(page: MenuPage, extensions: List<MenuExtension>, showQuit: Boole
         }
         if (page.hasPage && page.trackersBlocked > 0) {
             Text(
-                stringResource(R.string.toolbar_trackers_blocked, page.trackersBlocked),
+                pluralStringResource(R.plurals.toolbar_trackers_blocked, page.trackersBlocked, page.trackersBlocked),
                 style = Zeno.type.caption,
                 color = Zeno.colors.inkSoft,
                 modifier = Modifier.padding(start = Ma.xl, top = Ma.m),

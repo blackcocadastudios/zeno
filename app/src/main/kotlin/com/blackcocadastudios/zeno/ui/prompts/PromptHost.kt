@@ -73,6 +73,7 @@ import java.time.YearMonth
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import java.time.temporal.IsoFields
+import androidx.core.graphics.toColorInt
 
 /**
  * Shows the page's question (alert, confirm, select, file picker…) and sends the
@@ -316,7 +317,7 @@ private fun ColorDialog(prompt: PromptRequest.Color, finish: (() -> Unit) -> Uni
     ) {
         FlowRow(horizontalArrangement = Arrangement.spacedBy(Ma.s), verticalArrangement = Arrangement.spacedBy(Ma.s)) {
             palette.forEach { hex ->
-                val color = Color(android.graphics.Color.parseColor(hex))
+                val color = Color(hex.toColorInt())
                 Box(
                     Modifier
                         .size(40.dp)

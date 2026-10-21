@@ -35,9 +35,11 @@ class DownloadService : Service() {
                     ServiceCompat.stopForeground(this@DownloadService, ServiceCompat.STOP_FOREGROUND_REMOVE)
                     stopSelf()
                 } else {
-                    runCatching {
+                    try {
                         NotificationManagerCompat.from(this@DownloadService)
                             .notify(DownloadNotifications.PROGRESS_ID, DownloadNotifications.progress(this@DownloadService, active.values))
+                    } catch (_: SecurityException) {
+                        // Notifications not allowed: the foreground service still keeps the download alive.
                     }
                 }
             }

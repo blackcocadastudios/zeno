@@ -295,6 +295,8 @@ fun BrowserScreen(vm: MainViewModel, engineView: GeckoEngineView, active: Boolea
 
     if (tab == null) return
     val context = LocalContext.current
+    val copied = stringResource(R.string.context_copied)
+    val deniedBySystem = stringResource(R.string.permission_denied_system)
 
     content?.contextMenu?.let { hit ->
         ContextMenuSheet(
@@ -306,7 +308,7 @@ fun BrowserScreen(vm: MainViewModel, engineView: GeckoEngineView, active: Boolea
                 override fun copy(text: String) {
                     copyToClipboard(context, text)
                     // Android 13+ confirms copies itself.
-                    if (Build.VERSION.SDK_INT < 33) vm.message(context.getString(R.string.context_copied))
+                    if (Build.VERSION.SDK_INT < 33) vm.message(copied)
                 }
 
                 override fun share(url: String) = shareText(context, url, null)
@@ -325,7 +327,7 @@ fun BrowserScreen(vm: MainViewModel, engineView: GeckoEngineView, active: Boolea
         PermissionHost(request) { vm.controller.consumePermissionRequest(tab.id, it) }
     }
     content?.appPermissionRequests?.firstOrNull()?.let { request ->
-        AppPermissionHost(request) { vm.controller.consumeAppPermissionRequest(tab.id, it) }
+        AppPermissionHost(request, onDenied = { vm.message(deniedBySystem) }) { vm.controller.consumeAppPermissionRequest(tab.id, it) }
     }
 }
 
@@ -418,7 +420,7 @@ private fun menuActions(vm: MainViewModel, tab: TabState?, context: Context, act
 
 /** The renderer of this tab stopped. A broken ensō, and a way back. */
 @Composable
-private fun CrashedTab(onReload: () -> Unit) {
+internal fun CrashedTab(onReload: () -> Unit) {
     val colors = Zeno.colors
     Column(
         Modifier

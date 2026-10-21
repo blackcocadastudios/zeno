@@ -6,7 +6,7 @@ import android.net.Uri
 import android.os.Build
 import android.os.Environment
 import android.provider.MediaStore
-import androidx.core.content.ContextCompat
+import androidx.annotation.RequiresApi
 import androidx.core.content.FileProvider
 import com.blackcocadastudios.zeno.data.downloads.DownloadStatus
 import com.blackcocadastudios.zeno.data.downloads.DownloadsRepository
@@ -153,6 +153,7 @@ class DownloadCoordinator(
             fun create(context: Context, fileName: String, mimeType: String): Target =
                 if (Build.VERSION.SDK_INT >= 29) mediaStore(context, fileName, mimeType) else legacy(context, fileName)
 
+            @RequiresApi(Build.VERSION_CODES.Q)
             private fun mediaStore(context: Context, fileName: String, mimeType: String): Target {
                 val values = ContentValues().apply {
                     put(MediaStore.MediaColumns.DISPLAY_NAME, fileName)
@@ -171,7 +172,7 @@ class DownloadCoordinator(
             }
 
             private fun legacy(context: Context, fileName: String): Target {
-                val directory = ContextCompat.getExternalFilesDirs(context, Environment.DIRECTORY_DOWNLOADS).firstOrNull()
+                val directory = context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS)
                     ?: File(context.filesDir, "downloads")
                 directory.mkdirs()
                 var file = File(directory, fileName)

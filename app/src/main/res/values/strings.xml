@@ -19,11 +19,14 @@
     <string name="toolbar_secure">Conexão segura</string>
     <string name="toolbar_insecure">Conexão não segura</string>
     <string name="toolbar_private">Navegação privada</string>
-    <string name="toolbar_trackers_blocked">%1$d rastreadores bloqueados</string>
+    <plurals name="toolbar_trackers_blocked">
+        <item quantity="one">%1$d rastreador bloqueado</item>
+        <item quantity="many">%1$d rastreadores bloqueados</item>
+        <item quantity="other">%1$d rastreadores bloqueados</item>
+    </plurals>
 
     <!-- Suggestions -->
     <string name="suggestion_search_with">Pesquisar com %1$s</string>
-    <string name="suggestion_go_to">Ir para %1$s</string>
     <string name="suggestion_fill">Completar com %1$s</string>
     <string name="suggestion_bookmark">Favorito</string>
 
@@ -35,7 +38,6 @@
     <string name="home_shortcut_hide">Esconder este site</string>
 
     <!-- Tabs -->
-    <string name="tabs_title">Abas</string>
     <string name="tabs_normal">Abas</string>
     <string name="tabs_private">Privadas</string>
     <string name="tabs_new">Nova aba</string>
@@ -69,7 +71,6 @@
     <string name="menu_extensions">Extensões</string>
     <string name="menu_settings">Configurações</string>
     <string name="menu_quit">Sair</string>
-    <string name="menu_site_protection">Proteção neste site</string>
     <string name="menu_added_to_home">Adicionado ao início</string>
     <string name="menu_bookmark_added">Salvo nos favoritos</string>
     <string name="menu_bookmark_removed">Removido dos favoritos</string>
@@ -100,7 +101,6 @@
     <!-- Prompts -->
     <string name="prompt_ok">OK</string>
     <string name="prompt_cancel">Cancelar</string>
-    <string name="prompt_confirm">Confirmar</string>
     <string name="prompt_allow">Permitir</string>
     <string name="prompt_block">Bloquear</string>
     <string name="prompt_page_says">%1$s diz</string>
@@ -120,7 +120,6 @@
     <string name="prompt_resend">Reenviar</string>
     <string name="prompt_color_title">Escolha uma cor</string>
     <string name="prompt_clear">Limpar</string>
-    <string name="prompt_choose">Escolher</string>
 
     <!-- Permissions -->
     <string name="permission_location">%1$s quer saber sua localização.</string>
@@ -140,11 +139,9 @@
     <string name="download_failed">O download falhou</string>
     <string name="download_open">Abrir</string>
     <string name="download_cancel">Cancelar</string>
-    <string name="download_retry">Tentar de novo</string>
     <string name="download_no_app">Nenhum app abre este arquivo</string>
     <string name="download_channel">Downloads</string>
     <string name="download_channel_description">Progresso dos arquivos baixados</string>
-    <string name="download_notification_progress">%1$s · %2$d%%</string>
 
     <!-- Library -->
     <string name="history_title">Histórico</string>
@@ -225,8 +222,6 @@
     <string name="settings_search_engine">Mecanismo de pesquisa</string>
     <string name="settings_search_suggestions">Sugestões de pesquisa</string>
     <string name="settings_search_suggestions_desc">Envia o que você digita ao mecanismo de pesquisa para sugerir termos</string>
-    <string name="settings_toolbar_bottom">Barra de endereço embaixo</string>
-    <string name="settings_toolbar_hide">Esconder a barra ao rolar</string>
     <string name="settings_shortcuts">Atalhos no início</string>
     <string name="settings_restore_tabs">Reabrir abas ao iniciar</string>
     <string name="settings_appearance">Aparência</string>
@@ -235,7 +230,6 @@
     <string name="settings_theme_light">Claro</string>
     <string name="settings_theme_dark">Escuro</string>
     <string name="settings_web_theme">Tema dos sites</string>
-    <string name="settings_web_theme_desc">O que os sites veem como preferência de cor</string>
     <string name="settings_privacy">Privacidade e segurança</string>
     <string name="settings_tracking">Proteção contra rastreamento</string>
     <string name="settings_tracking_standard">Padrão</string>
@@ -288,9 +282,6 @@
     <string name="action_more">Mais opções</string>
     <string name="action_save">Salvar</string>
     <string name="action_delete">Apagar</string>
-    <string name="action_open">Abrir</string>
-    <string name="action_share">Compartilhar</string>
-    <string name="action_copy">Copiar</string>
     <string name="crash_title">Esta aba parou</string>
     <string name="crash_body">O processo da página foi encerrado. Recarregar costuma resolver.</string>
     <string name="crash_reload">Recarregar aba</string>
