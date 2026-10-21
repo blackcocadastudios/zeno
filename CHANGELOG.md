@@ -15,7 +15,6 @@ Primeira versão utilizável.
 - Abas normais e privadas (tema Yoru), grade de abas com miniaturas em memória; fechar com um gesto para o lado, desfazer logo depois.
 - Abas em segundo plano suspensas para poupar memória e restauradas ao voltar; sessão salva atomicamente.
 - Encontrar na página, tradução da página (modelos locais do Firefox), versão para computador, tela cheia de vídeo com rotação automática.
-- Gerenciador de senhas: depois de entrar num site o Zeno oferece salvar o login (ou atualizar a senha), e num campo de login mostra os logins salvos numa barra sobre o teclado. Usuários e senhas ficam cifrados com uma chave do keystore do Android; Configurações → Senhas pede o bloqueio de tela para mostrá-los, permite copiar, editar e apagar, e tem “nunca salvar neste site”.
 - Modo leitura (menu → Modo leitura): só o texto do artigo, com a tipografia e as cores do Zeno, pelo Readability da Mozilla. Não custa nada às páginas comuns; voltar, ou tocar no livro da barra, retorna à página.
 - Menu de contexto para links, imagens e mídia; downloads com notificação e lista própria.
 - Diálogos de página (alerta, confirmação, login, cores, datas, arquivos), permissões de sites e do Android.
@@ -32,13 +31,18 @@ Primeira versão utilizável.
 - Localização para sites no Android 12 e mais novos: o Zeno pede a localização aproximada junto com a precisa, como o sistema exige.
 - Notificações de sites, desligadas por padrão. Ligadas em Configurações → Sites, um site pode notificar se você permitir, enquanto está aberto (sem serviço de push); tocar na notificação traz a aba do site. Com elas desligadas, um site que pede recebe uma recusa silenciosa e o Zeno avisa onde ligar.
 
+### Senhas
+- Depois de entrar num site o Zeno oferece salvar o login (ou atualizar a senha), com “Nunca neste site”; num campo de login, os logins salvos aparecem numa barra sobre o teclado, sem cobrir a página; o login salvo é preenchido quando a página abre.
+- Usuários e senhas ficam cifrados (AES-256-GCM) com uma chave que não sai do keystore do Android; nada vai para a nuvem.
+- Configurações → Senhas pede o bloqueio de tela para abrir, fica fora de capturas de tela e fecha ao sair do app; permite mostrar, copiar, editar e apagar logins, e voltar a oferecer onde foi dito “nunca”.
+
 ### Extensões
 - Extensões do addons.mozilla.org, com pedido de permissões, ativar/desativar, abas privadas e remover.
 - O uBlock Origin é sugerido uma vez na página inicial; Dark Reader, Violentmonkey e SponsorBlock na lista de recomendadas.
 
 ### Desenvolvimento
 - Módulos: `:core:engine`, `:core:browser` (Kotlin puro), `:core:design`, `:core:data`, `:engine:gecko`, `:app`.
-- CI com build debug e release, testes, capturas de tela (Roborazzi), lint e teste de fumaça num emulador.
+- CI com build debug e release, testes, capturas de tela (Roborazzi), lint e teste de fumaça num emulador, que usa páginas locais (localização, notificações, modo leitura, login) e publica o resultado como anotações da execução.
 
 ### Ainda não
 - Notificações de sites com a página fechada (push). Exportar e importar senhas. A barra fica embaixo, de propósito (uma mão).
