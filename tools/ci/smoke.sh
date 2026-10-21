@@ -110,12 +110,21 @@ step "the bar comes back when scrolling up" $ui wait "abas? abertas?" 10
 adb shell input swipe 540 700 540 2000 200
 adb shell input swipe 540 700 540 2000 200
 sleep 1
-adb shell input motionevent DOWN 540 600
-for y in 700 800 900 1000 1100 1200; do adb shell input motionevent MOVE 540 "$y"; done
+# A picture mid-pull (best effort: the finger is held with separate commands).
+adb shell "input motionevent DOWN 540 1300; input motionevent MOVE 540 1450; input motionevent MOVE 540 1600; input motionevent MOVE 540 1750; input motionevent MOVE 540 1900"
 shot 07d-pulling
-adb shell input motionevent UP 540 1200
-sleep 1
-shot 07e-reloading
+adb shell input motionevent UP 540 1900
+sleep 2
+# A slow held finger can read as a long press: close the link menu if it opened.
+if $ui wait "^Copiar link$" 2 >> "$out/steps.log" 2>&1; then adb shell input keyevent KEYCODE_BACK; sleep 1; fi
+# The real check: one smooth pull reloads the page (Gecko logs every page start).
+adb logcat -d > "$out/logcat-before-pull.txt"
+adb logcat -c
+adb shell input swipe 540 900 540 1900 900
+sleep 4
+shot 07e-reloaded
+step "pulling the page down reloads it" grep -q "GeckoView:PageStart uri=https://pt.wikipedia.org/wiki/Zen" <(adb logcat -d)
+step "the bar is there after the pull" $ui wait "abas? abertas?" 10
 step "open the tab grid" $ui tap "abas? abertas?" 10
 sleep 2
 shot 08-tabs
@@ -159,7 +168,7 @@ shot 13-back
 adb shell dumpsys meminfo "$pkg" > "$out/meminfo-main.txt" 2>&1
 adb shell dumpsys meminfo > "$out/meminfo-all.txt" 2>&1
 adb logcat -d > "$out/logcat.txt"
-grep -E "FATAL EXCEPTION|ANR in|Fatal signal" "$out/logcat.txt" > "$out/crashes.txt" || true
+cat "$out"/logcat-before-pull.txt "$out/logcat.txt" 2>/dev/null | grep -E "FATAL EXCEPTION|ANR in|Fatal signal" > "$out/crashes.txt" || true
 
 {
   echo

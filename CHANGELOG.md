@@ -34,4 +34,4 @@ Primeira versão utilizável.
 - CI com build debug e release, testes, capturas de tela (Roborazzi), lint e teste de fumaça num emulador.
 
 ### Ainda não
-- Modo leitura, gerenciador de senhas, exceções de proteção por site, notificações de sites. A barra fica embaixo, de propósito (uma mão).
+- Modo leitura, gerenciador de senhas, exceções de proteção por site, lembrar permissões de sites (hoje o Zeno pergunta de novo a cada visita), notificações de sites. A barra fica embaixo, de propósito (uma mão).

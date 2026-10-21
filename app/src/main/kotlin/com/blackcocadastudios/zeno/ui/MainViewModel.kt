@@ -27,6 +27,7 @@ import com.blackcocadastudios.zeno.engine.LoadFlags
 import com.blackcocadastudios.zeno.ui.library.HistoryRange
 import com.blackcocadastudios.zeno.web.Suggestions
 import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -39,6 +40,7 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.util.Calendar
 import java.util.Locale
 
@@ -344,7 +346,12 @@ class MainViewModel(val container: AppContainer) : ViewModel() {
     fun download(url: String) {
         val private = state.value.selectedTab?.isPrivate ?: state.value.privateMode
         viewModelScope.launch {
-            val request = if (url.startsWith("data:")) DataUrls.toDownload(url, private) else container.engine.download(url, private)
+            val request = if (url.startsWith("data:")) {
+                // Inline images can be megabytes of base64: decode off the main thread.
+                withContext(Dispatchers.Default) { DataUrls.toDownload(url, private) }
+            } else {
+                container.engine.download(url, private)
+            }
             if (request != null) {
                 container.downloadCoordinator.enqueue(request)
             } else {
