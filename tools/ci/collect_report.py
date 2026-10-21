@@ -8,6 +8,7 @@ import glob
 import os
 import re
 import shutil
+import sys
 import xml.etree.ElementTree as ET
 
 ROOT = os.getcwd()
@@ -162,7 +163,9 @@ try:
     for line in changed:
         path = line[3:].strip()
         if path.endswith(".json") and os.path.exists(path):
-            annotate("notice", open(path).read()[:60000], path)
+            sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+            import annotate as notes
+            notes.annotate(os.path.basename(path), open(path).read(), path)
 except OSError:
     pass
 

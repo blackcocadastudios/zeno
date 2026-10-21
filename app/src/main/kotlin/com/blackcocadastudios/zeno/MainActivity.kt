@@ -50,7 +50,7 @@ class MainActivity : ComponentActivity(), AppHost {
     private val notificationPermission = registerForActivityResult(ActivityResultContracts.RequestPermission()) { }
     private val browserRole = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { }
 
-    /** Android 8 and 8.1: the screen lock is confirmed in a system activity. */
+    /** Android 8 and 9: the screen lock is confirmed in a system activity. */
     private var pendingAuthentication: ((Boolean) -> Unit)? = null
     private val confirmCredential = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         pendingAuthentication?.invoke(result.resultCode == RESULT_OK)
@@ -169,12 +169,13 @@ class MainActivity : ComponentActivity(), AppHost {
             Build.VERSION.SDK_INT >= 30 -> askBiometricPrompt(title, onResult) {
                 setAllowedAuthenticators(BiometricManager.Authenticators.BIOMETRIC_WEAK or BiometricManager.Authenticators.DEVICE_CREDENTIAL)
             }
-            Build.VERSION.SDK_INT >= 28 -> askBiometricPrompt(title, onResult) {
-                @Suppress("DEPRECATION") // The way to allow the PIN before Android 11.
+            Build.VERSION.SDK_INT >= 29 -> askBiometricPrompt(title, onResult) {
+                @Suppress("DEPRECATION") // The way to allow the PIN on Android 10.
                 setDeviceCredentialAllowed(true)
             }
             else -> {
-                @Suppress("DEPRECATION") // The only way before Android 9.
+                // Android 8 and 9: BiometricPrompt cannot fall back to the PIN there.
+                @Suppress("DEPRECATION")
                 val intent = getSystemService(KeyguardManager::class.java)?.createConfirmDeviceCredentialIntent(title, null)
                 if (intent == null) {
                     onResult(true)

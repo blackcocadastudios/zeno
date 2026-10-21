@@ -3,6 +3,8 @@ package com.blackcocadastudios.zeno.engine.gecko
 import android.net.Uri
 import com.blackcocadastudios.zeno.engine.ReaderMode
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 
 /**
  * Reader mode through a built-in extension (`assets/extensions/reader`): its
@@ -14,12 +16,15 @@ internal class GeckoReaderMode(private val engine: GeckoEngine) : ReaderMode {
     /** `moz-extension://…/`, once Gecko has the extension; the same in every run. */
     private var baseUrl: String? = null
 
+    /** One installation at a time (at start, and maybe a first reader request right after). */
+    private val installing = Mutex()
+
     /** Installs the extension, or updates it after an app update; Gecko keeps it between runs. */
     fun start() {
         engine.scope.launch { ensure() }
     }
 
-    private suspend fun ensure(): String? {
+    private suspend fun ensure(): String? = installing.withLock {
         baseUrl?.let { return it }
         val controller = engine.runtime.webExtensionController
         var extension = runCatching { controller.ensureBuiltIn(LOCATION, ID).await() }.getOrNull() ?: return null
@@ -27,7 +32,7 @@ internal class GeckoReaderMode(private val engine: GeckoEngine) : ReaderMode {
             // In a private tab the reader runs, and downloads, in that tab's private context.
             extension = runCatching { controller.setAllowedInPrivateBrowsing(extension, true).await() }.getOrNull() ?: extension
         }
-        return extension.metaData.baseUrl.also { baseUrl = it }
+        extension.metaData.baseUrl.also { baseUrl = it }
     }
 
     override suspend fun readerUrl(url: String): String? {
