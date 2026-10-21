@@ -50,6 +50,10 @@ activity="$pkg/com.blackcocadastudios.zeno.MainActivity"
 adb wait-for-device
 adb shell input keyevent KEYCODE_WAKEUP
 adb shell wm dismiss-keyguard || true
+# The emulator's own apps may freeze on a slow CI machine; their "not responding"
+# dialogs would cover Zeno. Hide them (ui.py also answers any that still show).
+adb shell settings put global hide_error_dialogs 1 || true
+adb shell settings put secure anr_show_background 0 || true
 step "install $(basename "$apk")" adb install -r -g "$apk"
 adb logcat -c
 
@@ -149,8 +153,8 @@ grep -E "FATAL EXCEPTION|ANR in|Fatal signal" "$out/logcat.txt" > "$out/crashes.
   grep -E "TotalTime|WaitTime" "$out/start-cold.txt" | sed 's/^/cold start: /'
   grep -E "TotalTime" "$out/start-warm.txt" | sed 's/^/warm start: /'
   grep -E "TOTAL PSS|TOTAL RSS|TOTAL:" "$out/meminfo-main.txt" | head -3 | sed 's/^/main process: /'
-  echo "Zeno processes (PSS):"
-  grep -E "$pkg|org\\.mozilla" "$out/meminfo-all.txt" | head -12
+  echo "Zeno processes (PSS, KB):"
+  awk '/Total PSS by process/{on=1; next} on && /^$/{exit} on' "$out/meminfo-all.txt" | grep -F "$pkg" | head -12
   echo '```'
   echo
   if [ -s "$out/crashes.txt" ]; then

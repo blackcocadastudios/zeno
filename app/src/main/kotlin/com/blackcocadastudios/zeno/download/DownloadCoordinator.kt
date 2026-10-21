@@ -8,6 +8,7 @@ import android.os.Environment
 import android.provider.MediaStore
 import androidx.annotation.RequiresApi
 import androidx.core.content.FileProvider
+import com.blackcocadastudios.zeno.data.downloads.DownloadRecord
 import com.blackcocadastudios.zeno.data.downloads.DownloadStatus
 import com.blackcocadastudios.zeno.data.downloads.DownloadsRepository
 import com.blackcocadastudios.zeno.engine.DownloadRequest
@@ -16,12 +17,14 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
@@ -43,13 +46,26 @@ data class ActiveDownload(val id: Long, val fileName: String, val bytes: Long, v
  * Saves files the engine hands over into the public Downloads folder. The
  * bytes come straight from the response Gecko already made (with the page's
  * cookies), so nothing is downloaded twice.
+ *
+ * Downloads from private tabs are listed from memory only: the file is saved
+ * (that is what the user asked for), but no record of it reaches the disk, and
+ * the list forgets them when the private tabs are closed.
  */
 class DownloadCoordinator(
     private val context: Context,
     private val repository: DownloadsRepository,
     private val scope: CoroutineScope,
+    private val clock: () -> Long = System::currentTimeMillis,
 ) {
     private val jobs = HashMap<Long, Job>()
+
+    private val privateRecords = MutableStateFlow<List<DownloadRecord>>(emptyList())
+    private var nextPrivateId = -1L
+
+    /** Every download to list: saved ones and, while they last, private ones. */
+    val records: Flow<List<DownloadRecord>> = combine(repository.all, privateRecords) { saved, private ->
+        (private + saved).sortedByDescending { it.createdAt }
+    }
 
     private val _active = MutableStateFlow<Map<Long, ActiveDownload>>(emptyMap())
     val active: StateFlow<Map<Long, ActiveDownload>> = _active.asStateFlow()
@@ -62,11 +78,12 @@ class DownloadCoordinator(
         scope.launch {
             val fileName = FileNames.resolve(request.fileName, request.url, request.contentType)
             val mimeType = FileNames.mimeTypeFor(fileName, request.contentType)
-            val id = repository.start(request.url, fileName, mimeType, request.contentLength)
+            val log = if (request.isPrivate) memoryLog else databaseLog
+            val id = log.start(request.url, fileName, mimeType, request.contentLength)
             _active.update { it + (id to ActiveDownload(id, fileName, 0, request.contentLength)) }
             _events.tryEmit(DownloadEvent.Started(fileName))
             DownloadService.start(context)
-            val job = scope.launch(Dispatchers.IO) { save(id, fileName, mimeType, request.contentLength, body) }
+            val job = scope.launch(Dispatchers.IO) { save(log, id, fileName, mimeType, request.contentLength, body) }
             jobs[id] = job
             job.invokeOnCompletion {
                 scope.launch {
@@ -81,33 +98,49 @@ class DownloadCoordinator(
         jobs[id]?.cancel()
     }
 
-    private suspend fun save(id: Long, fileName: String, mimeType: String, total: Long?, body: InputStream) {
+    /** Removes a download from the list (the file stays). */
+    suspend fun delete(id: Long) {
+        if (id < 0) privateRecords.update { list -> list.filterNot { it.id == id } } else repository.delete(id)
+    }
+
+    /** Removes every finished download from the list (the files stay). */
+    suspend fun clearFinished() {
+        privateRecords.update { list -> list.filter { it.status == DownloadStatus.Running } }
+        repository.clearFinished()
+    }
+
+    /** The private tabs are gone: so is the list of what they downloaded. */
+    fun forgetPrivate() {
+        privateRecords.update { list -> list.filter { it.status == DownloadStatus.Running } }
+    }
+
+    private suspend fun save(log: DownloadLog, id: Long, fileName: String, mimeType: String, total: Long?, body: InputStream) {
         var target: Target? = null
         try {
             target = Target.create(context, fileName, mimeType)
-            repository.setTarget(id, target.uri.toString(), target.displayName)
+            log.setTarget(id, target.uri.toString(), target.displayName)
             body.use { input ->
-                target.open(context).use { output -> copy(id, input, output, total) }
+                target.open(context).use { output -> copy(log, id, input, output, total) }
             }
             target.publish(context)
-            withContext(NonCancellable) { repository.finish(id, DownloadStatus.Completed, target.uri.toString()) }
+            withContext(NonCancellable) { log.finish(id, DownloadStatus.Completed, target.uri.toString()) }
             _events.tryEmit(DownloadEvent.Completed(id, target.displayName, target.uri, mimeType))
         } catch (cancelled: CancellationException) {
             withContext(NonCancellable) {
                 target?.discard(context)
-                repository.finish(id, DownloadStatus.Cancelled)
+                log.finish(id, DownloadStatus.Cancelled)
             }
             throw cancelled
         } catch (error: Exception) {
             withContext(NonCancellable) {
                 target?.discard(context)
-                repository.finish(id, DownloadStatus.Failed)
+                log.finish(id, DownloadStatus.Failed)
             }
             _events.tryEmit(DownloadEvent.Failed(fileName))
         }
     }
 
-    private suspend fun copy(id: Long, input: InputStream, output: OutputStream, total: Long?) {
+    private suspend fun copy(log: DownloadLog, id: Long, input: InputStream, output: OutputStream, total: Long?) {
         val buffer = ByteArray(64 * 1024)
         var written = 0L
         var lastReport = 0L
@@ -119,12 +152,66 @@ class DownloadCoordinator(
             val now = System.currentTimeMillis()
             if (now - lastReport > 500) {
                 lastReport = now
-                repository.progress(id, written, total)
+                log.progress(id, written, total)
                 _active.update { map -> map[id]?.let { map + (id to it.copy(bytes = written)) } ?: map }
             }
         }
         if (!currentCoroutineContextActive()) throw CancellationException("Download cancelled")
-        repository.progress(id, written, total ?: written)
+        log.progress(id, written, total ?: written)
+    }
+
+    /** Where a download's progress is written down. */
+    private interface DownloadLog {
+        suspend fun start(url: String, fileName: String, mimeType: String, total: Long?): Long
+        suspend fun setTarget(id: Long, uri: String, fileName: String)
+        suspend fun progress(id: Long, bytes: Long, total: Long?)
+        suspend fun finish(id: Long, status: DownloadStatus, uri: String? = null)
+    }
+
+    private val databaseLog = object : DownloadLog {
+        override suspend fun start(url: String, fileName: String, mimeType: String, total: Long?) =
+            repository.start(url, fileName, mimeType, total)
+
+        override suspend fun setTarget(id: Long, uri: String, fileName: String) = repository.setTarget(id, uri, fileName)
+
+        override suspend fun progress(id: Long, bytes: Long, total: Long?) = repository.progress(id, bytes, total)
+
+        override suspend fun finish(id: Long, status: DownloadStatus, uri: String?) = repository.finish(id, status, uri)
+    }
+
+    /** Private tabs: memory only, and without the address the file came from. */
+    private val memoryLog = object : DownloadLog {
+        override suspend fun start(url: String, fileName: String, mimeType: String, total: Long?): Long {
+            val id = nextPrivateId--
+            val record = DownloadRecord(
+                id = id,
+                url = "",
+                fileName = fileName,
+                mimeType = mimeType,
+                totalBytes = total,
+                downloadedBytes = 0,
+                status = DownloadStatus.Running,
+                contentUri = null,
+                createdAt = clock(),
+                completedAt = null,
+            )
+            privateRecords.update { it + record }
+            return id
+        }
+
+        override suspend fun setTarget(id: Long, uri: String, fileName: String) =
+            change(id) { it.copy(contentUri = uri, fileName = fileName) }
+
+        override suspend fun progress(id: Long, bytes: Long, total: Long?) =
+            change(id) { it.copy(downloadedBytes = bytes, totalBytes = total ?: it.totalBytes) }
+
+        override suspend fun finish(id: Long, status: DownloadStatus, uri: String?) = change(id) {
+            it.copy(status = status, contentUri = uri ?: it.contentUri, completedAt = if (status == DownloadStatus.Running) null else clock())
+        }
+
+        private fun change(id: Long, transform: (DownloadRecord) -> DownloadRecord) {
+            privateRecords.update { list -> list.map { if (it.id == id) transform(it) else it } }
+        }
     }
 
     private suspend fun currentCoroutineContextActive(): Boolean = kotlin.coroutines.coroutineContext.isActive

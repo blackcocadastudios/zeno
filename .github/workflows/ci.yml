@@ -57,13 +57,22 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: bash tools/ci/publish-report.sh report ci
 
-      - name: Upload APKs
-        # Also when only lint or tests failed, so the smoke test still runs on what was built.
+      # Also when only lint or tests failed, so the smoke test still runs on what was built.
+      - name: Upload the phone APK
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: zeno-apks
-          path: app/build/outputs/apk/**/*.apk
+          name: zeno-arm64
+          path: app/build/outputs/apk/release/*arm64-v8a*.apk
+          if-no-files-found: warn
+
+      - name: Upload the emulator APKs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: zeno-x86_64
+          path: app/build/outputs/apk/*/*x86_64*.apk
+          retention-days: 3
           if-no-files-found: warn
 
   # Uses the real app on an Android emulator: pages load, the interface
@@ -78,7 +87,7 @@ jobs:
 
       - uses: actions/download-artifact@v4
         with:
-          name: zeno-apks
+          name: zeno-x86_64
           path: apks
 
       - name: Enable KVM

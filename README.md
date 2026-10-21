@@ -11,7 +11,9 @@ O que já existe está em [`CHANGELOG.md`](CHANGELOG.md).
 
 ## Instalar
 
-Cada push gera APKs no GitHub Actions (artefato `zeno-apks`). Para compilar em casa:
+Cada push gera o APK no GitHub Actions: abra a execução mais recente do fluxo **ci**, desça até *Artifacts* e baixe `zeno-arm64` (um zip com o APK para celular). No Android, permita instalar apps do navegador ou do gerenciador de arquivos e abra o APK.
+
+Para compilar em casa:
 
 ```sh
 ./gradlew assembleRelease

@@ -389,13 +389,13 @@ class MainViewModel(val container: AppContainer) : ViewModel() {
     }
 
     fun deleteDownload(id: Long) {
-        viewModelScope.launch { container.downloads.delete(id) }
+        viewModelScope.launch { container.downloadCoordinator.delete(id) }
     }
 
     fun cancelDownload(id: Long) = container.downloadCoordinator.cancel(id)
 
     fun clearDownloads() {
-        viewModelScope.launch { container.downloads.clearFinished() }
+        viewModelScope.launch { container.downloadCoordinator.clearFinished() }
     }
 
     private fun openFile(uri: String, mimeType: String) {

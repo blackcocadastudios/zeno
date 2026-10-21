@@ -23,10 +23,34 @@ def dump():
         return None
 
 
+SYSTEM_DIALOG = re.compile(r"isn't responding|não está respondendo|keeps stopping", re.I)
+
+
+def dismiss_system_dialogs(root):
+    """The CI emulator's own apps (the launcher) sometimes freeze and Android
+    shows an "isn't responding" dialog over everything: answer "Wait"."""
+    if not any(SYSTEM_DIALOG.search(n.get("text") or "") for n in root.iter("node")):
+        return False
+    for node in root.iter("node"):
+        if re.fullmatch(r"Wait|Aguardar", node.get("text") or "", re.I):
+            m = BOUNDS.match(node.get("bounds", ""))
+            if m:
+                x1, y1, x2, y2 = map(int, m.groups())
+                subprocess.run(["adb", "shell", "input", "tap", str((x1 + x2) // 2), str((y1 + y2) // 2)], timeout=30)
+                print("dismissed a system 'not responding' dialog")
+                time.sleep(1)
+                return True
+    return False
+
+
 def find(pattern):
     root = dump()
     if root is None:
         return None
+    if dismiss_system_dialogs(root):
+        root = dump()
+        if root is None:
+            return None
     rx = re.compile(pattern, re.I)
     for node in root.iter("node"):
         if rx.search(node.get("text") or "") or rx.search(node.get("content-desc") or ""):

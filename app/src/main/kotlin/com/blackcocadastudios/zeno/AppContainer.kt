@@ -78,6 +78,16 @@ class AppContainer(val app: Application) {
             }
         }
         scope.launch { controller.downloads.collect(downloadCoordinator::enqueue) }
+        scope.launch {
+            // Thumbnails of tabs closed by their own pages (window.close) go too.
+            controller.state.map { state -> state.tabs.mapTo(HashSet()) { it.id } }.distinctUntilChanged().collect(thumbnails::retain)
+        }
+        scope.launch {
+            // When the last private tab closes, its downloads leave the list too.
+            controller.state.map { it.privateTabs.isNotEmpty() }.distinctUntilChanged().drop(1).collect { open ->
+                if (!open) downloadCoordinator.forgetPrivate()
+            }
+        }
         scope.launch { downloads.markInterrupted() }
         recordHistoryTitles()
         scope.launch {

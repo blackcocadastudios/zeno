@@ -138,7 +138,7 @@ private fun LibraryOrSettings(vm: MainViewModel, screen: Screen, settings: UserS
             )
         }
         Screen.Downloads -> {
-            val downloads by remember { vm.container.downloads.all }.collectAsStateWithLifecycle(initialValue = emptyList())
+            val downloads by remember { vm.container.downloadCoordinator.records }.collectAsStateWithLifecycle(initialValue = emptyList())
             val now = remember { System.currentTimeMillis() }
             DownloadsScreen(
                 downloads = downloads,

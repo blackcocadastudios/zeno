@@ -26,10 +26,12 @@ class ExternalAppInterceptor(private val context: Context) : RequestInterceptor 
         val url = request.url
         val scheme = url.toUri().scheme?.lowercase() ?: return Interception.Allow
         if (scheme in engineSchemes) return Interception.Allow
+        // Other apps' content providers are not for web pages to open.
+        if (scheme == "content") return Interception.Handled
         if (!request.hasUserGesture && !request.isDirectNavigation) return Interception.Handled
 
         val intent = when (scheme) {
-            "intent" -> parseIntentUri(url) ?: return Interception.Handled
+            "intent" -> intentFromPage(url) ?: return Interception.Handled
             else -> Intent(Intent.ACTION_VIEW, url.toUri())
         }
         intent.addCategory(Intent.CATEGORY_BROWSABLE)
@@ -49,13 +51,30 @@ class ExternalAppInterceptor(private val context: Context) : RequestInterceptor 
         return Interception.Handled
     }
 
-    /** `intent:` URIs come from web pages: never let them target a specific component. */
-    private fun parseIntentUri(url: String): Intent? = try {
-        Intent.parseUri(url, Intent.URI_INTENT_SCHEME).apply {
-            component = null
-            selector = null
+    internal companion object {
+        private const val URI_GRANTS = Intent.FLAG_GRANT_READ_URI_PERMISSION or
+            Intent.FLAG_GRANT_WRITE_URI_PERMISSION or
+            Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION or
+            Intent.FLAG_GRANT_PREFIX_URI_PERMISSION
+
+        /**
+         * `intent:` URIs come from web pages: they may name an app, never one
+         * of its components, and never borrow Zeno's own permissions (a granted
+         * `content://` URI would hand Zeno's files to the other app).
+         */
+        fun intentFromPage(url: String): Intent? = try {
+            Intent.parseUri(url, Intent.URI_INTENT_SCHEME).apply {
+                component = null
+                selector = null
+                clipData = null
+                flags = flags and URI_GRANTS.inv()
+                if (data?.scheme.equals("content", ignoreCase = true)) data = null
+            }
+        } catch (_: URISyntaxException) {
+            null
+        } catch (_: RuntimeException) {
+            // parseUri lets some malformed values through as runtime errors (launchFlags=zzz).
+            null
         }
-    } catch (_: URISyntaxException) {
-        null
     }
 }

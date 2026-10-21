@@ -26,7 +26,9 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
+import androidx.compose.material3.SwipeToDismissBox
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -143,13 +145,20 @@ fun TabsScreen(
                     verticalArrangement = Arrangement.spacedBy(Ma.m),
                 ) {
                     items(visible, key = { it.id }) { tab ->
-                        TabCard(
-                            tab = tab,
-                            selected = tab.id == selectedTabId,
-                            thumbnail = thumbnail(tab.id),
-                            onSelect = { onSelect(tab.id) },
-                            onClose = { onClose(tab.id) },
-                        )
+                        // A sideways swipe closes the tab, like brushing a card off the table.
+                        SwipeToDismissBox(
+                            state = rememberSwipeToDismissBoxState(),
+                            backgroundContent = {},
+                            onDismiss = { onClose(tab.id) },
+                        ) {
+                            TabCard(
+                                tab = tab,
+                                selected = tab.id == selectedTabId,
+                                thumbnail = thumbnail(tab.id),
+                                onSelect = { onSelect(tab.id) },
+                                onClose = { onClose(tab.id) },
+                            )
+                        }
                     }
                 }
             }
