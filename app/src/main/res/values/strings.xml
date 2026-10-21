@@ -6,7 +6,11 @@
     <!-- Toolbar -->
     <string name="toolbar_hint">Pesquisar ou digitar endereço</string>
     <string name="toolbar_hint_private">Pesquisar em privado</string>
-    <string name="toolbar_tabs">Abas abertas: %1$d</string>
+    <plurals name="toolbar_tab_count">
+        <item quantity="one">%1$d aba aberta</item>
+        <item quantity="many">%1$d abas abertas</item>
+        <item quantity="other">%1$d abas abertas</item>
+    </plurals>
     <string name="toolbar_menu">Menu</string>
     <string name="toolbar_reload">Recarregar</string>
     <string name="toolbar_stop">Parar</string>
@@ -199,7 +203,11 @@
     <string name="extensions_sponsorblock_name">SponsorBlock</string>
     <string name="extensions_sponsorblock_desc">Pula patrocínios e vinhetas em vídeos do YouTube.</string>
     <string name="permission_all_sites">Ler e alterar seus dados em todos os sites</string>
-    <string name="permission_some_sites">Ler e alterar seus dados em %1$d sites</string>
+    <plurals name="permission_some_sites">
+        <item quantity="one">Ler e alterar seus dados em %1$d site</item>
+        <item quantity="many">Ler e alterar seus dados em %1$d sites</item>
+        <item quantity="other">Ler e alterar seus dados em %1$d sites</item>
+    </plurals>
     <string name="permission_tabs">Acessar suas abas</string>
     <string name="permission_history">Acessar o histórico</string>
     <string name="permission_bookmarks">Ler e alterar favoritos</string>
@@ -288,4 +296,14 @@
     <string name="crash_reload">Recarregar aba</string>
     <string name="no_app_for_link">Nenhum app abre este link</string>
     <string name="share_via">Compartilhar com</string>
+    <string name="translate_unavailable">Não dá para traduzir esta página</string>
+    <string name="translate_working">Traduzindo…</string>
+    <string name="extensions_action_failed">Não foi possível concluir</string>
+    <string name="settings_already_default">O Zeno já é o navegador padrão</string>
+    <string name="shortcut_new_tab_short">Nova aba</string>
+    <string name="shortcut_private_short">Aba privada</string>
+    <string name="onboarding_ublock_title">Sem anúncios, com leveza</string>
+    <string name="onboarding_ublock_body">O Zeno já bloqueia rastreadores. Para os anúncios, instale o uBlock Origin: a extensão de bloqueio mais respeitada, leve e de código aberto.</string>
+    <string name="onboarding_ublock_install">Instalar</string>
+    <string name="onboarding_later">Agora não</string>
 </resources>

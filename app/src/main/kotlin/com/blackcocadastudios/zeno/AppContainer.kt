@@ -138,11 +138,16 @@ class AppContainer(val app: Application) {
         }
     }
 
-    /** Everything stored about browsing: history, cookies, cache, site data, tabs. */
-    suspend fun clearBrowsingData() {
+    /**
+     * Everything stored about browsing: history, cookies, cache, site data and,
+     * with [includeTabs], the saved tabs and their thumbnails (close the tabs first).
+     */
+    suspend fun clearBrowsingData(includeTabs: Boolean) {
         runCatching { history.clear() }
         runCatching { engine.clearData(setOf(BrowsingData.All)) }
-        thumbnails.clear()
-        sessionStore.clear()
+        if (includeTabs) {
+            thumbnails.clear()
+            sessionStore.clear()
+        }
     }
 }

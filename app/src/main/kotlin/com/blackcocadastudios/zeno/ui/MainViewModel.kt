@@ -4,6 +4,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.core.net.toUri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -14,14 +15,19 @@ import com.blackcocadastudios.zeno.browser.state.BrowserState
 import com.blackcocadastudios.zeno.browser.state.TabOrigin
 import com.blackcocadastudios.zeno.browser.url.UrlDisplay
 import com.blackcocadastudios.zeno.browser.url.UrlInput
+import com.blackcocadastudios.zeno.data.bookmarks.Bookmark
+import com.blackcocadastudios.zeno.data.downloads.DownloadRecord
 import com.blackcocadastudios.zeno.data.settings.UserSettings
-import com.blackcocadastudios.zeno.download.DownloadEvent
 import com.blackcocadastudios.zeno.download.DataUrls
+import com.blackcocadastudios.zeno.download.DownloadEvent
 import com.blackcocadastudios.zeno.download.DownloadNotifications
 import com.blackcocadastudios.zeno.engine.ExtensionInstallRequest
 import com.blackcocadastudios.zeno.engine.ExtensionPopup
+import com.blackcocadastudios.zeno.engine.LoadFlags
+import com.blackcocadastudios.zeno.ui.library.HistoryRange
 import com.blackcocadastudios.zeno.web.Suggestions
 import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -29,9 +35,12 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import java.util.Calendar
+import java.util.Locale
 
 /** Full-screen places besides the browser itself. */
 enum class Screen { Browser, Settings, History, Bookmarks, Downloads, Extensions }
@@ -71,8 +80,14 @@ class MainViewModel(val container: AppContainer) : ViewModel() {
     var pendingInstall by mutableStateOf<PendingInstall?>(null)
         private set
 
+    /** Install URLs in progress, so their buttons can say so. */
+    var installing by mutableStateOf(emptySet<String>())
+        private set
+
     private val _messages = MutableSharedFlow<UiMessage>(extraBufferCapacity = 4)
     val messages: SharedFlow<UiMessage> = _messages.asSharedFlow()
+
+    private val app get() = container.app
 
     val shortcuts: StateFlow<List<Shortcut>> = combine(
         container.bookmarks.pinned,
@@ -80,10 +95,9 @@ class MainViewModel(val container: AppContainer) : ViewModel() {
         container.userSettings.map { it.showShortcuts },
     ) { pinned, top, show ->
         if (!show) return@combine emptyList()
-        val hosts = HashSet<String>()
         val list = mutableListOf<Shortcut>()
         pinned.forEach { b ->
-            if (hosts.add(UrlDisplay.host(b.url).orEmpty() + b.url)) list += Shortcut(b.url, b.title, pinned = true)
+            if (list.none { it.url == b.url }) list += Shortcut(b.url, b.title, pinned = true)
         }
         top.forEach { h ->
             val host = h.host.removePrefix("www.")
@@ -113,13 +127,11 @@ class MainViewModel(val container: AppContainer) : ViewModel() {
         }
         viewModelScope.launch {
             container.downloadCoordinator.events.collect { event ->
-                val app = container.app
                 when (event) {
                     is DownloadEvent.Started -> message(app.getString(R.string.download_started, event.fileName))
                     is DownloadEvent.Completed -> message(
                         UiMessage(app.getString(R.string.download_complete), app.getString(R.string.download_open)) {
-                            runCatching { app.startActivity(DownloadNotifications.openIntent(event.uri, event.mimeType)) }
-                                .onFailure { message(app.getString(R.string.download_no_app)) }
+                            openFile(event.uri.toString(), event.mimeType)
                         },
                     )
                     is DownloadEvent.Failed -> message(app.getString(R.string.download_failed))
@@ -181,12 +193,19 @@ class MainViewModel(val container: AppContainer) : ViewModel() {
         editing = false
     }
 
+    /** Opens [url] here, or in a new tab; from any screen, ending on the browser. */
     fun openUrl(url: String, newTab: Boolean = false, private: Boolean = state.value.privateMode) {
         if (newTab) controller.newTab(url, private = private) else controller.load(url)
         editing = false
-        if (screen != Screen.Browser) {
-            while (popScreen()) Unit
-        }
+        while (popScreen()) Unit
+    }
+
+    /** A link from another app: a normal tab, and back on its first page returns to that app. */
+    fun openExternal(url: String) {
+        controller.newTab(url, private = false, origin = TabOrigin.External, flags = LoadFlags(external = true))
+        closeOverlays()
+        findOpen = false
+        while (popScreen()) Unit
     }
 
     suspend fun suggest(text: String): Suggestions {
@@ -203,10 +222,13 @@ class MainViewModel(val container: AppContainer) : ViewModel() {
 
     // region Tabs
 
+    /** Zeno's home page in the given mode, with the address bar ready; the tab is created when something loads. */
     fun newTab(private: Boolean) {
-        controller.newTab(private = private)
+        controller.showHome(private)
         showTabs = false
         showMenu = false
+        findOpen = false
+        while (popScreen()) Unit
         editing = true
     }
 
@@ -215,9 +237,22 @@ class MainViewModel(val container: AppContainer) : ViewModel() {
         showTabs = false
     }
 
+    /** Closes [id]; for a moment the user can bring it back. */
     fun closeTab(id: String) {
+        val before = state.value
+        val tab = before.tab(id) ?: return
+        val index = before.tabs.indexOf(tab)
+        val wasSelected = before.selectedTabId == id
+        val thumbnail = container.thumbnails.get(id)
         controller.closeTab(id)
         container.thumbnails.remove(id)
+        if (tab.url == null) return
+        message(
+            UiMessage(app.getString(R.string.tabs_closed), app.getString(R.string.tabs_undo)) {
+                val reopened = controller.reopen(tab, index, select = wasSelected)
+                thumbnail?.let { container.thumbnails.put(reopened, it) }
+            },
+        )
     }
 
     fun closeAllTabs(private: Boolean) {
@@ -236,6 +271,8 @@ class MainViewModel(val container: AppContainer) : ViewModel() {
 
     // region Page actions
 
+    fun isBookmarked(url: String?): Flow<Boolean> = url?.let(container.bookmarks::isBookmarked) ?: flowOf(false)
+
     fun toggleBookmark() {
         val tab = state.value.selectedTab ?: return
         val url = tab.url ?: return
@@ -243,10 +280,10 @@ class MainViewModel(val container: AppContainer) : ViewModel() {
             val bookmarked = container.bookmarks.isBookmarked(url).first()
             if (bookmarked) {
                 container.bookmarks.remove(url)
-                message(container.app.getString(R.string.menu_bookmark_removed))
+                message(app.getString(R.string.menu_bookmark_removed))
             } else {
                 container.bookmarks.add(url, tab.title.ifBlank { UrlDisplay.shortHost(url) })
-                message(container.app.getString(R.string.menu_bookmark_added))
+                message(app.getString(R.string.menu_bookmark_added))
             }
         }
     }
@@ -256,26 +293,47 @@ class MainViewModel(val container: AppContainer) : ViewModel() {
         val url = tab.url ?: return
         viewModelScope.launch {
             container.bookmarks.add(url, tab.title.ifBlank { UrlDisplay.siteName(url) }, pinned = true)
-            message(container.app.getString(R.string.menu_added_to_home))
+            message(app.getString(R.string.menu_added_to_home))
         }
         showMenu = false
     }
 
     fun removeShortcut(shortcut: Shortcut) {
         viewModelScope.launch {
-            if (shortcut.pinned) container.bookmarks.setPinned(shortcut.url, false)
-            else container.history.deleteSite(UrlDisplay.host(shortcut.url).orEmpty())
+            if (shortcut.pinned) {
+                container.bookmarks.setPinned(shortcut.url, false)
+            } else {
+                container.history.deleteSite(UrlDisplay.host(shortcut.url).orEmpty())
+            }
         }
     }
 
     fun openInBackground(url: String, private: Boolean) {
         val parent = state.value.selectedTabId
-        controller.newTab(url, private = private, select = false, parentId = parent, origin = TabOrigin.Link)
+        val id = controller.newTab(url, private = private, select = false, parentId = parent, origin = TabOrigin.Link)
         message(
-            UiMessage(container.app.getString(R.string.context_opened_in_background), container.app.getString(R.string.context_switch)) {
-                state.value.tabs.lastOrNull { it.url == url }?.let { controller.selectTab(it.id) }
+            UiMessage(app.getString(R.string.context_opened_in_background), app.getString(R.string.context_switch)) {
+                if (state.value.tab(id) != null) controller.selectTab(id)
             },
         )
+    }
+
+    /** Translates the page into the user's language, or shows the original again. */
+    fun translate() {
+        val tab = state.value.selectedTab ?: return
+        val translation = tab.content.translation
+        if (translation?.isTranslated == true) {
+            controller.restoreOriginalLanguage(tab.id)
+            return
+        }
+        val from = translation?.documentLanguage
+        val to = translation?.userLanguage ?: Locale.getDefault().language
+        if (from.isNullOrBlank() || from.substringBefore('-') == to.substringBefore('-')) {
+            message(app.getString(R.string.translate_unavailable))
+            return
+        }
+        controller.translate(tab.id, from, to)
+        message(app.getString(R.string.translate_working))
     }
 
     /** Saves [url] (a link or an image) as a file. */
@@ -283,18 +341,109 @@ class MainViewModel(val container: AppContainer) : ViewModel() {
         val private = state.value.selectedTab?.isPrivate ?: state.value.privateMode
         viewModelScope.launch {
             val request = if (url.startsWith("data:")) DataUrls.toDownload(url, private) else container.engine.download(url, private)
-            if (request != null) container.downloadCoordinator.enqueue(request)
-            else message(container.app.getString(R.string.download_failed))
+            if (request != null) {
+                container.downloadCoordinator.enqueue(request)
+            } else {
+                message(app.getString(R.string.download_failed))
+            }
         }
     }
+
+    // endregion
+
+    // region Library
+
+    fun deleteHistory(url: String) {
+        viewModelScope.launch { container.history.delete(url) }
+    }
+
+    fun clearHistory(range: HistoryRange) {
+        viewModelScope.launch {
+            when (range) {
+                HistoryRange.LastHour -> container.history.deleteSince(System.currentTimeMillis() - 60 * 60 * 1000L)
+                HistoryRange.TodayAndYesterday -> container.history.deleteSince(startOfYesterday())
+                HistoryRange.Everything -> container.history.clear()
+            }
+        }
+    }
+
+    fun deleteBookmark(url: String) {
+        viewModelScope.launch { container.bookmarks.remove(url) }
+    }
+
+    fun renameBookmark(url: String, title: String) {
+        viewModelScope.launch { container.bookmarks.rename(url, title) }
+    }
+
+    fun toggleBookmarkPin(bookmark: Bookmark) {
+        viewModelScope.launch { container.bookmarks.setPinned(bookmark.url, !bookmark.pinned) }
+    }
+
+    fun openDownload(record: DownloadRecord) {
+        val uri = record.contentUri ?: return
+        openFile(uri, record.mimeType ?: "*/*")
+    }
+
+    fun deleteDownload(id: Long) {
+        viewModelScope.launch { container.downloads.delete(id) }
+    }
+
+    fun cancelDownload(id: Long) = container.downloadCoordinator.cancel(id)
+
+    fun clearDownloads() {
+        viewModelScope.launch { container.downloads.clearFinished() }
+    }
+
+    private fun openFile(uri: String, mimeType: String) {
+        runCatching { app.startActivity(DownloadNotifications.openIntent(uri.toUri(), mimeType)) }
+            .onFailure { message(app.getString(R.string.download_no_app)) }
+    }
+
+    // endregion
+
+    // region Extensions
 
     fun requestInstallUblock() = install(UBLOCK_URL)
 
     fun install(url: String) {
+        if (url in installing) return
+        installing = installing + url
         viewModelScope.launch {
-            container.engine.extensions.install(url)
-                .onSuccess { message(container.app.getString(R.string.extensions_installed_toast, it.name)) }
-                .onFailure { message(container.app.getString(R.string.extensions_failed)) }
+            try {
+                container.engine.extensions.install(url)
+                    .onSuccess { message(app.getString(R.string.extensions_installed_toast, it.name)) }
+                    .onFailure { message(app.getString(R.string.extensions_failed)) }
+            } finally {
+                installing = installing - url
+            }
+        }
+    }
+
+    fun setExtensionEnabled(id: String, enabled: Boolean) = extensionAction { setEnabled(id, enabled) }
+
+    fun setExtensionAllowedInPrivate(id: String, allowed: Boolean) = extensionAction { setAllowedInPrivate(id, allowed) }
+
+    fun uninstallExtension(id: String) = extensionAction { uninstall(id) }
+
+    private fun extensionAction(action: suspend com.blackcocadastudios.zeno.engine.ExtensionController.() -> Result<*>) {
+        viewModelScope.launch {
+            container.engine.extensions.action().onFailure { message(app.getString(R.string.extensions_action_failed)) }
+        }
+    }
+
+    // endregion
+
+    // region Settings
+
+    fun updateSettings(transform: (UserSettings) -> UserSettings) {
+        viewModelScope.launch { container.settings.update(transform) }
+    }
+
+    /** History, cookies, cache and site data; open tabs stay. */
+    fun clearBrowsingData() {
+        viewModelScope.launch {
+            container.clearBrowsingData(includeTabs = false)
+            message(app.getString(R.string.settings_cleared))
         }
     }
 
@@ -309,16 +458,22 @@ class MainViewModel(val container: AppContainer) : ViewModel() {
     /** Leaves the app; with "clear on exit" everything browsing-related goes first. */
     fun quit(onDone: () -> Unit) {
         viewModelScope.launch {
+            controller.closeAllTabs(private = true)
             if (settings.value.clearOnExit) {
                 controller.closeAllTabs(private = false)
-                controller.closeAllTabs(private = true)
-                container.clearBrowsingData()
-            } else {
-                controller.closeAllTabs(private = true)
+                container.clearBrowsingData(includeTabs = true)
             }
             onDone()
         }
     }
+
+    private fun startOfYesterday(): Long = Calendar.getInstance().apply {
+        set(Calendar.HOUR_OF_DAY, 0)
+        set(Calendar.MINUTE, 0)
+        set(Calendar.SECOND, 0)
+        set(Calendar.MILLISECOND, 0)
+        add(Calendar.DAY_OF_YEAR, -1)
+    }.timeInMillis
 
     class Factory(private val container: AppContainer) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
