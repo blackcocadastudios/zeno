@@ -16,7 +16,9 @@ import org.jetbrains.kotlin.gradle.dsl.KotlinJvmProjectExtension
 
 /** Values shared by every module. Changing one of these is an architectural decision (see docs/adr). */
 object ZenoBuild {
+    /** GeckoView 158 requires Android 17 QPR2 (API 37.2) at compile time. */
     const val COMPILE_SDK = 37
+    const val COMPILE_SDK_MINOR = 2
     const val TARGET_SDK = 36
     const val MIN_SDK = 26
     val JAVA_VERSION = JavaVersion.VERSION_17
@@ -30,8 +32,6 @@ internal fun VersionCatalog.lib(alias: String) = findLibrary(alias).get()
 
 internal fun Project.configureAndroidCommon(commonExtension: CommonExtension) {
     commonExtension.apply {
-        compileSdk = ZenoBuild.COMPILE_SDK
-
         defaultConfig.apply {
             minSdk = ZenoBuild.MIN_SDK
         }
@@ -50,8 +50,6 @@ internal fun Project.configureAndroidCommon(commonExtension: CommonExtension) {
             abortOnError = true
             checkDependencies = false
             warningsAsErrors = false
-            xmlReport = true
-            htmlReport = true
         }
     }
 

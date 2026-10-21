@@ -1,0 +1,96 @@
+# Development aid (removed before merge): publishes the resolved compile
+# classpath and a matching Kotlin compiler to the `ci-classpath` branch so code
+# can be type-checked in environments without Maven access.
+name: toolchain
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - gradle/libs.versions.toml
+      - .github/workflows/toolchain.yml
+      - tools/ci/export-classpath.init.gradle.kts
+
+permissions:
+  contents: write
+
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Export module classpaths
+        run: |
+          ./gradlew --init-script tools/ci/export-classpath.init.gradle.kts exportCompileClasspath --no-configuration-cache --continue || true
+          mkdir -p out/classpath
+          python3 - <<'EOF'
+          import glob, os, zipfile, shutil
+          seen = set()
+          for path in glob.glob("build/zeno-classpath/*/*"):
+              name = os.path.basename(path)
+              if name in seen:
+                  continue
+              seen.add(name)
+              if name.endswith(".aar"):
+                  with zipfile.ZipFile(path) as z:
+                      if "classes.jar" in z.namelist():
+                          with z.open("classes.jar") as src, open(f"out/classpath/{name[:-4]}.jar", "wb") as dst:
+                              shutil.copyfileobj(src, dst)
+              else:
+                  shutil.copy(path, f"out/classpath/{name}")
+          # Per-module manifest of what each module sees.
+          with open("out/modules.txt", "w") as f:
+              for d in sorted(glob.glob("build/zeno-classpath/*")):
+                  f.write(os.path.basename(d) + ": " + " ".join(sorted(os.listdir(d))) + "\n")
+          EOF
+          ls out/classpath | wc -l
+          du -sh out/classpath
+
+      - name: Export android.jar
+        run: |
+          mkdir -p out/android
+          platform=$(ls -d "$ANDROID_HOME"/platforms/android-37* | sort -V | tail -1)
+          echo "$platform" > out/android/PLATFORM
+          cp "$platform/android.jar" out/android/android.jar
+          ls -la out/android
+
+      - name: Export Kotlin compiler
+        run: |
+          mkdir -p /tmp/tc && cd /tmp/tc
+          kotlin=$(grep -E '^kotlin = ' "$GITHUB_WORKSPACE/gradle/libs.versions.toml" | cut -d'"' -f2)
+          cat > settings.gradle.kts <<EOF
+          rootProject.name = "tc"
+          EOF
+          cat > build.gradle.kts <<EOF
+          repositories { mavenCentral() }
+          val tc by configurations.creating
+          dependencies {
+              tc("org.jetbrains.kotlin:kotlin-compiler-embeddable:$kotlin")
+              tc("org.jetbrains.kotlin:kotlin-compose-compiler-plugin-embeddable:$kotlin")
+              tc("org.jetbrains.kotlin:kotlin-serialization-compiler-plugin-embeddable:$kotlin")
+          }
+          tasks.register<Copy>("export") { from(tc); into("$GITHUB_WORKSPACE/out/kotlinc") }
+          EOF
+          "$GITHUB_WORKSPACE/gradlew" -p /tmp/tc -q export --no-configuration-cache
+          ls "$GITHUB_WORKSPACE/out/kotlinc"
+
+      - name: Publish
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          cd out
+          git init -q -b ci-classpath
+          git config user.name "zeno-ci"
+          git config user.email "zeno-ci@users.noreply.github.com"
+          git add -A
+          git commit -q -m "classpath @ $GITHUB_SHA"
+          git push -q -f "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" ci-classpath

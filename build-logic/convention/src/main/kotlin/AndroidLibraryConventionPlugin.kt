@@ -14,6 +14,11 @@ class AndroidLibraryConventionPlugin : Plugin<Project> {
             pluginManager.apply("com.android.library")
 
             extensions.configure<LibraryExtension> {
+                compileSdk {
+                    version = release(ZenoBuild.COMPILE_SDK) {
+                        minorApiLevel = ZenoBuild.COMPILE_SDK_MINOR
+                    }
+                }
                 configureAndroidCommon(this)
                 testOptions.targetSdk = ZenoBuild.TARGET_SDK
                 lint.targetSdk = ZenoBuild.TARGET_SDK

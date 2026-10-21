@@ -14,6 +14,11 @@ class AndroidApplicationConventionPlugin : Plugin<Project> {
             pluginManager.apply("com.android.application")
 
             extensions.configure<ApplicationExtension> {
+                compileSdk {
+                    version = release(ZenoBuild.COMPILE_SDK) {
+                        minorApiLevel = ZenoBuild.COMPILE_SDK_MINOR
+                    }
+                }
                 configureAndroidCommon(this)
                 defaultConfig.targetSdk = ZenoBuild.TARGET_SDK
                 testOptions.animationsDisabled = true
