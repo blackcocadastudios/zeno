@@ -2,9 +2,6 @@ name: ci
 
 on:
   push:
-    branches-ignore:
-      - ci-reports
-      - ci-smoke
   workflow_dispatch:
 
 concurrency:
@@ -12,9 +9,7 @@ concurrency:
   cancel-in-progress: true
 
 permissions:
-  # Write access is only used to publish development reports to the
-  # `ci-reports` branch (feature branches only; removed before release).
-  contents: write
+  contents: read
 
 jobs:
   build:
@@ -51,11 +46,14 @@ jobs:
         if: always()
         run: python3 tools/ci/collect_report.py
 
-      - name: Publish development report
-        if: always() && github.ref_name != 'main'
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: bash tools/ci/publish-report.sh report ci
+      # Summary, test and lint reports, and screenshots of every screen.
+      - name: Upload the report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: zeno-report
+          path: report
+          if-no-files-found: warn
 
       # Also when only lint or tests failed, so the smoke test still runs on what was built.
       - name: Upload the phone APK
@@ -106,12 +104,6 @@ jobs:
           disable-animations: true
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -no-snapshot
           script: bash tools/ci/smoke.sh apks
-
-      - name: Publish smoke report
-        if: always() && github.ref_name != 'main'
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: bash tools/ci/publish-report.sh smoke-report smoke ci-smoke
 
       - name: Upload smoke report
         if: always()

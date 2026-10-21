@@ -75,7 +75,7 @@ O estado do navegador é um único `StateFlow` imutável dono das abas (`Browser
 
 ## Verificação
 
-`bash tools/ci/gradle-check.sh` roda o que o CI roda: build debug e release, testes na JVM, capturas de tela de todas as telas (Roborazzi, em `*/build/outputs/roborazzi/`) e lint. No CI, um teste de fumaça (`tools/ci/smoke.sh`) instala o app num emulador e o usa de verdade: abre páginas, pesquisa, troca de aba, instala o uBlock Origin, entra no modo privado e mede abertura e memória.
+`bash tools/ci/gradle-check.sh` roda o que o CI roda: build debug e release, testes na JVM, capturas de tela de todas as telas (Roborazzi, em `*/build/outputs/roborazzi/`) e lint. No CI, um teste de fumaça (`tools/ci/smoke.sh`) instala o APK de release num emulador e o usa de verdade: abre páginas, pesquisa, rola e puxa para recarregar, troca de aba, instala o uBlock Origin, entra no modo privado e mede abertura e memória. Os resultados ficam nos artefatos de cada execução: `zeno-report` (resumo, relatórios e capturas das telas) e `zeno-smoke` (passos, capturas do emulador e medições).
 
 ## Licenças
 
