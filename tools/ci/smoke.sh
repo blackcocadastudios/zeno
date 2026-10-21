@@ -191,7 +191,9 @@ step "reload the page" $ui tap "^Recarregar$" 10
 step "the kept answer is used: no second question" absent "quer saber sua localização" 8
 step "the lock opens the site panel" $ui tap "Informações do site" 10
 step "the panel shows tracking protection" $ui wait "^Proteção contra rastreamento" 10
-step "the panel lists the location as allowed" $ui wait "^Localização.*Permitido" 5
+# Title and subtitle of a row are separate texts for UI Automator.
+step "the panel lists the location" $ui wait "^Localização$" 5
+step "…as allowed" $ui wait "^Permitido$" 5
 shot 14-site-panel
 adb shell input keyevent KEYCODE_BACK
 sleep 1
@@ -204,7 +206,8 @@ adb shell input swipe 540 1700 540 900 300
 sleep 1
 step "open site permissions" $ui tap "^Permissões dos sites" 10
 # The browser stays composed under the settings: look for the permission row, not the host.
-step "settings list the site's location permission" $ui wait "^Localização.*Permitido" 10
+step "settings list the site's location permission" $ui wait "^Localização$" 10
+step "…as allowed, under the site" $ui wait "^Permitido$" 5
 shot 15-site-permissions
 adb shell input keyevent KEYCODE_BACK
 sleep 1
