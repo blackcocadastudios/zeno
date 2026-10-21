@@ -1,0 +1,527 @@
+Downloading https://services.gradle.org/distributions/gradle-9.8.2-bin.zip
+..............10%..............20%...............30%..............40%...............50%..............60%...............70%..............80%...............90%..............100%
+
+Welcome to Gradle 9.8.2!
+
+Here are the highlights of this release:
+ - Java 27 support
+ - Maven mirror settings reuse
+ - Linked problem locations in build output
+
+For more details see https://docs.gradle.org/9.8.2/release-notes.html
+
+Starting a Gradle Daemon (subsequent builds will be faster)
+Calculating task graph as no cached configuration is available for tasks: assembleDebug assembleRelease :core:engine:test :core:browser:test testDebugUnitTest :app:lintDebug
+Type-safe project accessors is an incubating feature.
+> Task :build-logic:convention:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :build-logic:convention:pluginDescriptors
+> Task :build-logic:convention:processResources
+> Task :build-logic:convention:compileKotlin
+> Task :build-logic:convention:compileJava NO-SOURCE
+> Task :build-logic:convention:classes
+> Task :build-logic:convention:jar
+> Task :core:browser:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :app:preBuild UP-TO-DATE
+> Task :app:preDebugBuild UP-TO-DATE
+> Task :core:engine:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :app:mergeDebugNativeDebugMetadata NO-SOURCE
+> Task :core:engine:processResources NO-SOURCE
+> Task :core:browser:processResources NO-SOURCE
+> Task :core:data:preBuild UP-TO-DATE
+> Task :core:data:preDebugBuild UP-TO-DATE
+> Task :core:data:processDebugNavigationResources
+> Task :core:design:preBuild UP-TO-DATE
+> Task :core:design:preDebugBuild UP-TO-DATE
+> Task :app:generateDebugBuildConfig
+> Task :app:generateDebugResources
+> Task :core:design:processDebugNavigationResources
+> Task :engine:gecko:preBuild UP-TO-DATE
+> Task :engine:gecko:preDebugBuild UP-TO-DATE
+> Task :core:data:generateDebugResources
+> Task :engine:gecko:processDebugNavigationResources
+> Task :core:data:packageDebugResources
+> Task :app:packageDebugResources
+> Task :core:data:parseDebugLocalResources
+> Task :core:data:generateDebugRFile
+> Task :core:data:preDebugUnitTestBuild UP-TO-DATE
+> Task :core:data:writeDebugAarMetadata
+> Task :core:data:javaPreCompileDebug
+> Task :core:data:mapDebugSourceSetPaths
+> Task :core:data:checkDebugUnitTestAarMetadata
+> Task :core:data:mapDebugUnitTestSourceSetPaths
+> Task :core:data:generateDebugUnitTestResources FROM-CACHE
+> Task :core:data:mergeDebugUnitTestResources
+> Task :core:data:extractDeepLinksDebug
+> Task :core:data:compileDebugLibraryResources
+> Task :core:data:javaPreCompileDebugUnitTest
+> Task :core:data:preReleaseBuild UP-TO-DATE
+> Task :core:data:generateReleaseResources FROM-CACHE
+> Task :core:data:packageReleaseResources
+> Task :core:data:processReleaseNavigationResources FROM-CACHE
+> Task :core:data:parseReleaseLocalResources FROM-CACHE
+> Task :core:data:generateReleaseRFile FROM-CACHE
+> Task :core:data:javaPreCompileRelease FROM-CACHE
+> Task :core:design:generateDebugResources
+> Task :core:design:packageDebugResources
+> Task :core:design:parseDebugLocalResources
+> Task :core:data:processDebugManifest
+> Task :core:design:generateDebugRFile
+> Task :core:data:mergeDebugUnitTestManifest
+> Task :core:data:processDebugUnitTestManifest
+> Task :core:data:processDebugUnitTestResources
+> Task :core:design:javaPreCompileDebug FROM-CACHE
+> Task :engine:gecko:generateDebugResources
+> Task :engine:gecko:packageDebugResources
+> Task :engine:gecko:parseDebugLocalResources
+> Task :engine:gecko:generateDebugRFile
+> Task :engine:gecko:javaPreCompileDebug FROM-CACHE
+> Task :app:javaPreCompileDebug FROM-CACHE
+> Task :app:generateDebugAssets UP-TO-DATE
+> Task :core:data:generateDebugAssets UP-TO-DATE
+> Task :core:data:mergeDebugAssets
+> Task :core:design:generateDebugAssets UP-TO-DATE
+> Task :core:design:mergeDebugAssets
+> Task :engine:gecko:generateDebugAssets UP-TO-DATE
+> Task :engine:gecko:mergeDebugAssets
+> Task :app:processDebugNavigationResources
+> Task :app:parseDebugLocalResources
+> Task :app:generateDebugRFile
+> Task :app:mergeDebugAssets
+> Task :app:compressDebugAssets
+> Task :app:generateDebugGlobalSynthetics
+> Task :app:desugarDebugFileDependencies
+> Task :core:design:writeDebugAarMetadata
+> Task :engine:gecko:writeDebugAarMetadata
+> Task :app:checkDebugAarMetadata
+> Task :app:mapDebugSourceSetPaths
+> Task :app:checkDebugDuplicateClasses
+> Task :app:compileDebugNavigationResources
+> Task :core:engine:compileKotlin
+> Task :core:engine:compileJava NO-SOURCE
+> Task :core:engine:classes UP-TO-DATE
+> Task :core:engine:jar
+> Task :core:design:compileDebugKotlin
+> Task :core:design:compileDebugJavaWithJavac NO-SOURCE
+> Task :core:browser:compileKotlin
+> Task :core:browser:compileJava NO-SOURCE
+> Task :core:browser:classes UP-TO-DATE
+> Task :core:browser:jar
+> Task :app:mergeExtDexDebug
+> Task :app:mergeDebugResources
+> Task :core:design:bundleLibCompileToJarDebug
+> Task :core:data:kspDebugKotlin
+> Task :core:data:kspReleaseKotlin FROM-CACHE
+> Task :core:data:compileDebugKotlin
+> Task :core:data:compileReleaseKotlin
+> Task :core:data:compileDebugJavaWithJavac NO-SOURCE
+> Task :core:data:compileReleaseJavaWithJavac NO-SOURCE
+> Task :core:data:bundleLibCompileToJarDebug
+> Task :core:data:processDebugJavaRes
+> Task :core:design:processDebugJavaRes
+> Task :core:data:bundleLibRuntimeToDirDebug
+> Task :core:design:bundleLibRuntimeToDirDebug
+> Task :engine:gecko:compileDebugKotlin
+> Task :engine:gecko:compileDebugJavaWithJavac NO-SOURCE
+> Task :engine:gecko:processDebugJavaRes
+> Task :engine:gecko:bundleLibCompileToJarDebug
+> Task :engine:gecko:bundleLibRuntimeToDirDebug
+> Task :core:data:kspDebugUnitTestKotlin
+> Task :app:mergeLibDexDebug
+> Task :app:createDebugCompatibleScreenManifests
+> Task :app:extractDeepLinksDebug
+> Task :core:design:extractDeepLinksDebug FROM-CACHE
+> Task :core:design:processDebugManifest
+> Task :engine:gecko:extractDeepLinksDebug FROM-CACHE
+> Task :engine:gecko:processDebugManifest
+> Task :app:processDebugMainManifest
+> Task :app:processDebugManifest
+> Task :app:processDebugManifestForPackage
+> Task :core:design:mapDebugSourceSetPaths
+> Task :core:design:compileDebugLibraryResources
+> Task :engine:gecko:mapDebugSourceSetPaths
+> Task :engine:gecko:compileDebugLibraryResources
+> Task :app:mergeDebugJniLibFolders
+> Task :core:data:mergeDebugJniLibFolders
+> Task :core:data:mergeDebugNativeLibs NO-SOURCE
+> Task :core:data:copyDebugJniLibsProjectOnly
+> Task :core:design:mergeDebugJniLibFolders
+> Task :core:design:mergeDebugNativeLibs NO-SOURCE
+> Task :core:design:copyDebugJniLibsProjectOnly
+> Task :engine:gecko:mergeDebugJniLibFolders
+> Task :engine:gecko:mergeDebugNativeLibs NO-SOURCE
+> Task :engine:gecko:copyDebugJniLibsProjectOnly
+> Task :core:data:compileDebugUnitTestKotlin
+> Task :core:data:compileDebugUnitTestJavaWithJavac NO-SOURCE
+> Task :core:data:copyRoomSchemas NO-SOURCE
+> Task :app:validateSigningDebug
+> Task :app:writeDebugAppMetadata
+> Task :app:writeDebugSigningConfigVersions
+> Task :core:data:checkDebugAarMetadata
+> Task :core:data:stripDebugDebugSymbols NO-SOURCE
+> Task :core:data:copyDebugJniLibsProjectAndLocalJars
+> Task :app:processDebugResources
+> Task :core:data:extractDeepLinksForAarDebug
+> Task :core:data:mergeDebugGeneratedProguardFiles
+> Task :core:data:mergeDebugConsumerProguardFiles
+> Task :core:data:prepareDebugArtProfile
+> Task :core:data:prepareLintJarForPublish
+> Task :app:mergeDebugNativeLibs
+> Task :core:data:mergeDebugJavaResource
+
+> Task :app:stripDebugDebugSymbols
+Unable to strip the following libraries, packaging them as they are: libandroidx.graphics.path.so, libclearkey.so, libcrashhelper.so, libcrashtools.so, libdatastore_shared_counter.so, libfreebl3.so, libgkcodecs.so, liblgpllibs.so, libmozavcodec.so, libmozavutil.so, libmozglue.so, libnss3.so, libplugin-container.so, libsoftokn3.so, libxul.so. Run with --info option to learn more.
+
+> Task :core:design:stripDebugDebugSymbols NO-SOURCE
+> Task :core:design:copyDebugJniLibsProjectAndLocalJars
+> Task :core:design:checkDebugAarMetadata
+> Task :core:design:extractDeepLinksForAarDebug FROM-CACHE
+> Task :core:design:mergeDebugGeneratedProguardFiles
+> Task :core:design:mergeDebugConsumerProguardFiles
+> Task :core:design:prepareDebugArtProfile
+> Task :core:design:prepareLintJarForPublish
+> Task :core:design:mergeDebugJavaResource
+> Task :engine:gecko:checkDebugAarMetadata
+> Task :engine:gecko:stripDebugDebugSymbols NO-SOURCE
+> Task :engine:gecko:copyDebugJniLibsProjectAndLocalJars
+> Task :engine:gecko:extractDebugAnnotations
+> Task :core:design:extractDebugAnnotations
+> Task :engine:gecko:extractDeepLinksForAarDebug FROM-CACHE
+> Task :core:data:extractDebugAnnotations
+> Task :engine:gecko:mergeDebugGeneratedProguardFiles
+> Task :engine:gecko:mergeDebugConsumerProguardFiles
+> Task :engine:gecko:prepareDebugArtProfile
+> Task :engine:gecko:prepareLintJarForPublish
+> Task :engine:gecko:mergeDebugJavaResource
+> Task :core:design:syncDebugLibJars
+> Task :core:design:bundleDebugAar
+> Task :core:design:assembleDebug
+> Task :app:preReleaseBuild UP-TO-DATE
+> Task :app:mergeReleaseJniLibFolders
+> Task :core:data:mergeReleaseJniLibFolders
+> Task :core:data:mergeReleaseNativeLibs NO-SOURCE
+> Task :core:data:copyReleaseJniLibsProjectOnly
+> Task :core:design:preReleaseBuild UP-TO-DATE
+> Task :core:design:mergeReleaseJniLibFolders
+> Task :core:design:mergeReleaseNativeLibs NO-SOURCE
+> Task :engine:gecko:syncDebugLibJars
+> Task :core:design:copyReleaseJniLibsProjectOnly
+> Task :engine:gecko:preReleaseBuild UP-TO-DATE
+> Task :core:data:syncDebugLibJars
+> Task :engine:gecko:mergeReleaseJniLibFolders
+> Task :engine:gecko:mergeReleaseNativeLibs NO-SOURCE
+> Task :engine:gecko:copyReleaseJniLibsProjectOnly
+> Task :engine:gecko:bundleDebugAar
+> Task :engine:gecko:assembleDebug
+> Task :core:data:bundleDebugAar
+> Task :core:data:assembleDebug
+> Task :core:data:mergeReleaseGeneratedProguardFiles
+> Task :core:data:exportReleaseConsumerProguardFiles
+> Task :core:design:generateReleaseResources FROM-CACHE
+> Task :core:design:packageReleaseResources
+> Task :core:design:processReleaseNavigationResources FROM-CACHE
+> Task :core:design:javaPreCompileRelease FROM-CACHE
+> Task :core:design:parseReleaseLocalResources FROM-CACHE
+> Task :engine:gecko:generateReleaseResources FROM-CACHE
+> Task :core:design:generateReleaseRFile FROM-CACHE
+> Task :engine:gecko:packageReleaseResources
+> Task :engine:gecko:processReleaseNavigationResources FROM-CACHE
+> Task :engine:gecko:parseReleaseLocalResources FROM-CACHE
+> Task :engine:gecko:generateReleaseRFile FROM-CACHE
+> Task :app:mergeReleaseNativeLibs
+
+> Task :app:stripReleaseDebugSymbols
+Unable to strip the following libraries, packaging them as they are: libandroidx.graphics.path.so, libclearkey.so, libcrashhelper.so, libcrashtools.so, libdatastore_shared_counter.so, libfreebl3.so, libgkcodecs.so, liblgpllibs.so, libmozavcodec.so, libmozavutil.so, libmozglue.so, libnss3.so, libplugin-container.so, libsoftokn3.so, libxul.so. Run with --info option to learn more.
+
+> Task :app:extractReleaseNativeSymbolTables
+> Task :app:mergeReleaseNativeDebugMetadata NO-SOURCE
+> Task :engine:gecko:javaPreCompileRelease FROM-CACHE
+> Task :app:checkReleaseDuplicateClasses
+> Task :app:generateReleaseBuildConfig
+> Task :app:generateReleaseResources
+> Task :app:packageReleaseResources
+> Task :app:processReleaseNavigationResources
+> Task :app:parseReleaseLocalResources
+> Task :app:generateReleaseRFile FROM-CACHE
+> Task :core:data:bundleLibCompileToJarRelease
+> Task :app:javaPreCompileRelease FROM-CACHE
+> Task :core:data:prepareReleaseArtProfile
+> Task :core:design:prepareReleaseArtProfile
+> Task :engine:gecko:prepareReleaseArtProfile
+> Task :app:mergeReleaseArtProfile
+> Task :core:data:writeReleaseAarMetadata
+> Task :core:design:writeReleaseAarMetadata
+> Task :engine:gecko:writeReleaseAarMetadata
+> Task :app:checkReleaseAarMetadata
+> Task :app:mapReleaseSourceSetPaths
+> Task :app:compileReleaseNavigationResources FROM-CACHE
+> Task :core:design:compileReleaseKotlin
+> Task :core:design:compileReleaseJavaWithJavac NO-SOURCE
+> Task :core:design:mergeReleaseGeneratedProguardFiles
+> Task :core:design:exportReleaseConsumerProguardFiles
+> Task :core:design:bundleLibCompileToJarRelease
+> Task :app:createReleaseCompatibleScreenManifests
+> Task :app:extractDeepLinksRelease
+> Task :core:data:extractDeepLinksRelease FROM-CACHE
+> Task :core:data:processReleaseManifest FROM-CACHE
+> Task :core:design:extractDeepLinksRelease FROM-CACHE
+> Task :core:design:processReleaseManifest FROM-CACHE
+> Task :engine:gecko:extractDeepLinksRelease FROM-CACHE
+> Task :engine:gecko:processReleaseManifest FROM-CACHE
+> Task :app:processReleaseMainManifest
+> Task :app:processReleaseManifest
+> Task :app:processReleaseManifestForPackage
+> Task :core:data:mapReleaseSourceSetPaths
+> Task :core:data:compileReleaseLibraryResources
+> Task :core:design:mapReleaseSourceSetPaths
+> Task :core:design:compileReleaseLibraryResources
+> Task :engine:gecko:mapReleaseSourceSetPaths
+> Task :engine:gecko:compileReleaseLibraryResources
+> Task :core:data:bundleLibRuntimeToJarRelease
+> Task :core:design:bundleLibRuntimeToJarRelease
+> Task :engine:gecko:compileReleaseKotlin
+> Task :engine:gecko:compileReleaseJavaWithJavac NO-SOURCE
+> Task :engine:gecko:mergeReleaseGeneratedProguardFiles
+> Task :app:extractProguardFiles
+> Task :engine:gecko:exportReleaseConsumerProguardFiles
+> Task :engine:gecko:bundleLibCompileToJarRelease
+> Task :engine:gecko:bundleLibRuntimeToJarRelease
+> Task :core:data:processReleaseJavaRes
+> Task :core:design:processReleaseJavaRes
+> Task :engine:gecko:processReleaseJavaRes
+> Task :app:mergeReleaseStartupProfile
+> Task :app:generateReleaseAssets UP-TO-DATE
+> Task :core:data:generateReleaseAssets UP-TO-DATE
+> Task :core:data:mergeReleaseAssets
+> Task :core:design:generateReleaseAssets UP-TO-DATE
+> Task :core:design:mergeReleaseAssets
+> Task :engine:gecko:generateReleaseAssets UP-TO-DATE
+> Task :engine:gecko:mergeReleaseAssets
+> Task :app:mergeReleaseAssets
+> Task :app:mergeReleaseResources
+> Task :app:processReleaseResources
+> Task :app:extractReleaseVersionControlInfo
+> Task :core:engine:generateJvmMainLintModel
+> Task :core:browser:generateJvmMainLintModel
+> Task :core:data:createFullJarRelease
+> Task :core:data:extractProguardFiles
+> Task :app:compressReleaseAssets
+> Task :core:design:createFullJarRelease
+> Task :core:design:extractProguardFiles
+> Task :core:data:generateReleaseLintModel
+> Task :engine:gecko:createFullJarRelease
+> Task :engine:gecko:extractProguardFiles
+> Task :core:design:generateReleaseLintModel
+> Task :core:data:checkReleaseAarMetadata
+> Task :core:data:extractDeepLinksForAarRelease FROM-CACHE
+> Task :core:data:extractReleaseAnnotations FROM-CACHE
+> Task :core:data:mergeReleaseConsumerProguardFiles
+> Task :core:data:mergeReleaseJavaResource
+> Task :core:data:syncReleaseLibJars
+> Task :core:data:bundleReleaseLocalLintAar
+> Task :core:design:checkReleaseAarMetadata
+> Task :core:design:extractDeepLinksForAarRelease FROM-CACHE
+> Task :core:design:extractReleaseAnnotations
+> Task :core:design:mergeReleaseConsumerProguardFiles
+> Task :core:design:mergeReleaseJavaResource
+> Task :core:design:syncReleaseLibJars
+> Task :core:design:bundleReleaseLocalLintAar
+> Task :engine:gecko:checkReleaseAarMetadata
+> Task :engine:gecko:extractDeepLinksForAarRelease FROM-CACHE
+> Task :engine:gecko:extractReleaseAnnotations FROM-CACHE
+> Task :engine:gecko:mergeReleaseConsumerProguardFiles
+> Task :engine:gecko:mergeReleaseJavaResource
+> Task :engine:gecko:syncReleaseLibJars
+> Task :engine:gecko:bundleReleaseLocalLintAar
+> Task :app:compileDebugKotlin
+> Task :engine:gecko:generateReleaseLintModel
+> Task :app:processDebugJavaRes
+> Task :app:compileDebugJavaWithJavac
+> Task :app:mergeDebugJavaResource
+> Task :core:engine:writeJvmLintModelMetadata
+> Task :core:browser:writeJvmLintModelMetadata
+> Task :app:compileReleaseKotlin
+> Task :app:dexBuilderDebug
+> Task :app:compileReleaseJavaWithJavac
+> Task :app:mergeProjectDexDebug
+> Task :core:engine:lintVitalAnalyzeJvmMain
+> Task :app:mergeReleaseGeneratedProguardFiles
+> Task :app:processReleaseJavaRes
+> Task :app:mergeReleaseJavaResource
+> Task :app:packageDebug
+> Task :app:createDebugApkListingFileRedirect
+> Task :app:assembleDebug
+> Task :app:expandReleaseArtProfileWildcards
+> Task :app:generateReleaseLintVitalReportModel
+> Task :app:produceReleaseComposeMapping
+> Task :app:reportReleaseComposeMappingErrors
+> Task :core:data:writeReleaseLintModelMetadata
+> Task :core:data:lintVitalAnalyzeRelease
+> Task :core:design:writeReleaseLintModelMetadata
+> Task :core:browser:lintVitalAnalyzeJvmMain
+> Task :engine:gecko:writeReleaseLintModelMetadata
+> Task :core:browser:generateLintVitalJvmMainLintModel
+> Task :core:data:generateReleaseLintVitalModel
+> Task :core:design:generateReleaseLintVitalModel
+> Task :core:engine:generateLintVitalJvmMainLintModel
+> Task :engine:gecko:generateReleaseLintVitalModel
+> Task :app:collectReleaseDependencies
+> Task :app:sdkReleaseDependencyData
+> Task :app:validateSigningRelease
+> Task :app:writeReleaseAppMetadata
+> Task :app:writeReleaseSigningConfigVersions
+> Task :core:data:stripReleaseDebugSymbols NO-SOURCE
+> Task :core:data:copyReleaseJniLibsProjectAndLocalJars
+> Task :core:data:bundleReleaseAar
+> Task :core:data:mergeReleaseResources
+> Task :core:data:verifyReleaseResources
+> Task :core:data:assembleRelease
+> Task :core:design:stripReleaseDebugSymbols NO-SOURCE
+> Task :core:design:copyReleaseJniLibsProjectAndLocalJars
+> Task :core:design:bundleReleaseAar
+> Task :core:design:mergeReleaseResources
+> Task :core:design:lintVitalAnalyzeRelease
+> Task :engine:gecko:stripReleaseDebugSymbols NO-SOURCE
+> Task :engine:gecko:copyReleaseJniLibsProjectAndLocalJars
+> Task :engine:gecko:bundleReleaseAar
+> Task :core:design:verifyReleaseResources
+> Task :core:design:assembleRelease
+> Task :core:engine:compileTestKotlin NO-SOURCE
+> Task :core:engine:compileTestJava NO-SOURCE
+> Task :core:engine:processTestResources NO-SOURCE
+> Task :core:engine:testClasses UP-TO-DATE
+> Task :core:engine:test NO-SOURCE
+> Task :engine:gecko:mergeReleaseResources
+> Task :engine:gecko:verifyReleaseResources
+> Task :engine:gecko:assembleRelease
+> Task :core:browser:processTestResources NO-SOURCE
+> Task :app:bundleDebugClassesToRuntimeJar
+> Task :app:bundleDebugClassesToCompileJar
+> Task :app:preDebugUnitTestBuild UP-TO-DATE
+> Task :core:browser:compileTestKotlin
+> Task :core:browser:compileTestJava NO-SOURCE
+> Task :core:browser:testClasses UP-TO-DATE
+> Task :app:compileDebugUnitTestKotlin
+> Task :app:javaPreCompileDebugUnitTest FROM-CACHE
+> Task :app:compileDebugUnitTestJavaWithJavac NO-SOURCE
+> Task :core:browser:test
+> Task :app:packageDebugUnitTestForUnitTest
+> Task :app:processDebugUnitTestJavaRes
+> Task :core:data:bundleLibRuntimeToJarDebug
+> Task :core:design:bundleLibRuntimeToJarDebug
+> Task :engine:gecko:bundleLibRuntimeToJarDebug
+> Task :core:data:generateDebugUnitTestAssets UP-TO-DATE
+> Task :core:data:mergeDebugUnitTestAssets
+> Task :core:data:packageDebugUnitTestForUnitTest
+> Task :core:data:generateDebugUnitTestConfig
+> Task :core:data:processDebugUnitTestJavaRes
+> Task :app:mergeDebugUnitTestManifest
+> Task :app:processDebugUnitTestManifest
+> Task :app:generateDebugUnitTestConfig
+> Task :engine:gecko:lintVitalAnalyzeRelease
+> Task :app:minifyReleaseWithR8
+> Task :core:data:testDebugUnitTest
+> Task :app:testDebugUnitTest
+> Task :app:lintVitalAnalyzeRelease
+> Task :core:design:preDebugUnitTestBuild UP-TO-DATE
+> Task :core:design:checkDebugUnitTestAarMetadata
+> Task :core:design:mapDebugUnitTestSourceSetPaths
+> Task :core:design:generateDebugUnitTestResources FROM-CACHE
+> Task :core:design:mergeDebugUnitTestResources
+> Task :core:design:mergeDebugUnitTestManifest
+> Task :core:design:processDebugUnitTestManifest
+> Task :core:design:processDebugUnitTestResources
+> Task :core:design:compileDebugUnitTestKotlin
+> Task :core:design:javaPreCompileDebugUnitTest FROM-CACHE
+> Task :core:design:compileDebugUnitTestJavaWithJavac NO-SOURCE
+> Task :core:design:generateDebugUnitTestAssets UP-TO-DATE
+> Task :core:design:mergeDebugUnitTestAssets
+> Task :core:design:packageDebugUnitTestForUnitTest
+> Task :core:design:generateDebugUnitTestConfig
+> Task :core:design:processDebugUnitTestJavaRes
+> Task :app:lintVitalReportRelease
+> Task :app:lintVitalRelease
+> Task :engine:gecko:preDebugUnitTestBuild UP-TO-DATE
+> Task :engine:gecko:checkDebugUnitTestAarMetadata
+> Task :engine:gecko:mapDebugUnitTestSourceSetPaths
+> Task :engine:gecko:generateDebugUnitTestResources FROM-CACHE
+> Task :engine:gecko:mergeDebugUnitTestResources
+> Task :engine:gecko:mergeDebugUnitTestManifest
+> Task :engine:gecko:processDebugUnitTestManifest
+> Task :engine:gecko:processDebugUnitTestResources
+> Task :engine:gecko:compileDebugUnitTestKotlin NO-SOURCE
+> Task :engine:gecko:javaPreCompileDebugUnitTest FROM-CACHE
+> Task :engine:gecko:compileDebugUnitTestJavaWithJavac NO-SOURCE
+> Task :engine:gecko:generateDebugUnitTestAssets UP-TO-DATE
+> Task :engine:gecko:mergeDebugUnitTestAssets
+> Task :engine:gecko:packageDebugUnitTestForUnitTest
+> Task :engine:gecko:generateDebugUnitTestConfig
+> Task :engine:gecko:processDebugUnitTestJavaRes NO-SOURCE
+> Task :engine:gecko:testDebugUnitTest NO-SOURCE
+> Task :core:data:bundleDebugLocalLintAar
+> Task :core:design:bundleDebugLocalLintAar
+> Task :engine:gecko:bundleDebugLocalLintAar
+> Task :app:preDebugAndroidTestBuild SKIPPED
+> Task :core:data:createFullJarDebug
+> Task :core:data:writeDebugLintModelMetadata
+> Task :core:design:createFullJarDebug
+> Task :core:design:writeDebugLintModelMetadata
+> Task :engine:gecko:createFullJarDebug
+> Task :engine:gecko:writeDebugLintModelMetadata
+> Task :app:generateDebugAndroidTestLintModel
+> Task :core:data:generateDebugLintModel
+> Task :core:design:generateDebugLintModel
+> Task :engine:gecko:generateDebugLintModel
+> Task :app:generateDebugLintReportModel
+> Task :app:generateDebugUnitTestLintModel
+> Task :core:design:testDebugUnitTest
+> Task :core:design:finalizeTestRoborazziDebug
+> Task :app:finalizeTestRoborazziDebug
+> Task :app:lintAnalyzeDebugAndroidTest
+> Task :core:engine:lintAnalyzeJvmMain
+> Task :app:lintAnalyzeDebugUnitTest
+> Task :core:design:lintAnalyzeDebug
+> Task :core:browser:lintAnalyzeJvmMain
+> Task :engine:gecko:lintAnalyzeDebug
+> Task :core:browser:generateJvmTestLintModel
+> Task :core:data:preDebugAndroidTestBuild UP-TO-DATE
+> Task :core:data:generateDebugAndroidTestLintModel
+> Task :core:data:generateDebugUnitTestLintModel
+> Task :core:data:lintAnalyzeDebugAndroidTest
+> Task :core:data:lintAnalyzeDebugUnitTest
+> Task :core:design:preDebugAndroidTestBuild UP-TO-DATE
+> Task :core:browser:lintAnalyzeJvmTest
+> Task :core:design:generateDebugAndroidTestLintModel
+> Task :core:data:lintAnalyzeDebug
+> Task :core:design:generateDebugUnitTestLintModel
+> Task :core:design:lintAnalyzeDebugAndroidTest
+> Task :core:engine:generateJvmTestLintModel
+> Task :core:engine:lintAnalyzeJvmTest
+> Task :engine:gecko:preDebugAndroidTestBuild UP-TO-DATE
+> Task :engine:gecko:generateDebugAndroidTestLintModel
+> Task :engine:gecko:generateDebugUnitTestLintModel
+> Task :engine:gecko:lintAnalyzeDebugAndroidTest
+> Task :engine:gecko:lintAnalyzeDebugUnitTest
+> Task :core:design:lintAnalyzeDebugUnitTest
+> Task :app:lintAnalyzeDebug
+> Task :app:convertShrunkResourcesToBinaryRelease
+> Task :app:optimizeReleaseResources
+> Task :app:mergeReleaseComposeMapping
+> Task :app:compileReleaseArtProfile
+> Task :app:packageRelease
+> Task :app:assembleRelease
+> Task :app:createReleaseApkListingFileRedirect
+> Task :app:lintReportDebug
+> Task :app:lintDebug
+gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/__run_2-1792584162698.json
+
+[Incubating] Problems report is available at: file:///home/runner/work/zeno/zeno/build/reports/problems/problems-report.html
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 10.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/9.8.2/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+
+BUILD SUCCESSFUL in 9m 14s
+407 actionable tasks: 364 executed, 43 from cache
+Configuration cache entry stored.
