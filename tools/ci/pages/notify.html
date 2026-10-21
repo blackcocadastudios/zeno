@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="pt-BR">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width">
+<title>Zeno: notificações</title>
+<style>
+  #ask { position: fixed; inset: 0; width: 100%; height: 100%; font-size: 28px; border: 0; background: #e8f4f6; }
+</style>
+<!-- One big button: the smoke test taps the middle of the screen (a request needs a tap). -->
+<button id="ask">notify: toque para ativar avisos</button>
+<script>
+  const ask = document.getElementById("ask");
+  ask.addEventListener("click", async () => {
+    const result = await Notification.requestPermission();
+    ask.textContent = "notify: " + result;
+    if (result === "granted") {
+      new Notification("Zeno teste", { body: "Olá do site de teste", tag: "zeno-test" });
+    }
+  });
+</script>
+</html>
