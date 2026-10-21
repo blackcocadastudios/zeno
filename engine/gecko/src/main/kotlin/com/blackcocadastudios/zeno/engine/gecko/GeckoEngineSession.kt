@@ -50,6 +50,10 @@ class GeckoEngineSession internal constructor(
     /** The view painting this session, released before the session closes. */
     internal var attachedView: GeckoEngineView? = null
 
+    /** The page's vertical scroll position as Gecko last reported it; 0 at the top. */
+    internal var scrollY = 0
+        private set
+
     init {
         geckoSession.contentDelegate = ContentDelegate()
         geckoSession.progressDelegate = ProgressDelegate()
@@ -59,6 +63,12 @@ class GeckoEngineSession internal constructor(
         geckoSession.contentBlockingDelegate = BlockingDelegate()
         geckoSession.mediaSessionDelegate = MediaDelegate()
         geckoSession.translationsSessionDelegate = TranslationDelegate()
+        geckoSession.scrollDelegate = object : GeckoSession.ScrollDelegate {
+            override fun onScrollChanged(session: GeckoSession, scrollX: Int, scrollY: Int) {
+                this@GeckoEngineSession.scrollY = scrollY
+                attachedView?.onPageScrolled(scrollY)
+            }
+        }
         if (!isPrivate) geckoSession.historyDelegate = HistoryDelegate()
         engine.onSessionCreated(this)
         if (open) geckoSession.open(engine.runtime)
@@ -218,6 +228,8 @@ class GeckoEngineSession internal constructor(
 
     private inner class ProgressDelegate : GeckoSession.ProgressDelegate {
         override fun onPageStart(session: GeckoSession, url: String) {
+            // A new document starts at its top; a restored position is reported as a scroll.
+            scrollY = 0
             observer?.onLoadingStateChange(true)
         }
 

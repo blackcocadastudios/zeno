@@ -84,6 +84,11 @@ class GeckoEngineView(context: Context) : FrameLayout(context) {
     /** Releases the session before the view goes away, so it can be shown elsewhere. */
     fun release() = detach()
 
+    /** The page moved: a pull that turns out to be a scroll is no pull. */
+    internal fun onPageScrolled(scrollY: Int) {
+        (geckoView as TouchReportingGeckoView).onPageScrolled(scrollY)
+    }
+
     internal fun detach() {
         waiting = null
         val session = current ?: return
@@ -122,6 +127,16 @@ class GeckoEngineView(context: Context) : FrameLayout(context) {
         private var lastY = 0f
         private var tracking = false
         private var pull = 0f
+        private var pullAllowed = true
+
+        fun onPageScrolled(scrollY: Int) {
+            if (!tracking || scrollY <= 0) return
+            pullAllowed = false
+            if (pull > 0f) {
+                pull = 0f
+                scrollListener?.onPull(0f)
+            }
+        }
 
         @SuppressLint("ClickableViewAccessibility")
         override fun onTouchEvent(event: MotionEvent): Boolean {
@@ -135,7 +150,7 @@ class GeckoEngineView(context: Context) : FrameLayout(context) {
                     Log.d(
                         TAG,
                         "touch: handled=${result.handledResult()} scrollable=${result.scrollableDirections()} " +
-                            "overscroll=${result.overscrollDirections()}",
+                            "overscroll=${result.overscrollDirections()} scrollY=${current?.scrollY}",
                     )
                 }
             }, { detail = null })
@@ -148,6 +163,7 @@ class GeckoEngineView(context: Context) : FrameLayout(context) {
                     lastY = event.y
                     tracking = true
                     pull = 0f
+                    pullAllowed = true
                 }
                 // A second finger means zooming: the toolbar stays where it is.
                 MotionEvent.ACTION_POINTER_DOWN -> if (tracking) {
@@ -162,7 +178,7 @@ class GeckoEngineView(context: Context) : FrameLayout(context) {
                     lastY = event.y
                     when {
                         dy == 0f -> Unit
-                        pull > 0f || (dy < 0f && canPull()) -> {
+                        pullAllowed && (pull > 0f || (dy < 0f && canPull())) -> {
                             pull = (pull - dy).coerceAtLeast(0f)
                             scrollListener?.onPull(pull)
                         }
@@ -177,11 +193,16 @@ class GeckoEngineView(context: Context) : FrameLayout(context) {
             }
         }
 
-        /** At the top already, and Gecko lets the page be pulled further (overscroll). */
+        /**
+         * At the top already, and the page allows overscroll (pages that set
+         * `overscroll-behavior` to keep their own pull gestures are left alone).
+         * "At the top" comes from the page's scroll position: with a sliding
+         * toolbar Gecko reports the page as scrollable upwards even at its top.
+         */
         private fun canPull(): Boolean {
             val result = detail ?: return false
             if (result.handledResult() != PanZoomController.INPUT_RESULT_HANDLED) return false
-            val atTop = result.scrollableDirections() and PanZoomController.SCROLLABLE_FLAG_TOP == 0
+            val atTop = (current?.scrollY ?: return false) <= 0
             val overscrolls = result.overscrollDirections() and PanZoomController.OVERSCROLL_FLAG_VERTICAL != 0
             return atTop && overscrolls
         }
