@@ -1,0 +1,138 @@
+# Temporary: discovers current dependency versions and fetches the GeckoView
+# public API sources so the project is written against real APIs.
+name: probe
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - .github/workflows/probe.yml
+
+permissions:
+  contents: write
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Probe versions
+        run: |
+          set -u
+          mkdir -p report
+          G=https://dl.google.com/dl/android/maven2
+          C=https://repo1.maven.org/maven2
+          P=https://plugins.gradle.org/m2
+          M=https://maven.mozilla.org/maven2
+          meta() {
+            local base=$1 g=$2 a=$3
+            local xml
+            xml=$(curl -fsSL "$base/${g//.//}/$a/maven-metadata.xml" 2>/dev/null || echo "")
+            local rel latest recent
+            rel=$(echo "$xml" | grep -oP '(?<=<release>)[^<]+' | head -1 || true)
+            latest=$(echo "$xml" | grep -oP '(?<=<latest>)[^<]+' | head -1 || true)
+            recent=$(echo "$xml" | grep -oP '(?<=<version>)[^<]+' | tail -30 | tr '\n' ' ' || true)
+            echo "$g:$a | release=$rel | latest=$latest | recent: $recent"
+          }
+          {
+            echo "## Google Maven"
+            meta $G com.android.tools.build gradle
+            meta $G androidx.compose compose-bom
+            meta $G androidx.compose.material3 material3
+            meta $G androidx.activity activity-compose
+            meta $G androidx.core core-ktx
+            meta $G androidx.core core-splashscreen
+            meta $G androidx.lifecycle lifecycle-runtime-compose
+            meta $G androidx.lifecycle lifecycle-viewmodel-compose
+            meta $G androidx.lifecycle lifecycle-process
+            meta $G androidx.navigation navigation-compose
+            meta $G androidx.room room-runtime
+            meta $G androidx.room room-compiler
+            meta $G androidx.room androidx.room.gradle.plugin
+            meta $G androidx.datastore datastore-preferences
+            meta $G androidx.datastore datastore
+            meta $G androidx.browser browser
+            meta $G androidx.webkit webkit
+            meta $G androidx.test.ext junit
+            meta $G androidx.test runner
+            meta $G androidx.test core
+            meta $G androidx.test.espresso espresso-core
+            meta $G androidx.test.uiautomator uiautomator
+            meta $G androidx.benchmark benchmark-macro-junit4
+            meta $G androidx.profileinstaller profileinstaller
+            meta $G androidx.baselineprofile androidx.baselineprofile.gradle.plugin
+            meta $G com.android.tools.build aapt2
+            echo
+            echo "## Maven Central"
+            meta $C org.jetbrains.kotlin kotlin-gradle-plugin
+            meta $C org.jetbrains.kotlin kotlin-stdlib
+            meta $C org.jetbrains.kotlin.plugin.compose org.jetbrains.kotlin.plugin.compose.gradle.plugin
+            meta $C com.google.devtools.ksp symbol-processing-gradle-plugin
+            meta $C com.google.devtools.ksp com.google.devtools.ksp.gradle.plugin
+            meta $C org.jetbrains.kotlinx kotlinx-coroutines-android
+            meta $C org.jetbrains.kotlinx kotlinx-coroutines-test
+            meta $C org.jetbrains.kotlinx kotlinx-serialization-json
+            meta $C junit junit
+            meta $C org.robolectric robolectric
+            meta $C io.github.takahirom.roborazzi roborazzi
+            meta $C io.github.takahirom.roborazzi roborazzi-compose
+            meta $C io.github.takahirom.roborazzi roborazzi-gradle-plugin
+            meta $C app.cash.turbine turbine
+            meta $C org.jetbrains.kotlin kotlin-test
+            echo
+            echo "## Gradle Plugin Portal"
+            meta $P org.jetbrains.kotlin.android org.jetbrains.kotlin.android.gradle.plugin
+            meta $P io.github.takahirom.roborazzi io.github.takahirom.roborazzi.gradle.plugin
+            meta $P org.jetbrains.kotlin.plugin.serialization org.jetbrains.kotlin.plugin.serialization.gradle.plugin
+            meta $P com.google.devtools.ksp com.google.devtools.ksp.gradle.plugin
+            echo
+            echo "## Mozilla Maven"
+            meta $M org.mozilla.geckoview geckoview
+            meta $M org.mozilla.geckoview geckoview-beta
+            meta $M org.mozilla.geckoview geckoview-omni
+            meta $M org.mozilla.geckoview geckoview-arm64-v8a
+            meta $M org.mozilla.geckoview geckoview-omni-arm64-v8a
+            echo
+            echo "## Gradle"
+            curl -fsSL https://services.gradle.org/versions/current
+            echo
+            curl -fsSL https://services.gradle.org/versions/all | python3 -c "import json,sys; v=[x for x in json.load(sys.stdin) if not x['snapshot'] and not x['nightly'] and not x['releaseNightly'] and x['rcFor']=='' and x['milestoneFor']=='' and not x['broken']]; print(' '.join(x['version'] for x in v[:25]))"
+          } > report/versions.txt 2>&1
+          cat report/versions.txt
+
+      - name: Fetch GeckoView API
+        run: |
+          set -u
+          M=https://maven.mozilla.org/maven2/org/mozilla/geckoview/geckoview
+          GV=$(curl -fsSL $M/maven-metadata.xml | grep -oP '(?<=<release>)[^<]+')
+          echo "GV=$GV" | tee report/geckoview-version.txt
+          curl -fsSL -o report/geckoview-sources.jar "$M/$GV/geckoview-$GV-sources.jar" || echo "no sources jar" >> report/geckoview-version.txt
+          curl -fsSL -o report/geckoview.pom "$M/$GV/geckoview-$GV.pom" || true
+          curl -fsSL -o report/geckoview.module "$M/$GV/geckoview-$GV.module" || true
+          curl -fsSL -o /tmp/gv.aar "$M/$GV/geckoview-$GV.aar"
+          ls -la /tmp/gv.aar > report/geckoview-aar-listing.txt
+          unzip -l /tmp/gv.aar >> report/geckoview-aar-listing.txt
+          unzip -p /tmp/gv.aar AndroidManifest.xml > report/geckoview-AndroidManifest.xml || true
+          unzip -p /tmp/gv.aar proguard.txt > report/geckoview-proguard.txt || true
+          curl -fsSL "https://maven.mozilla.org/maven2/org/mozilla/geckoview/" | grep -oP 'href="[^"]+"' | head -60 > report/geckoview-artifacts.txt || true
+
+      - name: Runner facts
+        run: |
+          {
+            echo "## java"; java -version 2>&1
+            echo "## android sdk"; echo "ANDROID_HOME=$ANDROID_HOME"
+            ls "$ANDROID_HOME/platforms" "$ANDROID_HOME/build-tools" 2>&1
+            ls "$ANDROID_HOME/cmdline-tools" 2>&1
+            echo "## kvm"; ls -l /dev/kvm 2>&1 || true
+            echo "## cpu/mem"; nproc; free -g
+            echo "## AMO"; curl -sSI https://addons.mozilla.org/firefox/downloads/latest/ublock-origin/latest.xpi | head -5
+          } > report/runner.txt 2>&1
+          cat report/runner.txt
+
+      - name: Publish report
+        if: always()
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: bash tools/ci/publish-report.sh report probe
