@@ -37,8 +37,9 @@ fun ZenoWordmark(
     val density = LocalDensity.current
     val em = with(density) { fontSize.toPx() }
     val xHeight = em * MINCHO_X_HEIGHT
-    val ensoSize = xHeight * 1.22f
-    val gap = em * 0.05f
+    // The brush circle is open and tapers, so it needs to be larger than a typeset "o" to read as one.
+    val ensoSize = xHeight * 1.4f
+    val gap = em * 0.03f
     val width = layout.size.width + gap + ensoSize
     val height = layout.size.height.toFloat()
 
@@ -48,8 +49,8 @@ fun ZenoWordmark(
             .semantics { contentDescription = "Zeno" },
     ) {
         drawText(layout)
-        // The ensō sits on the baseline and rises a little above the x-height, like a round letter.
-        val top = layout.firstBaseline - ensoSize + xHeight * 0.06f
+        // Round letters overshoot the baseline slightly; so does the ensō.
+        val top = layout.firstBaseline - ensoSize + em * 0.035f
         translate(left = layout.size.width + gap, top = top) {
             drawEnso(Size(ensoSize, ensoSize), ensoColor, drawProgress)
         }

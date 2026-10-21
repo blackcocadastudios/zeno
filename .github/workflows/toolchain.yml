@@ -7,9 +7,7 @@ on:
   workflow_dispatch:
   push:
     paths:
-      - gradle/libs.versions.toml
       - .github/workflows/toolchain.yml
-      - tools/ci/export-classpath.init.gradle.kts
 
 permissions:
   contents: write

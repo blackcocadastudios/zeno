@@ -10,11 +10,16 @@ import zeno.buildlogic.configureTests
 import zeno.buildlogic.lib
 import zeno.buildlogic.libs
 
-/** Pure Kotlin module: no Android framework, fast JVM tests. */
+/**
+ * Pure Kotlin module: no Android framework, fast JVM tests. Android Lint still
+ * runs on it (through the app's checkDependencies) so Java APIs newer than the
+ * app's minSdk are caught.
+ */
 class JvmLibraryConventionPlugin : Plugin<Project> {
     override fun apply(target: Project) {
         with(target) {
             pluginManager.apply("org.jetbrains.kotlin.jvm")
+            pluginManager.apply("com.android.lint")
 
             extensions.configure<JavaPluginExtension> {
                 sourceCompatibility = ZenoBuild.JAVA_VERSION

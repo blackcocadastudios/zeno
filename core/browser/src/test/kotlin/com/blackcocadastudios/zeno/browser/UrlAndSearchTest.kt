@@ -1,0 +1,98 @@
+package com.blackcocadastudios.zeno.browser
+
+import com.blackcocadastudios.zeno.browser.search.SearchEngine
+import com.blackcocadastudios.zeno.browser.search.SearchEngines
+import com.blackcocadastudios.zeno.browser.url.UrlDisplay
+import com.blackcocadastudios.zeno.browser.url.UrlInput
+import org.junit.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertNull
+import kotlin.test.assertTrue
+
+class UrlAndSearchTest {
+    private val ddg = SearchEngines.DuckDuckGo
+
+    private fun resolve(input: String) = UrlInput.resolve(input, ddg)
+
+    @Test
+    fun `addresses become urls`() {
+        assertEquals("https://example.com", resolve("example.com"))
+        assertEquals("https://example.com/a?b=1#c", resolve("  example.com/a?b=1#c "))
+        assertEquals("https://pt.wikipedia.org/wiki/Zen", resolve("pt.wikipedia.org/wiki/Zen"))
+        assertEquals("https://example.com:8443/x", resolve("example.com:8443/x"))
+        assertEquals("http://localhost:3000", resolve("localhost:3000"))
+        assertEquals("http://localhost", resolve("localhost"))
+        assertEquals("https://192.168.0.1/admin", resolve("192.168.0.1/admin"))
+        assertEquals("https://xn--e1afmkfd.xn--p1ai", resolve("xn--e1afmkfd.xn--p1ai"))
+        assertEquals("https://café.fr", resolve("café.fr"))
+    }
+
+    @Test
+    fun `explicit schemes are kept`() {
+        assertEquals("http://example.com", resolve("http://example.com"))
+        assertEquals("HTTPS://Example.com/Path", resolve("HTTPS://Example.com/Path"))
+        assertEquals("about:config", resolve("about:config"))
+        assertEquals("mailto:a@b.c", resolve("mailto:a@b.c"))
+        assertEquals("view-source:https://a.b", resolve("view-source:https://a.b"))
+    }
+
+    @Test
+    fun `everything else is searched`() {
+        assertEquals("https://duckduckgo.com/?q=what+is+zen", resolve("what is zen"))
+        assertEquals("https://duckduckgo.com/?q=node.js", resolve("node.js"))
+        assertEquals("https://duckduckgo.com/?q=2.5", resolve("2.5"))
+        assertEquals("https://duckduckgo.com/?q=zeno", resolve("zeno"))
+        assertEquals("https://duckduckgo.com/?q=a%26b%3Dc", resolve("a&b=c"))
+        assertEquals("https://duckduckgo.com/?q=999.1.1.1", resolve("999.1.1.1"))
+        assertNull(resolve("   "))
+    }
+
+    @Test
+    fun `javascript urls are never run from the address bar`() {
+        assertEquals("https://duckduckgo.com/?q=javascript%3Aalert%281%29", resolve("javascript:alert(1)"))
+        assertFalse(UrlInput.isUrl("JavaScript:void(0)"))
+        assertTrue(UrlInput.isUrl("example.org"))
+    }
+
+    @Test
+    fun `display strips noise`() {
+        assertEquals("github.com", UrlDisplay.shortHost("https://www.github.com/x/y"))
+        assertEquals("pt.wikipedia.org", UrlDisplay.shortHost("https://pt.wikipedia.org/wiki/A"))
+        assertEquals("example.com", UrlDisplay.shortHost("https://m.example.com/"))
+        assertEquals("wikipedia", UrlDisplay.siteName("https://pt.wikipedia.org/wiki/A"))
+        // The registrable domain is uol.com.br, so the site is "uol".
+        assertEquals("uol", UrlDisplay.siteName("https://www1.folha.uol.com.br/"))
+        assertEquals("bbc", UrlDisplay.siteName("https://www.bbc.co.uk/news"))
+        assertEquals("G", UrlDisplay.sealLetter("https://github.com"))
+    }
+
+    @Test
+    fun `search results show their terms`() {
+        assertEquals("zen garden", UrlDisplay.searchTerms("https://duckduckgo.com/?q=zen+garden&t=h_", ddg))
+        assertEquals("ação", UrlDisplay.searchTerms(SearchEngines.Google.searchUrl("ação"), SearchEngines.Google))
+        assertNull(UrlDisplay.searchTerms("https://duckduckgo.com/about", ddg))
+        assertNull(UrlDisplay.searchTerms("https://example.com/?q=x", ddg))
+        assertEquals("https://example.com/?q=x", UrlDisplay.editableText("https://example.com/?q=x", ddg))
+    }
+
+    @Test
+    fun `suggestions parse opensearch and survive junk`() {
+        assertEquals(listOf("zen", "zen garden"), SearchEngine.parseSuggestions("""["ze",["zen","zen garden","zen"]]"""))
+        assertEquals(listOf("a"), SearchEngine.parseSuggestions("""["q",["a"],["desc"],["https://x"]]"""))
+        assertEquals(emptyList(), SearchEngine.parseSuggestions("<html>"))
+        assertEquals(emptyList(), SearchEngine.parseSuggestions("""{"q":1}"""))
+        assertEquals(2, SearchEngine.parseSuggestions("""["q",["a","b","c"]]""", limit = 2).size)
+    }
+
+    @Test
+    fun `every engine builds valid urls`() {
+        SearchEngines.all.forEach { engine ->
+            val url = engine.searchUrl("café com leite")
+            assertTrue(url.startsWith("https://"), url)
+            assertEquals("café com leite", engine.termsFrom(url), engine.id)
+            engine.suggestUrl("x")?.let { assertTrue(it.startsWith("https://")) }
+        }
+        assertEquals(SearchEngines.DuckDuckGo, SearchEngines.byId("nope"))
+    }
+}
