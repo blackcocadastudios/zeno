@@ -3,8 +3,7 @@
 # orphan branch `ci-reports`, replacing its previous contents.
 #
 # Used during development so results can be read from environments that can
-# reach git but not GitHub's artifact storage. Enabled only when the repository
-# variable CI_REPORTS is "true"; it is never needed to build the app.
+# reach git but not GitHub's artifact storage. It is never needed to build the app.
 #
 # usage: publish-report.sh <dir> <label>
 set -euo pipefail

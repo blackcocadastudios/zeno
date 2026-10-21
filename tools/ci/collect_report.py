@@ -1,0 +1,138 @@
+#!/usr/bin/env python3
+"""Collects CI outputs into report/ and emits GitHub annotations.
+
+Produces report/summary.md with: Gradle status, compiler errors, failing tests,
+lint errors and APK sizes. Copies screenshots and raw reports alongside it.
+"""
+import glob
+import os
+import re
+import shutil
+import xml.etree.ElementTree as ET
+
+ROOT = os.getcwd()
+REPORT = os.path.join(ROOT, "report")
+os.makedirs(REPORT, exist_ok=True)
+
+lines = []
+
+
+def out(s=""):
+    lines.append(s)
+
+
+def annotate(level, msg, file=None, line=None):
+    loc = ""
+    if file:
+        loc = f" file={file}"
+        if line:
+            loc += f",line={line}"
+    msg = msg.replace("%", "%25").replace("\r", "").replace("\n", "%0A")
+    print(f"::{level}{loc}::{msg}")
+
+
+# Gradle status
+code_path = os.path.join(REPORT, "gradle-exit-code")
+code = open(code_path).read().strip() if os.path.exists(code_path) else "?"
+out(f"# CI report\n\nGradle exit code: **{code}**\n")
+
+log_path = os.path.join(REPORT, "build.log")
+log = open(log_path, errors="replace").read() if os.path.exists(log_path) else ""
+
+# Kotlin compiler errors: "e: file:///path/File.kt:12:5 message"
+kt_errors = re.findall(r"^e: (?:file://)?(/[^:\s]+):(\d+):(\d+) (.*)$", log, re.M)
+if kt_errors:
+    out(f"## Kotlin errors ({len(kt_errors)})\n")
+    for path, ln, col, msg in kt_errors[:200]:
+        rel = os.path.relpath(path, ROOT) if path.startswith(ROOT) else path
+        out(f"- `{rel}:{ln}:{col}` {msg}")
+        annotate("error", msg, rel, ln)
+    out()
+
+# Other failures ("What went wrong")
+wrong = re.findall(r"\* What went wrong:\n(.*?)(?:\n\* Try:|\n\* Exception is:)", log, re.S)
+if wrong:
+    out("## What went wrong\n")
+    for w in wrong[:15]:
+        out("```\n" + w.strip()[:4000] + "\n```")
+    out()
+
+# Warnings worth seeing (deprecations in our code)
+kt_warnings = re.findall(r"^w: (?:file://)?(/[^:\s]+):(\d+):(\d+) (.*)$", log, re.M)
+if kt_warnings:
+    out(f"## Kotlin warnings ({len(kt_warnings)})\n")
+    for path, ln, col, msg in kt_warnings[:100]:
+        rel = os.path.relpath(path, ROOT) if path.startswith(ROOT) else path
+        out(f"- `{rel}:{ln}` {msg}")
+    out()
+
+# Test results
+failures = []
+total = 0
+for xml_path in glob.glob("**/build/test-results/**/*.xml", recursive=True):
+    try:
+        tree = ET.parse(xml_path)
+    except ET.ParseError:
+        continue
+    for case in tree.getroot().iter("testcase"):
+        total += 1
+        for tag in ("failure", "error"):
+            node = case.find(tag)
+            if node is not None:
+                text = (node.get("message") or "") + "\n" + (node.text or "")
+                failures.append((case.get("classname"), case.get("name"), text.strip()[:3000]))
+out(f"## Tests\n\n{total} run, {len(failures)} failed\n")
+for cls, name, text in failures[:50]:
+    out(f"### {cls}.{name}\n```\n{text}\n```")
+    annotate("error", f"Test failed: {cls}.{name}")
+out()
+
+# Lint
+for lint_xml in glob.glob("**/build/reports/lint-results-*.xml", recursive=True):
+    try:
+        tree = ET.parse(lint_xml)
+    except ET.ParseError:
+        continue
+    issues = list(tree.getroot().iter("issue"))
+    errors = [i for i in issues if i.get("severity") in ("Error", "Fatal")]
+    warnings = [i for i in issues if i.get("severity") == "Warning"]
+    out(f"## Lint `{lint_xml}`: {len(errors)} errors, {len(warnings)} warnings\n")
+    for issue in (errors + warnings)[:80]:
+        loc = issue.find("location")
+        where = ""
+        if loc is not None:
+            where = f"{os.path.relpath(loc.get('file', ''), ROOT)}:{loc.get('line', '')}"
+        out(f"- **{issue.get('severity')}** `{issue.get('id')}` {where} — {issue.get('message')}")
+    shutil.copy(lint_xml, os.path.join(REPORT, os.path.basename(lint_xml)))
+    out()
+
+# APKs
+apks = sorted(glob.glob("app/build/outputs/apk/**/*.apk", recursive=True))
+if apks:
+    out("## APKs\n")
+    for apk in apks:
+        size = os.path.getsize(apk)
+        out(f"- `{apk}` {size / 1024 / 1024:.1f} MiB")
+    out()
+
+# Screenshots
+shots = sorted(glob.glob("**/build/outputs/roborazzi/**/*.png", recursive=True))
+if shots:
+    dest = os.path.join(REPORT, "screenshots")
+    os.makedirs(dest, exist_ok=True)
+    out(f"## Screenshots ({len(shots)})\n")
+    for shot in shots:
+        module = shot.split("/build/")[0].replace("/", "_")
+        name = f"{module}__{os.path.basename(shot)}"
+        shutil.copy(shot, os.path.join(dest, name))
+        out(f"- {name}")
+    out()
+
+with open(os.path.join(REPORT, "summary.md"), "w") as f:
+    f.write("\n".join(lines) + "\n")
+
+summary_env = os.environ.get("GITHUB_STEP_SUMMARY")
+if summary_env:
+    with open(summary_env, "a") as f:
+        f.write("\n".join(lines[:400]) + "\n")
+print("\n".join(lines[:60]))
