@@ -49,3 +49,36 @@ data class DownloadEntity(
     val createdAt: Long,
     val completedAt: Long?,
 )
+
+/**
+ * A saved login. Username and password are encrypted with a key kept in
+ * Android's keystore ([com.blackcocadastudios.zeno.data.logins.SecretCipher]);
+ * the site is plain, so logins can be found by site.
+ */
+@Entity(
+    tableName = "logins",
+    indices = [Index("host")],
+)
+data class LoginEntity(
+    @PrimaryKey val guid: String,
+    /** Scheme, host and port, e.g. `https://accounts.example.com`. */
+    val origin: String,
+    /** The origin's host, lowercase: logins are fetched by domain. */
+    val host: String,
+    val formActionOrigin: String?,
+    val httpRealm: String?,
+    val encryptedUsername: String,
+    val encryptedPassword: String,
+    val createdAt: Long,
+    val lastUsedAt: Long,
+    val passwordChangedAt: Long,
+    val timesUsed: Int,
+)
+
+/** A site where Zeno never offers to save a login. */
+@Entity(tableName = "login_exceptions")
+data class LoginExceptionEntity(
+    @PrimaryKey val origin: String,
+    val createdAt: Long,
+)
+

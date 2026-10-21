@@ -81,6 +81,7 @@ import com.blackcocadastudios.zeno.design.component.ZenoPillButton
 import com.blackcocadastudios.zeno.design.theme.Ma
 import com.blackcocadastudios.zeno.design.theme.Zeno
 import com.blackcocadastudios.zeno.engine.PermissionKind
+import com.blackcocadastudios.zeno.engine.PromptRequest
 import com.blackcocadastudios.zeno.engine.SitePermission
 import com.blackcocadastudios.zeno.engine.TrackingProtection
 import com.blackcocadastudios.zeno.engine.gecko.GeckoEngineView
@@ -90,6 +91,8 @@ import com.blackcocadastudios.zeno.ui.UiMessage
 import com.blackcocadastudios.zeno.ui.common.MessageHost
 import com.blackcocadastudios.zeno.ui.home.HomeScreen
 import com.blackcocadastudios.zeno.ui.home.UblockCard
+import com.blackcocadastudios.zeno.ui.logins.LoginBar
+import com.blackcocadastudios.zeno.ui.logins.LoginSaveDialog
 import com.blackcocadastudios.zeno.ui.menu.MenuActions
 import com.blackcocadastudios.zeno.ui.menu.MenuExtension
 import com.blackcocadastudios.zeno.ui.menu.MenuPage
@@ -336,6 +339,23 @@ fun BrowserScreen(vm: MainViewModel, engineView: GeckoEngineView, active: Boolea
                     CrashedTab(onReload = { vm.controller.reload(tab.id) }, modifier = Modifier.padding(bottom = underBar))
                 }
                 PullIndicator(pull = { pull }, threshold = pullThreshold, modifier = Modifier.align(Alignment.TopCenter))
+                val loginSelect = content?.prompts?.firstOrNull() as? PromptRequest.LoginSelect
+                if (active && tab != null && loginSelect != null) {
+                    LoginBar(
+                        prompt = loginSelect,
+                        onSelect = { choice ->
+                            loginSelect.select(choice)
+                            vm.controller.consumePrompt(tab.id, loginSelect)
+                        },
+                        onClose = {
+                            loginSelect.dismiss()
+                            vm.controller.consumePrompt(tab.id, loginSelect)
+                        },
+                        modifier = Modifier
+                            .align(Alignment.BottomCenter)
+                            .padding(bottom = underBar),
+                    )
+                }
                 if (overlayBar && showBar) {
                     bar(
                         Modifier
@@ -486,8 +506,12 @@ fun BrowserScreen(vm: MainViewModel, engineView: GeckoEngineView, active: Boolea
     }
 
     val origin = tab.url?.let(UrlDisplay::shortHost).orEmpty()
-    content?.prompts?.firstOrNull()?.let { prompt ->
-        PromptHost(prompt, origin) { vm.controller.consumePrompt(tab.id, it) }
+    when (val prompt = content?.prompts?.firstOrNull()) {
+        null -> Unit
+        is PromptRequest.LoginSave -> LoginSaveHost(prompt, vm, tab.id)
+        // Shown as a bar over the keyboard, in the page area above.
+        is PromptRequest.LoginSelect -> Unit
+        else -> PromptHost(prompt, origin) { vm.controller.consumePrompt(tab.id, it) }
     }
     val notificationsOff = stringResource(R.string.permission_notifications_off)
     val settingsLabel = stringResource(R.string.menu_settings)
@@ -706,3 +730,40 @@ private fun PullIndicator(pull: () -> Float, threshold: Float, modifier: Modifie
         Enso(Modifier.fillMaxSize(), color = if (progress >= 1f) colors.accent else colors.inkSoft, drawProgress = progress)
     }
 }
+
+/**
+ * Offers to keep a login after a sign-in, unless the user turned that off or
+ * said never for this site; then the offer goes away without a word.
+ */
+@Composable
+private fun LoginSaveHost(prompt: PromptRequest.LoginSave, vm: MainViewModel, tabId: String) {
+    var offer by remember(prompt) { mutableStateOf<Boolean?>(null) }
+    val saved = stringResource(R.string.login_saved)
+    fun done() = vm.controller.consumePrompt(tabId, prompt)
+    LaunchedEffect(prompt) {
+        offer = vm.shouldOfferToSave(prompt.login.origin)
+        if (offer == false) {
+            prompt.dismiss()
+            done()
+        }
+    }
+    if (offer != true) return
+    LoginSaveDialog(
+        prompt = prompt,
+        onSave = {
+            prompt.save()
+            done()
+            vm.message(saved)
+        },
+        onNever = {
+            prompt.dismiss()
+            done()
+            vm.neverSaveLogins(prompt.login.origin)
+        },
+        onNotNow = {
+            prompt.dismiss()
+            done()
+        },
+    )
+}
+

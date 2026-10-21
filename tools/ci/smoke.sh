@@ -46,6 +46,13 @@ absent() {
   ! $ui wait "$1" "$2"
 }
 
+hide_keyboard() {
+  if adb shell dumpsys input_method | grep -q "mInputShown=true"; then
+    adb shell input keyevent KEYCODE_BACK
+    sleep 1
+  fi
+}
+
 shot() {
   adb exec-out screencap -p > "$out/screenshots/$1.png"
 }
@@ -178,7 +185,7 @@ sleep 1
 
 # 9. A site asks for the location; the answer is remembered and shown in the site panel.
 # Test pages are served from this machine and reach the emulator through adb reverse.
-python3 -m http.server 8765 --bind 127.0.0.1 --directory tools/ci/pages > "$out/http.log" 2>&1 &
+python3 tools/ci/serve_pages.py 8765 tools/ci/pages > "$out/http.log" 2>&1 &
 http_pid=$!
 adb reverse tcp:8765 tcp:8765
 sleep 1
@@ -260,14 +267,47 @@ step "the address keeps the site, with a book" $ui wait "Modo leitura. Voltar pa
 shot 21-reader
 step "the book goes back to the page" $ui tap "Modo leitura. Voltar para a página" 10
 step "the page is back" $ui wait "Menu do site de teste" 15
+
+# 12. Passwords: sign in on a local form, save the login, find it in the settings.
+adb shell am start -a android.intent.action.VIEW -d "http://localhost:8765/login.html" -n "$activity"
+step "the sign-in page opens" $ui wait "Entrar no site de teste" 20
+sleep 2
+# The e-mail field has autofocus; Tab moves to the password, Enter sends the form.
+adb shell input text "hana@teste.example"
+adb shell input keyevent KEYCODE_TAB
+adb shell input text "zen-1234"
+adb shell input keyevent KEYCODE_ENTER
+step "Zeno offers to save the login" $ui wait "Salvar a senha de localhost" 20
+shot 23-login-save
+step "save it" $ui tap "^Salvar$" 10
+probe "a message says it is saved" $ui wait "^Senha salva$" 5
+sleep 2
+hide_keyboard
+step "open the menu for the passwords" $ui tap "^Menu$" 10
+sleep 1
+step "open settings for the passwords" $ui tap "^Configurações$" 10
+sleep 1
+adb shell input swipe 540 1700 540 900 300
+sleep 1
+# No screen lock on the emulator: nothing to confirm, the list opens.
+step "open the passwords" $ui tap "^Senhas$" 10
+step "the saved login is listed, decrypted" $ui wait "^hana@teste.example$" 10
+shot 24-passwords
+adb shell input keyevent KEYCODE_BACK
+sleep 1
+adb shell input keyevent KEYCODE_BACK
+sleep 1
+adb shell am start -a android.intent.action.VIEW -d "http://localhost:8765/login.html" -n "$activity"
+probe "the form is filled on the next visit" $ui wait "hana@teste.example" 15
+shot 25-login-filled
 kill "$http_pid" 2>/dev/null || true
 
-# 12. Background and back: the session survives.
+# 13. Background and back: the session survives.
 adb shell input keyevent KEYCODE_HOME
 sleep 3
 adb shell am start -W -n "$activity" > "$out/start-warm.txt"
 sleep 3
-shot 22-back
+shot 26-back
 
 # Measurements.
 adb shell dumpsys meminfo "$pkg" > "$out/meminfo-main.txt" 2>&1

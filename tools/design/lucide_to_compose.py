@@ -97,6 +97,10 @@ ICONS = {
     "MonitorPlay": "monitor-play",
     "Network": "network",
     "GlobeLock": "globe-lock",
+    "Password": "rectangle-ellipsis",
+    "Eye": "eye",
+    "EyeOff": "eye-off",
+    "User": "user-round",
 }
 
 NUM = r"-?\d*\.?\d+(?:e-?\d+)?"

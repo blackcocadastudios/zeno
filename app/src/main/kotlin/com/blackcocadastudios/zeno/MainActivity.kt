@@ -1,7 +1,10 @@
 package com.blackcocadastudios.zeno
 
 import android.Manifest
+import android.app.KeyguardManager
 import android.app.role.RoleManager
+import android.hardware.biometrics.BiometricManager
+import android.hardware.biometrics.BiometricPrompt
 import android.content.ComponentCallbacks2
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -9,14 +12,17 @@ import android.content.res.Configuration
 import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
+import android.os.CancellationSignal
 import android.os.SystemClock
 import android.provider.Settings
+import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
+import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
 import androidx.core.content.pm.ShortcutInfoCompat
 import androidx.core.content.pm.ShortcutManagerCompat
@@ -43,6 +49,13 @@ class MainActivity : ComponentActivity(), AppHost {
     private var askedForNotifications = false
     private val notificationPermission = registerForActivityResult(ActivityResultContracts.RequestPermission()) { }
     private val browserRole = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { }
+
+    /** Android 8 and 8.1: the screen lock is confirmed in a system activity. */
+    private var pendingAuthentication: ((Boolean) -> Unit)? = null
+    private val confirmCredential = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        pendingAuthentication?.invoke(result.resultCode == RESULT_OK)
+        pendingAuthentication = null
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         val splash = installSplashScreen()
@@ -75,6 +88,7 @@ class MainActivity : ComponentActivity(), AppHost {
 
     override fun onStop() {
         super.onStop()
+        vm.lockPasswords()
         container.controller.setAppVisible(false)
         container.controller.suspendInactiveTabs(INACTIVE_TAB_MILLIS)
         container.saveSessionNow()
@@ -141,6 +155,60 @@ class MainActivity : ComponentActivity(), AppHost {
         if (Build.VERSION.SDK_INT < 33) return
         val granted = ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED
         if (!granted) runCatching { notificationPermission.launch(Manifest.permission.POST_NOTIFICATIONS) }
+    }
+
+    override val deviceSecure: Boolean
+        get() = getSystemService(KeyguardManager::class.java)?.isDeviceSecure == true
+
+    override fun authenticate(title: String, onResult: (Boolean) -> Unit) {
+        if (!deviceSecure) {
+            onResult(true)
+            return
+        }
+        when {
+            Build.VERSION.SDK_INT >= 30 -> askBiometricPrompt(title, onResult) {
+                setAllowedAuthenticators(BiometricManager.Authenticators.BIOMETRIC_WEAK or BiometricManager.Authenticators.DEVICE_CREDENTIAL)
+            }
+            Build.VERSION.SDK_INT >= 28 -> askBiometricPrompt(title, onResult) {
+                @Suppress("DEPRECATION") // The way to allow the PIN before Android 11.
+                setDeviceCredentialAllowed(true)
+            }
+            else -> {
+                @Suppress("DEPRECATION") // The only way before Android 9.
+                val intent = getSystemService(KeyguardManager::class.java)?.createConfirmDeviceCredentialIntent(title, null)
+                if (intent == null) {
+                    onResult(true)
+                    return
+                }
+                pendingAuthentication = onResult
+                runCatching { confirmCredential.launch(intent) }.onFailure {
+                    pendingAuthentication = null
+                    onResult(false)
+                }
+            }
+        }
+    }
+
+    @RequiresApi(28)
+    private fun askBiometricPrompt(title: String, onResult: (Boolean) -> Unit, configure: BiometricPrompt.Builder.() -> Unit) {
+        val prompt = BiometricPrompt.Builder(this).setTitle(title).apply(configure).build()
+        prompt.authenticate(
+            CancellationSignal(),
+            mainExecutor,
+            object : BiometricPrompt.AuthenticationCallback() {
+                override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) = onResult(true)
+
+                override fun onAuthenticationError(errorCode: Int, errString: CharSequence) = onResult(false)
+            },
+        )
+    }
+
+    override fun setSecureWindow(secure: Boolean) {
+        if (secure) {
+            window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
+        } else {
+            window.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
+        }
     }
 
     /** Download progress lives in a notification; ask for it the first time it matters, once per run. */

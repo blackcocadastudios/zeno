@@ -20,6 +20,10 @@ data class UserSettings(
     val blockAudibleAutoplay: Boolean = true,
     /** Sites the user allows may notify while they are open. Off by default: silence. */
     val siteNotifications: Boolean = false,
+    /** Offers to save a login after a sign-in form is sent. */
+    val askToSavePasswords: Boolean = true,
+    /** Fills sign-in forms with a saved login as the page loads. */
+    val autofillPasswords: Boolean = true,
     val javascriptEnabled: Boolean = true,
     val desktopModeByDefault: Boolean = false,
     val automaticFontSize: Boolean = true,
@@ -45,6 +49,7 @@ data class UserSettings(
         automaticFontSizeAdjustment = automaticFontSize,
         forceUserScalable = forceZoom,
         blockAudibleAutoplay = blockAudibleAutoplay,
+        loginAutofill = autofillPasswords,
         secureDns = when (secureDns) {
             SecureDnsChoice.Default -> SecureDns.Default
             SecureDnsChoice.Increased -> SecureDns.Increased(secureDnsProvider.url)

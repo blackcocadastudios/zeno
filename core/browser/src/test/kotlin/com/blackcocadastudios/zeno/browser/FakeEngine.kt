@@ -14,6 +14,7 @@ import com.blackcocadastudios.zeno.engine.ExtensionPopup
 import com.blackcocadastudios.zeno.engine.ExtensionTabs
 import com.blackcocadastudios.zeno.engine.HistoryTracker
 import com.blackcocadastudios.zeno.engine.LoadFlags
+import com.blackcocadastudios.zeno.engine.LoginStore
 import com.blackcocadastudios.zeno.engine.ReaderMode
 import com.blackcocadastudios.zeno.engine.RequestInterceptor
 import com.blackcocadastudios.zeno.engine.SitePermission
@@ -37,6 +38,7 @@ class FakeEngine : Engine {
         override fun originalUrl(url: String) = url.removePrefix("reader:").takeIf { it != url }
     }
     override var notificationHandler: WebNotificationHandler? = null
+    override var loginStore: LoginStore? = null
     override var windowOpener: WindowOpener? = null
 
     override fun createSession(private: Boolean): EngineSession = FakeSession(private).also { created += it }

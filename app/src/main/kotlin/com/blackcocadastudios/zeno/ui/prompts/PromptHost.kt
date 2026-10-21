@@ -110,6 +110,9 @@ fun PromptHost(prompt: PromptRequest, origin: String, onDone: (PromptRequest) ->
         is PromptRequest.File -> FilePicker(prompt, ::finish)
         is PromptRequest.Share -> ShareLauncher(prompt, ::finish)
 
+        // The browser shows these itself: a save offer with its own rules, a bar over the keyboard.
+        is PromptRequest.LoginSave, is PromptRequest.LoginSelect -> Unit
+
         is PromptRequest.Popup -> ZenoDialog(
             onDismiss = { finish { prompt.confirm(false) } },
             title = stringResource(R.string.prompt_popup_title),

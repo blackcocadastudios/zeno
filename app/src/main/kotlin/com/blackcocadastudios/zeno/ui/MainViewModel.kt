@@ -1,5 +1,9 @@
 package com.blackcocadastudios.zeno.ui
 
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.os.Build
+import android.os.PersistableBundle
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
@@ -19,6 +23,7 @@ import com.blackcocadastudios.zeno.browser.url.UrlDisplay
 import com.blackcocadastudios.zeno.browser.url.UrlInput
 import com.blackcocadastudios.zeno.data.bookmarks.Bookmark
 import com.blackcocadastudios.zeno.data.downloads.DownloadRecord
+import com.blackcocadastudios.zeno.data.logins.SavedLogin
 import com.blackcocadastudios.zeno.data.settings.UserSettings
 import com.blackcocadastudios.zeno.download.DataUrls
 import com.blackcocadastudios.zeno.download.DownloadEvent
@@ -48,7 +53,7 @@ import java.util.Calendar
 import java.util.Locale
 
 /** Full-screen places besides the browser itself. */
-enum class Screen { Browser, Settings, SitePermissions, History, Bookmarks, Downloads, Extensions }
+enum class Screen { Browser, Settings, SitePermissions, Passwords, History, Bookmarks, Downloads, Extensions }
 
 /** A short message shown above the toolbar. */
 data class UiMessage(val text: String, val actionLabel: String? = null, val action: (() -> Unit)? = null)
@@ -390,6 +395,49 @@ class MainViewModel(val container: AppContainer) : ViewModel() {
         message(app.getString(R.string.translate_working))
     }
 
+    // region Logins
+
+    /** Offer to save a login for [origin]? Not when the user said never there, or turned it off. */
+    suspend fun shouldOfferToSave(origin: String): Boolean =
+        settings.value.askToSavePasswords && !runCatching { container.logins.isNeverSave(origin) }.getOrDefault(false)
+
+    fun neverSaveLogins(origin: String) {
+        viewModelScope.launch { runCatching { container.logins.neverSave(origin) } }
+    }
+
+    fun allowSavingLogins(origin: String) {
+        viewModelScope.launch { runCatching { container.logins.allowSaving(origin) } }
+    }
+
+    fun changeLogin(guid: String, username: String, password: String) {
+        viewModelScope.launch { runCatching { container.logins.update(guid, username, password) } }
+    }
+
+    fun deleteLogin(login: SavedLogin) {
+        viewModelScope.launch {
+            runCatching { container.logins.delete(login.guid) }
+            message(app.getString(R.string.login_deleted))
+        }
+    }
+
+    /** Copies a username or password; a password is marked sensitive so the clipboard preview hides it. */
+    fun copyLoginPart(text: String, isPassword: Boolean) {
+        val clip = ClipData.newPlainText(app.getString(if (isPassword) R.string.prompt_password else R.string.prompt_username), text)
+        if (isPassword) clip.description.extras = PersistableBundle().apply { putBoolean(EXTRA_IS_SENSITIVE, true) }
+        app.getSystemService(ClipboardManager::class.java)?.setPrimaryClip(clip)
+        // Android 13+ confirms copies itself.
+        if (Build.VERSION.SDK_INT < 33) {
+            message(app.getString(if (isPassword) R.string.login_copied_password else R.string.login_copied_username))
+        }
+    }
+
+    /** Leaving the app closes the passwords: coming back asks for the screen lock again. */
+    fun lockPasswords() {
+        if (screen == Screen.Passwords) popScreen()
+    }
+
+    // endregion
+
     // region Site permissions
 
     suspend fun sitePermissions(url: String, private: Boolean): List<SitePermission> =
@@ -579,6 +627,9 @@ class MainViewModel(val container: AppContainer) : ViewModel() {
     }
 
     companion object {
+        /** ClipDescription.EXTRA_IS_SENSITIVE (Android 13); older versions ignore it. */
+        private const val EXTRA_IS_SENSITIVE = "android.content.extra.IS_SENSITIVE"
+
         const val UBLOCK_URL = "https://addons.mozilla.org/firefox/downloads/latest/ublock-origin/latest.xpi"
     }
 }

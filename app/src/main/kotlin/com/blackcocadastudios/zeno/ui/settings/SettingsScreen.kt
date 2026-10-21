@@ -44,6 +44,7 @@ interface SettingsActions {
     fun openUrl(url: String)
     fun makeDefaultBrowser()
     fun sitePermissions()
+    fun passwords()
     fun requestNotificationPermission()
     fun back()
 }
@@ -128,6 +129,12 @@ fun SettingsScreen(settings: UserSettings, versions: String, actions: SettingsAc
                 subtitle = stringResource(R.string.settings_site_permissions_desc),
                 icon = ZenoIcons.GlobeLock,
                 onClick = actions::sitePermissions,
+            )
+            ZenoListRow(
+                title = stringResource(R.string.settings_passwords),
+                subtitle = stringResource(R.string.settings_passwords_desc),
+                icon = ZenoIcons.Password,
+                onClick = actions::passwords,
             )
             ZenoListRow(
                 title = stringResource(R.string.settings_https_only),

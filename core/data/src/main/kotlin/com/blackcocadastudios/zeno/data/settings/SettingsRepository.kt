@@ -42,6 +42,8 @@ class SettingsRepository(context: Context) {
         val gpc = booleanPreferencesKey("gpc")
         val blockAutoplay = booleanPreferencesKey("block_audible_autoplay")
         val siteNotifications = booleanPreferencesKey("site_notifications")
+        val askToSavePasswords = booleanPreferencesKey("ask_to_save_passwords")
+        val autofillPasswords = booleanPreferencesKey("autofill_passwords")
         val javascript = booleanPreferencesKey("javascript")
         val desktopDefault = booleanPreferencesKey("desktop_default")
         val automaticFontSize = booleanPreferencesKey("font_auto")
@@ -69,6 +71,8 @@ class SettingsRepository(context: Context) {
             globalPrivacyControl = p[Keys.gpc] ?: d.globalPrivacyControl,
             blockAudibleAutoplay = p[Keys.blockAutoplay] ?: d.blockAudibleAutoplay,
             siteNotifications = p[Keys.siteNotifications] ?: d.siteNotifications,
+            askToSavePasswords = p[Keys.askToSavePasswords] ?: d.askToSavePasswords,
+            autofillPasswords = p[Keys.autofillPasswords] ?: d.autofillPasswords,
             javascriptEnabled = p[Keys.javascript] ?: d.javascriptEnabled,
             desktopModeByDefault = p[Keys.desktopDefault] ?: d.desktopModeByDefault,
             automaticFontSize = p[Keys.automaticFontSize] ?: d.automaticFontSize,
@@ -95,6 +99,8 @@ class SettingsRepository(context: Context) {
         p[Keys.gpc] = s.globalPrivacyControl
         p[Keys.blockAutoplay] = s.blockAudibleAutoplay
         p[Keys.siteNotifications] = s.siteNotifications
+        p[Keys.askToSavePasswords] = s.askToSavePasswords
+        p[Keys.autofillPasswords] = s.autofillPasswords
         p[Keys.javascript] = s.javascriptEnabled
         p[Keys.desktopDefault] = s.desktopModeByDefault
         p[Keys.automaticFontSize] = s.automaticFontSize

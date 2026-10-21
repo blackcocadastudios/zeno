@@ -11,6 +11,7 @@ import com.blackcocadastudios.zeno.data.bookmarks.BookmarksRepository
 import com.blackcocadastudios.zeno.data.ZenoStorage
 import com.blackcocadastudios.zeno.data.downloads.DownloadsRepository
 import com.blackcocadastudios.zeno.data.history.HistoryRepository
+import com.blackcocadastudios.zeno.data.logins.LoginsRepository
 import com.blackcocadastudios.zeno.data.session.SessionStore
 import com.blackcocadastudios.zeno.data.settings.SettingsRepository
 import com.blackcocadastudios.zeno.data.settings.UserSettings
@@ -52,6 +53,7 @@ class AppContainer(val app: Application) {
     val history: HistoryRepository get() = storage.history
     val bookmarks: BookmarksRepository get() = storage.bookmarks
     val downloads: DownloadsRepository get() = storage.downloads
+    val logins: LoginsRepository get() = storage.logins
     val settings = SettingsRepository(app)
     private val sessionStore = SessionStore(app.filesDir)
 
@@ -75,6 +77,7 @@ class AppContainer(val app: Application) {
         engine.requestInterceptor = ExternalAppInterceptor(app)
         engine.extensions.tabs = BrowserExtensionTabs(controller)
         engine.notificationHandler = siteNotifications
+        engine.loginStore = logins
         engine.windowOpener = WindowOpener { session, url ->
             controller.adoptSession(session, url, private = false, origin = TabOrigin.Link)
             true

@@ -698,6 +698,42 @@ object ZenoIcons {
         )
     }
 
+    val Password: ImageVector by lazy {
+        lineIcon(
+            "Password",
+            "M4 6h16a2 2 0 0 1 2 2v8a2 2 0 0 1 -2 2h-16a2 2 0 0 1 -2 -2v-8a2 2 0 0 1 2 -2Z",
+            "M12 12h.01",
+            "M17 12h.01",
+            "M7 12h.01",
+        )
+    }
+
+    val Eye: ImageVector by lazy {
+        lineIcon(
+            "Eye",
+            "M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0",
+            "M9 12a3 3 0 1 0 6 0a3 3 0 1 0 -6 0Z",
+        )
+    }
+
+    val EyeOff: ImageVector by lazy {
+        lineIcon(
+            "EyeOff",
+            "M10.733 5.076a10.744 10.744 0 0 1 11.205 6.575 1 1 0 0 1 0 .696 10.747 10.747 0 0 1-1.444 2.49",
+            "M14.084 14.158a3 3 0 0 1-4.242-4.242",
+            "M17.479 17.499a10.75 10.75 0 0 1-15.417-5.151 1 1 0 0 1 0-.696 10.75 10.75 0 0 1 4.446-5.143",
+            "m2 2 20 20",
+        )
+    }
+
+    val User: ImageVector by lazy {
+        lineIcon(
+            "User",
+            "M7 8a5 5 0 1 0 10 0a5 5 0 1 0 -10 0Z",
+            "M20 21a8 8 0 0 0-16 0",
+        )
+    }
+
     /** Every icon with its name, for galleries and tests. */
     val all: List<Pair<String, ImageVector>>
         get() = listOf(
@@ -779,5 +815,9 @@ object ZenoIcons {
             "MonitorPlay" to MonitorPlay,
             "Network" to Network,
             "GlobeLock" to GlobeLock,
+            "Password" to Password,
+            "Eye" to Eye,
+            "EyeOff" to EyeOff,
+            "User" to User,
         )
 }

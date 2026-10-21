@@ -2,9 +2,9 @@
 
 Navegador Android pessoal: leve, silencioso e minimalista, com o motor do Firefox (GeckoView) e um desenho japonês em azul claro — papel, tinta e um ensō.
 
-- **Firefox de verdade por dentro.** GeckoView 158: proteção contra rastreamento com cookies isolados por site, extensões do addons.mozilla.org (uBlock Origin à distância de um toque), tradução local, DNS seguro.
+- **Firefox de verdade por dentro.** GeckoView 158: proteção contra rastreamento com cookies isolados por site (e desligável só num site, pelo cadeado), extensões do addons.mozilla.org (uBlock Origin à distância de um toque), tradução local, modo leitura, DNS seguro.
 - **Feito para uma mão.** Barra de endereço embaixo, como no Firefox; abas, menu e pesquisa ao alcance do polegar.
-- **Silêncio.** Sem telemetria, sem contas, sem notícias, sem notificações que não sejam suas.
+- **Silêncio.** Sem telemetria, sem contas, sem notícias. Notificações de sites só se você ligar; permissões e senhas só ficam guardadas quando você confirma, e as senhas, cifradas no aparelho.
 - **Leve.** A página inicial é nativa (abre sem esperar o motor), abas paradas são suspensas e voltam onde estavam.
 
 <p>
@@ -61,7 +61,7 @@ No GitHub, os mesmos valores vão em *Settings → Secrets and variables → Act
 ```
 :app            interface (Compose), Activity, downloads, intents
 :engine:gecko   o único módulo que conhece o GeckoView
-:core:data      histórico, favoritos, downloads (Room), preferências (DataStore), sessão
+:core:data      histórico, favoritos, downloads e senhas (Room), preferências (DataStore), sessão
 :core:design    tokens, tipografia, ícones, ensō, selos — o desenho do Zeno
 :core:browser   abas, navegação, endereços e pesquisa (Kotlin puro)
 :core:engine    a fronteira com o motor (Kotlin puro)
@@ -71,7 +71,7 @@ O estado do navegador é um único `StateFlow` imutável dono das abas (`Browser
 
 - [`docs/PADROES.md`](docs/PADROES.md) — regras, orçamentos de desempenho, dependências, permissões.
 - [`docs/DESIGN.md`](docs/DESIGN.md) — cores tradicionais japonesas, tipografia, ícones, espaçamento.
-- [`docs/adr/`](docs/adr) — decisões: GeckoView direto, estado e navegação, silêncio e privacidade, SDK e assinatura, modo leitura.
+- [`docs/adr/`](docs/adr) — decisões: GeckoView direto, estado e navegação, silêncio e privacidade, SDK e assinatura, modo leitura, senhas.
 
 ## Verificação
 

@@ -11,6 +11,8 @@ data class EngineSettings(
     val automaticFontSizeAdjustment: Boolean = true,
     val forceUserScalable: Boolean = false,
     val blockAudibleAutoplay: Boolean = true,
+    /** Fills sign-in forms with a saved login as the page loads. */
+    val loginAutofill: Boolean = true,
     val secureDns: SecureDns = SecureDns.Default,
     val remoteDebugging: Boolean = false,
 )

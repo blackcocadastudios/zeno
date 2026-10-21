@@ -27,13 +27,17 @@ import com.blackcocadastudios.zeno.data.bookmarks.Bookmark
 import com.blackcocadastudios.zeno.data.downloads.DownloadRecord
 import com.blackcocadastudios.zeno.data.downloads.DownloadStatus
 import com.blackcocadastudios.zeno.data.history.HistoryEntry
+import com.blackcocadastudios.zeno.data.logins.SavedLogin
 import com.blackcocadastudios.zeno.data.settings.UserSettings
 import com.blackcocadastudios.zeno.design.theme.Zeno
 import com.blackcocadastudios.zeno.design.theme.ZenoShapes
 import com.blackcocadastudios.zeno.design.theme.ZenoTheme
 import com.blackcocadastudios.zeno.engine.ExtensionInfo
 import com.blackcocadastudios.zeno.engine.FindResult
+import com.blackcocadastudios.zeno.engine.Login
+import com.blackcocadastudios.zeno.engine.LoginChoice
 import com.blackcocadastudios.zeno.engine.PermissionKind
+import com.blackcocadastudios.zeno.engine.PromptRequest
 import com.blackcocadastudios.zeno.engine.SecurityInfo
 import com.blackcocadastudios.zeno.engine.SitePermission
 import com.blackcocadastudios.zeno.ui.browser.CrashedTab
@@ -45,6 +49,11 @@ import com.blackcocadastudios.zeno.ui.home.UblockCard
 import com.blackcocadastudios.zeno.ui.library.BookmarksScreen
 import com.blackcocadastudios.zeno.ui.library.DownloadsScreen
 import com.blackcocadastudios.zeno.ui.library.HistoryScreen
+import com.blackcocadastudios.zeno.ui.logins.LoginBar
+import com.blackcocadastudios.zeno.ui.logins.LoginDetails
+import com.blackcocadastudios.zeno.ui.logins.LoginSaveBody
+import com.blackcocadastudios.zeno.ui.logins.PasswordsActions
+import com.blackcocadastudios.zeno.ui.logins.PasswordsScreen
 import com.blackcocadastudios.zeno.ui.menu.MenuActions
 import com.blackcocadastudios.zeno.ui.menu.MenuContent
 import com.blackcocadastudios.zeno.ui.menu.MenuExtension
@@ -279,6 +288,59 @@ class ScreensScreenshotTest {
         SitePermissionsScreen(permissions = emptyList(), onChange = { _, _ -> }, onBack = {})
     }
 
+    private val savedLogins = listOf(
+        SavedLogin("1", "https://accounts.example.com", "hana@exemplo.com", null, now, now, 3),
+        SavedLogin("2", "https://github.com", "hmoriyama", null, now, now, 12),
+        SavedLogin("3", "https://www.nhk.or.jp", "", null, now, now, 0),
+    )
+
+    @Test
+    fun passwords() = capture("passwords") {
+        PasswordsScreen(
+            settings = UserSettings(),
+            logins = savedLogins,
+            neverSave = listOf("https://bank.example"),
+            deviceSecure = true,
+            actions = NoPasswordsActions,
+        )
+    }
+
+    @Test
+    fun passwordsEmptyNoLock() = capture("passwords_empty", dark = true) {
+        PasswordsScreen(settings = UserSettings(), logins = emptyList(), neverSave = emptyList(), deviceSecure = false, actions = NoPasswordsActions)
+    }
+
+    @Test
+    fun loginDetails() = capture("login_details") {
+        SheetOverPage { LoginDetails(savedLogins.first(), NoPasswordsActions, onDone = {}) }
+    }
+
+    @Test
+    fun loginBar() = capture("login_bar") {
+        val choices = listOf(
+            LoginChoice(Login(origin = "https://accounts.example.com", username = "hana@exemplo.com", password = "x")),
+            LoginChoice(Login(origin = "https://example.com", username = "hmoriyama", password = "y")),
+        )
+        Column(Modifier.fillMaxSize()) {
+            Box(Modifier.weight(1f)) { FakePage() }
+            LoginBar(PromptRequest.LoginSelect(choices, insecure = true, onSelect = {}, onDismiss = {}), onSelect = {}, onClose = {})
+            // Where the keyboard would be.
+            Box(
+                Modifier
+                    .fillMaxWidth()
+                    .height(280.dp)
+                    .background(Color(0xFFD6DBDE)),
+            )
+        }
+    }
+
+    @Test
+    fun loginSave() = capture("login_save") {
+        DialogOverPage(confirm = R.string.login_save, dismiss = R.string.login_not_now, title = "Salvar a senha de example.com?") {
+            LoginSaveBody("hana@exemplo.com", showNever = true, onNever = {})
+        }
+    }
+
     @Test
     fun permissionPrompt() = capture("permission_prompt") {
         DialogOverPage {
@@ -330,7 +392,12 @@ class ScreensScreenshotTest {
 
     /** A dialog's body and buttons, drawn in place (real dialogs open in their own window). */
     @Composable
-    private fun DialogOverPage(content: @Composable () -> Unit) {
+    private fun DialogOverPage(
+        confirm: Int = R.string.prompt_allow,
+        dismiss: Int = R.string.prompt_block,
+        title: String? = null,
+        content: @Composable () -> Unit,
+    ) {
         Box(Modifier.fillMaxSize()) {
             FakePage()
             Box(
@@ -347,6 +414,9 @@ class ScreensScreenshotTest {
                     .background(Zeno.colors.paperRaised)
                     .padding(24.dp),
             ) {
+                if (title != null) {
+                    Text(title, style = Zeno.type.heading, color = Zeno.colors.ink, modifier = Modifier.padding(bottom = 16.dp))
+                }
                 content()
                 Row(
                     Modifier
@@ -354,8 +424,8 @@ class ScreensScreenshotTest {
                         .padding(top = 16.dp),
                     horizontalArrangement = Arrangement.End,
                 ) {
-                    Text(stringResource(R.string.prompt_block), style = Zeno.type.label, color = Zeno.colors.inkSoft, modifier = Modifier.padding(12.dp))
-                    Text(stringResource(R.string.prompt_allow), style = Zeno.type.label, color = Zeno.colors.accentInk, modifier = Modifier.padding(12.dp))
+                    Text(stringResource(dismiss), style = Zeno.type.label, color = Zeno.colors.inkSoft, modifier = Modifier.padding(12.dp))
+                    Text(stringResource(confirm), style = Zeno.type.label, color = Zeno.colors.accentInk, modifier = Modifier.padding(12.dp))
                 }
             }
         }
@@ -515,7 +585,19 @@ private object NoSettingsActions : SettingsActions {
     override fun openUrl(url: String) = Unit
     override fun makeDefaultBrowser() = Unit
     override fun sitePermissions() = Unit
+    override fun passwords() = Unit
     override fun requestNotificationPermission() = Unit
+    override fun back() = Unit
+}
+
+private object NoPasswordsActions : PasswordsActions {
+    override fun update(transform: (UserSettings) -> UserSettings) = Unit
+    override suspend fun password(guid: String): String? = null
+    override fun copy(text: String, isPassword: Boolean) = Unit
+    override fun change(guid: String, username: String, password: String) = Unit
+    override fun delete(login: SavedLogin) = Unit
+    override fun allowSaving(origin: String) = Unit
+    override fun openSite(origin: String) = Unit
     override fun back() = Unit
 }
 

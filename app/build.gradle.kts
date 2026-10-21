@@ -79,6 +79,10 @@ android {
 
     lint {
         checkDependencies = true
+        // "A newer version is available" depends on the day, not on the code: updates are
+        // deliberate (docs/PADROES.md, Dependências), so this check would only make builds
+        // of the same commit pass one week and warn the next.
+        disable += "GradleDependency"
     }
 }
 

@@ -181,6 +181,39 @@
     <string name="site_protect_body">Os rastreadores deste site voltam a ser bloqueados.</string>
     <string name="site_protect">Ligar</string>
 
+    <!-- Logins -->
+    <string name="login_save_title">Salvar a senha de %1$s?</string>
+    <string name="login_update_title">Atualizar a senha de %1$s?</string>
+    <string name="login_save">Salvar</string>
+    <string name="login_update">Atualizar</string>
+    <string name="login_not_now">Agora não</string>
+    <string name="login_never">Nunca neste site</string>
+    <string name="login_saved">Senha salva</string>
+    <string name="login_no_username">(sem usuário)</string>
+    <string name="login_bar_title">Usar login salvo</string>
+    <plurals name="login_bar_count">
+        <item quantity="one">%1$d login salvo</item>
+        <item quantity="many">%1$d logins salvos</item>
+        <item quantity="other">%1$d logins salvos</item>
+    </plurals>
+    <string name="login_bar_generated">Usar uma senha forte sugerida</string>
+    <string name="login_bar_insecure">Esta página envia a senha sem criptografia</string>
+    <string name="login_bar_close">Fechar logins salvos</string>
+    <string name="login_bar_more">Ver logins salvos</string>
+    <string name="login_copy_username">Copiar usuário</string>
+    <string name="login_copy_password">Copiar senha</string>
+    <string name="login_show_password">Mostrar senha</string>
+    <string name="login_hide_password">Esconder senha</string>
+    <string name="login_copied_username">Usuário copiado</string>
+    <string name="login_copied_password">Senha copiada</string>
+    <string name="login_edit">Editar</string>
+    <string name="login_open_site">Abrir o site</string>
+    <string name="login_delete">Apagar login</string>
+    <string name="login_delete_title">Apagar o login de %1$s?</string>
+    <string name="login_delete_body">O Zeno vai esquecer este usuário e esta senha.</string>
+    <string name="login_deleted">Login apagado</string>
+    <string name="login_password_empty">A senha não pode ficar vazia</string>
+
     <!-- Downloads -->
     <string name="download_started">Baixando %1$s</string>
     <string name="download_complete">Download concluído</string>
@@ -312,6 +345,20 @@
     <string name="settings_sites">Sites</string>
     <string name="settings_site_notifications">Notificações de sites</string>
     <string name="settings_site_notifications_desc">Sites que você permitir podem avisar você enquanto estão abertos</string>
+    <string name="settings_passwords">Senhas</string>
+    <string name="settings_passwords_desc">Logins salvos, cifrados neste aparelho</string>
+    <string name="passwords_auth_title">Ver senhas salvas</string>
+    <string name="passwords_ask_to_save">Perguntar se quer salvar</string>
+    <string name="passwords_ask_to_save_desc">Depois de você entrar num site, o Zeno oferece guardar o login</string>
+    <string name="passwords_autofill">Preencher automaticamente</string>
+    <string name="passwords_autofill_desc">O login salvo entra no formulário quando a página abre</string>
+    <string name="passwords_saved">Salvas</string>
+    <string name="passwords_search">Pesquisar logins</string>
+    <string name="passwords_empty">Nenhuma senha salva</string>
+    <string name="passwords_empty_body">Ao entrar num site, o Zeno oferece guardar o login. Usuários e senhas ficam cifrados neste aparelho, nunca vão para a nuvem.</string>
+    <string name="passwords_never">Nunca salvar em</string>
+    <string name="passwords_allow_saving">Voltar a oferecer em %1$s</string>
+    <string name="passwords_no_lock">Este aparelho não tem bloqueio de tela: quem estiver com ele em mãos vê estas senhas.</string>
     <string name="settings_site_permissions">Permissões dos sites</string>
     <string name="settings_site_permissions_desc">O que cada site pode usar e onde a proteção está desligada</string>
     <string name="site_permissions_empty">Nada guardado</string>

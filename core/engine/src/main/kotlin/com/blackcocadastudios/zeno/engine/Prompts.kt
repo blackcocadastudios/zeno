@@ -137,6 +137,30 @@ sealed class PromptRequest {
         override fun dismiss() = complete { onResult(false) }
     }
 
+    /** A sign-in form was sent: keep the login? */
+    class LoginSave(
+        val login: Login,
+        /** It changes the password of a login already saved. */
+        val isUpdate: Boolean,
+        private val onSave: (Login) -> Unit,
+        private val onDismiss: () -> Unit,
+    ) : PromptRequest() {
+        fun save() = complete { onSave(login) }
+        override fun dismiss() = complete(onDismiss)
+    }
+
+    /** A sign-in field has focus: a saved login (or a generated password) can fill it. */
+    class LoginSelect(
+        val choices: List<LoginChoice>,
+        /** The form would send the password without encryption. */
+        val insecure: Boolean,
+        private val onSelect: (LoginChoice) -> Unit,
+        private val onDismiss: () -> Unit,
+    ) : PromptRequest() {
+        fun select(choice: LoginChoice) = complete { onSelect(choice) }
+        override fun dismiss() = complete(onDismiss)
+    }
+
     /** Re-sending form data on reload. */
     class Repost(
         private val onResult: (Boolean) -> Unit,

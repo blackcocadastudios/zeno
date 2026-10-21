@@ -29,6 +29,9 @@ interface Engine {
 
     val reader: ReaderMode
 
+    /** Saved logins the engine fills forms with and saves new ones to; without one, nothing is saved. */
+    var loginStore: LoginStore?
+
     /** Receives notifications from sites; without one, they are not shown. */
     var notificationHandler: WebNotificationHandler?
 

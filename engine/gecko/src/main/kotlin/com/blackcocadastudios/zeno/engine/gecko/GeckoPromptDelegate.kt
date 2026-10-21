@@ -7,13 +7,17 @@ import com.blackcocadastudios.zeno.engine.ChoiceMode
 import com.blackcocadastudios.zeno.engine.DateTimeKind
 import com.blackcocadastudios.zeno.engine.EngineSession
 import com.blackcocadastudios.zeno.engine.FileCapture
+import com.blackcocadastudios.zeno.engine.LoginChoice
 import com.blackcocadastudios.zeno.engine.PromptRequest
 import com.blackcocadastudios.zeno.engine.ShareResult
 import org.mozilla.geckoview.AllowOrDeny
+import org.mozilla.geckoview.Autocomplete
+import org.mozilla.geckoview.Autocomplete.SelectOption.Hint as SelectHint
 import org.mozilla.geckoview.GeckoResult
 import org.mozilla.geckoview.GeckoSession
 import org.mozilla.geckoview.GeckoSession.PromptDelegate.AlertPrompt
 import org.mozilla.geckoview.GeckoSession.PromptDelegate.AuthPrompt
+import org.mozilla.geckoview.GeckoSession.PromptDelegate.AutocompleteRequest
 import org.mozilla.geckoview.GeckoSession.PromptDelegate.BasePrompt
 import org.mozilla.geckoview.GeckoSession.PromptDelegate.BeforeUnloadPrompt
 import org.mozilla.geckoview.GeckoSession.PromptDelegate.ButtonPrompt
@@ -300,6 +304,48 @@ internal class GeckoPromptDelegate(
             PromptRequest.Repost { resend ->
                 result.completeSafely { prompt.confirm(if (resend) AllowOrDeny.ALLOW else AllowOrDeny.DENY) }
             },
+        )
+    }
+
+    override fun onLoginSave(
+        session: GeckoSession,
+        request: AutocompleteRequest<Autocomplete.LoginSaveOption>,
+    ): GeckoResult<PromptResponse>? {
+        val option = request.options.firstOrNull() ?: return null
+        val result = GeckoResult<PromptResponse>()
+        return ask(
+            request,
+            result,
+            PromptRequest.LoginSave(
+                login = option.value.toLogin(),
+                isUpdate = option.value.guid != null,
+                // Gecko then hands the login to the storage delegate, which keeps it.
+                onSave = { result.completeSafely { request.confirm(option) } },
+                onDismiss = { result.completeSafely { request.dismiss() } },
+            ),
+        )
+    }
+
+    override fun onLoginSelect(
+        session: GeckoSession,
+        request: AutocompleteRequest<Autocomplete.LoginSelectOption>,
+    ): GeckoResult<PromptResponse>? {
+        val options = request.options.toList()
+        if (options.isEmpty()) return null
+        val choices = options.map { LoginChoice(it.value.toLogin(), generated = it.hint and SelectHint.GENERATED != 0) }
+        val result = GeckoResult<PromptResponse>()
+        return ask(
+            request,
+            result,
+            PromptRequest.LoginSelect(
+                choices = choices,
+                insecure = options.any { it.hint and SelectHint.INSECURE_FORM != 0 },
+                onSelect = { choice ->
+                    val option = options[choices.indexOf(choice).coerceAtLeast(0)]
+                    result.completeSafely { request.confirm(option) }
+                },
+                onDismiss = { result.completeSafely { request.dismiss() } },
+            ),
         )
     }
 

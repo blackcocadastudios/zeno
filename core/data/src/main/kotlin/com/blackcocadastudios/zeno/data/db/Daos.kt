@@ -127,3 +127,44 @@ abstract class DownloadDao {
     @Query("UPDATE downloads SET status = 2 WHERE status = 0")
     abstract suspend fun failInterrupted()
 }
+
+@Dao
+abstract class LoginDao {
+    @Query("SELECT * FROM logins ORDER BY host ASC, createdAt ASC")
+    abstract fun all(): Flow<List<LoginEntity>>
+
+    @Query("SELECT * FROM logins")
+    abstract suspend fun allNow(): List<LoginEntity>
+
+    /** Logins whose host ends with [suffix] (a LIKE pattern); callers check the exact domain. */
+    @Query("SELECT * FROM logins WHERE host LIKE :suffix ESCAPE '\\'")
+    abstract suspend fun hostsEndingWith(suffix: String): List<LoginEntity>
+
+    @Query("SELECT * FROM logins WHERE host = :host")
+    abstract suspend fun forHost(host: String): List<LoginEntity>
+
+    @Query("SELECT * FROM logins WHERE guid = :guid")
+    abstract suspend fun get(guid: String): LoginEntity?
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    abstract suspend fun upsert(login: LoginEntity)
+
+    @Query("UPDATE logins SET lastUsedAt = :at, timesUsed = timesUsed + 1 WHERE guid = :guid")
+    abstract suspend fun markUsed(guid: String, at: Long)
+
+    @Query("DELETE FROM logins WHERE guid = :guid")
+    abstract suspend fun delete(guid: String)
+
+    @Query("SELECT * FROM login_exceptions ORDER BY origin ASC")
+    abstract fun exceptions(): Flow<List<LoginExceptionEntity>>
+
+    @Query("SELECT COUNT(*) > 0 FROM login_exceptions WHERE origin = :origin")
+    abstract suspend fun isException(origin: String): Boolean
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    abstract suspend fun addException(exception: LoginExceptionEntity)
+
+    @Query("DELETE FROM login_exceptions WHERE origin = :origin")
+    abstract suspend fun removeException(origin: String)
+}
+

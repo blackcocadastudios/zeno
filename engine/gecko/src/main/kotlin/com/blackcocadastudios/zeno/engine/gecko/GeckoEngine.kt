@@ -10,6 +10,7 @@ import com.blackcocadastudios.zeno.engine.EngineSession
 import com.blackcocadastudios.zeno.engine.EngineSettings
 import com.blackcocadastudios.zeno.engine.HistoryTracker
 import com.blackcocadastudios.zeno.engine.HttpsOnly
+import com.blackcocadastudios.zeno.engine.LoginStore
 import com.blackcocadastudios.zeno.engine.ReaderMode
 import com.blackcocadastudios.zeno.engine.RequestInterceptor
 import com.blackcocadastudios.zeno.engine.SecureDns
@@ -65,6 +66,7 @@ class GeckoEngine(context: Context, private val debug: Boolean = false) : Engine
     override var requestInterceptor: RequestInterceptor? = null
     override var historyTracker: HistoryTracker? = null
     override var notificationHandler: WebNotificationHandler? = null
+    override var loginStore: LoginStore? = null
     override var windowOpener: WindowOpener? = null
 
     private val liveSessions = LinkedHashSet<GeckoEngineSession>()
@@ -125,6 +127,7 @@ class GeckoEngine(context: Context, private val debug: Boolean = false) : Engine
         if (!settings.automaticFontSizeAdjustment) s.setFontSizeFactor(settings.fontSizeFactor)
         s.setForceUserScalableEnabled(settings.forceUserScalable)
         s.setRemoteDebuggingEnabled(settings.remoteDebugging)
+        s.setLoginAutofillEnabled(settings.loginAutofill)
         applySecureDns(s, settings.secureDns)
         if (previous.trackingProtection != settings.trackingProtection) {
             applyTrackingProtection(s.contentBlocking, settings.trackingProtection)
@@ -203,6 +206,7 @@ class GeckoEngine(context: Context, private val debug: Boolean = false) : Engine
             .automaticFontSizeAdjustment(settings.automaticFontSizeAdjustment)
             .forceUserScalableEnabled(settings.forceUserScalable)
             .remoteDebuggingEnabled(settings.remoteDebugging)
+            .loginAutofillEnabled(settings.loginAutofill)
             .contentBlocking(contentBlocking)
             // Lets addons.mozilla.org install extensions with its own buttons.
             .extensionsWebAPIEnabled(true)
@@ -217,6 +221,7 @@ class GeckoEngine(context: Context, private val debug: Boolean = false) : Engine
         applySecureDns(rt.settings, settings.secureDns)
         oneTimeGrants.revokeLeftovers(rt.storageController)
         rt.webNotificationDelegate = NotificationDelegate()
+        rt.autocompleteStorageDelegate = GeckoLoginStorage(this)
         rt.serviceWorkerDelegate = GeckoRuntime.ServiceWorkerDelegate(::openServiceWorkerWindow)
         return rt
     }

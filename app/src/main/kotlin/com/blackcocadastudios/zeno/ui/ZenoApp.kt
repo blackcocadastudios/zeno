@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -20,6 +21,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.blackcocadastudios.zeno.BuildConfig
 import com.blackcocadastudios.zeno.R
 import com.blackcocadastudios.zeno.data.settings.AppTheme
+import com.blackcocadastudios.zeno.data.logins.SavedLogin
 import com.blackcocadastudios.zeno.data.settings.UserSettings
 import com.blackcocadastudios.zeno.design.theme.ZenoTheme
 import com.blackcocadastudios.zeno.engine.SitePermission
@@ -33,6 +35,8 @@ import com.blackcocadastudios.zeno.ui.extensions.InstallDialog
 import com.blackcocadastudios.zeno.ui.library.BookmarksScreen
 import com.blackcocadastudios.zeno.ui.library.DownloadsScreen
 import com.blackcocadastudios.zeno.ui.library.HistoryScreen
+import com.blackcocadastudios.zeno.ui.logins.PasswordsActions
+import com.blackcocadastudios.zeno.ui.logins.PasswordsScreen
 import com.blackcocadastudios.zeno.ui.settings.SettingsActions
 import com.blackcocadastudios.zeno.ui.settings.SettingsScreen
 import com.blackcocadastudios.zeno.ui.settings.SitePermissionsScreen
@@ -47,6 +51,15 @@ interface AppHost {
 
     /** Android 13+: asks to show notifications (needed for sites' notifications). */
     fun requestNotificationPermission()
+
+    /** The phone has a screen lock (PIN, pattern, password or biometrics) to confirm the user with. */
+    val deviceSecure: Boolean
+
+    /** Asks for the screen lock; without one there is nothing to ask and the answer is yes. */
+    fun authenticate(title: String, onResult: (Boolean) -> Unit)
+
+    /** Keeps the screen out of screenshots and the recent apps list while secrets are shown. */
+    fun setSecureWindow(secure: Boolean)
 }
 
 /**
@@ -121,10 +134,47 @@ private fun LibraryOrSettings(vm: MainViewModel, screen: Screen, settings: UserS
 
                     override fun requestNotificationPermission() = host.requestNotificationPermission()
 
+                    override fun passwords() = host.authenticate(vm.container.app.getString(R.string.passwords_auth_title)) { ok ->
+                        if (ok) vm.open(Screen.Passwords)
+                    }
+
                     override fun back() = goBack()
                 }
             },
         )
+        Screen.Passwords -> {
+            val logins by remember { vm.container.logins.saved }.collectAsStateWithLifecycle(initialValue = null)
+            val neverSave by remember { vm.container.logins.neverSave }.collectAsStateWithLifecycle(initialValue = emptyList())
+            DisposableEffect(host) {
+                host.setSecureWindow(true)
+                onDispose { host.setSecureWindow(false) }
+            }
+            PasswordsScreen(
+                settings = settings,
+                logins = logins,
+                neverSave = neverSave,
+                deviceSecure = host.deviceSecure,
+                actions = remember(vm) {
+                    object : PasswordsActions {
+                        override fun update(transform: (UserSettings) -> UserSettings) = vm.updateSettings(transform)
+
+                        override suspend fun password(guid: String): String? = vm.container.logins.password(guid)
+
+                        override fun copy(text: String, isPassword: Boolean) = vm.copyLoginPart(text, isPassword)
+
+                        override fun change(guid: String, username: String, password: String) = vm.changeLogin(guid, username, password)
+
+                        override fun delete(login: SavedLogin) = vm.deleteLogin(login)
+
+                        override fun allowSaving(origin: String) = vm.allowSavingLogins(origin)
+
+                        override fun openSite(origin: String) = vm.openUrl(origin, newTab = true)
+
+                        override fun back() = goBack()
+                    }
+                },
+            )
+        }
         Screen.SitePermissions -> {
             var permissions by remember { mutableStateOf<List<SitePermission>?>(null) }
             LaunchedEffect(vm.sitePermissionsVersion) { permissions = vm.allSitePermissions() }

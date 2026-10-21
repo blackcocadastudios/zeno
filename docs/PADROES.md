@@ -46,7 +46,7 @@ Toda dependência custa tamanho e superfície de ataque, então cada uma precisa
 | Readability (Mozilla, copiado) | o modo leitura do Firefox, rodando numa página de extensão embutida (ver ADR 0005) |
 | Testes: JUnit, Robolectric, Roborazzi, Turbine | testes na JVM e capturas de tela da interface |
 
-Sem bibliotecas de rede (o GeckoView já faz requisições), sem bibliotecas de imagem, sem navegação de terceiros, sem DI por reflexão. Versões ficam travadas no catálogo `gradle/libs.versions.toml`; o GeckoView é atualizado com prioridade, porque motor desatualizado é a maior brecha de um navegador.
+Sem bibliotecas de rede (o GeckoView já faz requisições), sem bibliotecas de imagem, sem navegação de terceiros, sem DI por reflexão. Versões ficam travadas no catálogo `gradle/libs.versions.toml`; o GeckoView é atualizado com prioridade, porque motor desatualizado é a maior brecha de um navegador. As demais sobem de propósito, uma de cada vez e com o CI verde; por isso o aviso do lint “há versão mais nova” fica desligado (ele muda com o calendário, não com o código).
 
 ## Segurança e privacidade
 
@@ -54,6 +54,7 @@ Sem bibliotecas de rede (o GeckoView já faz requisições), sem bibliotecas de 
 - HTTPS-first, proteção contra rastreamento ligada por padrão, Global Privacy Control ligado.
 - Permissões mínimas no manifesto; cada permissão nova precisa de motivo na tabela abaixo.
 - Dados de navegação nunca vão para backup na nuvem (`allowBackup=false` e regras de extração vazias).
+- Senhas salvas: usuário e senha cifrados com AES-256-GCM e chave no keystore do Android; mostrar ou copiar pede o bloqueio de tela (ADR 0006).
 - Abas privadas não gravam histórico, sessão nem miniaturas em disco.
 - Intents e esquemas externos são tratados como entrada não confiável: outros apps só abrem páginas `http`/`https`; texto compartilhado vira pesquisa, nunca `file:`, `about:`, `data:` ou `javascript:`.
 
@@ -66,6 +67,7 @@ Sem bibliotecas de rede (o GeckoView já faz requisições), sem bibliotecas de 
 | `CAMERA`, `RECORD_AUDIO` | videochamadas e leitura de códigos na web | idem |
 | `POST_NOTIFICATIONS` | progresso e fim de downloads; avisos dos sites que você permitiu | no primeiro download, ou ao ligar as notificações de sites (Android 13+) |
 | `FOREGROUND_SERVICE`, `FOREGROUND_SERVICE_DATA_SYNC` | um download continua com a tela apagada | nunca (concedida na instalação) |
+| `USE_BIOMETRIC` | confirmar que é você (digital, rosto ou bloqueio de tela) antes de mostrar senhas salvas | nunca (concedida na instalação) |
 
 ## Interface
 
