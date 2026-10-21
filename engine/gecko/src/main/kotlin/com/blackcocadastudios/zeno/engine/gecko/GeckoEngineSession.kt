@@ -45,6 +45,11 @@ class GeckoEngineSession internal constructor(
     private var closed = false
     private var lastFindText: String? = null
 
+    internal val isClosed: Boolean get() = closed
+
+    /** The view painting this session, released before the session closes. */
+    internal var attachedView: GeckoEngineView? = null
+
     init {
         geckoSession.contentDelegate = ContentDelegate()
         geckoSession.progressDelegate = ProgressDelegate()
@@ -140,6 +145,7 @@ class GeckoEngineSession internal constructor(
         if (closed) return
         closed = true
         observer = null
+        attachedView?.detach()
         engine.onSessionClosed(this)
         engine.extensions.onSessionClosed(this)
         geckoSession.close()

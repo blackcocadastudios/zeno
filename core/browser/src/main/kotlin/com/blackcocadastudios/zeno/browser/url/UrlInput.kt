@@ -34,6 +34,44 @@ object UrlInput {
     /** True when [input] would be loaded as an address rather than searched. */
     fun isUrl(input: String): Boolean = toUrlOrNull(input.trim()) != null
 
+    private val linkInText = Regex("""https?://[^\s<>"]+""", RegexOption.IGNORE_CASE)
+
+    /** Longest text searched as-is when another app shares or selects it. */
+    private const val MAX_SHARED_QUERY = 500
+
+    /**
+     * What to open for text another app shared or selected ("Look at this:
+     * https://…"): the first web link in it, or else the text itself, as typed
+     * input. Other apps only ever get web pages opened: anything else that
+     * looks like an address (file:, about:, data:…) is searched as text.
+     */
+    fun fromSharedText(text: String, searchEngine: SearchEngine): String? {
+        linkInText.find(text)?.value?.let(::trimLinkEnd)?.let { link ->
+            if (normalizeHttp(link) != null) return link
+        }
+        val query = text.trim().take(MAX_SHARED_QUERY)
+        val resolved = resolve(query, searchEngine) ?: return null
+        val web = resolved.startsWith("https://", ignoreCase = true) || resolved.startsWith("http://", ignoreCase = true)
+        return if (web) resolved else searchEngine.searchUrl(query)
+    }
+
+    /** Drops punctuation that ends the sentence, not the link; keeps balanced brackets (Wikipedia). */
+    private fun trimLinkEnd(link: String): String {
+        var end = link.length
+        while (end > 0) {
+            val c = link[end - 1]
+            val drop = when (c) {
+                '.', ',', ';', ':', '!', '?', '\'', '"', '…' -> true
+                ')' -> link.substring(0, end).count { it == ')' } > link.substring(0, end).count { it == '(' }
+                ']' -> link.substring(0, end).count { it == ']' } > link.substring(0, end).count { it == '[' }
+                else -> false
+            }
+            if (!drop) break
+            end--
+        }
+        return link.substring(0, end)
+    }
+
     private fun toUrlOrNull(text: String): String? {
         if (text.isEmpty() || text.any { it.isWhitespace() }) return null
 

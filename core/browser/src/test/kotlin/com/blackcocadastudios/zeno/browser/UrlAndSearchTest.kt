@@ -86,6 +86,22 @@ class UrlAndSearchTest {
     }
 
     @Test
+    fun `shared text opens its first link or is searched`() {
+        fun shared(text: String) = UrlInput.fromSharedText(text, ddg)
+        assertEquals("https://example.com/a?b=1", shared("Olha isso: https://example.com/a?b=1."))
+        assertEquals("https://en.wikipedia.org/wiki/Zen_(disambiguation)", shared("(see https://en.wikipedia.org/wiki/Zen_(disambiguation))"))
+        assertEquals("http://a.example/x", shared("\"http://a.example/x\", disse ele"))
+        assertEquals("https://zeno.example", shared("zeno.example"))
+        assertEquals(ddg.searchUrl("jardim zen em Kyoto"), shared("  jardim zen em Kyoto "))
+        assertNull(shared("   "))
+        assertEquals(ddg.searchUrl("javascript:alert(1)"), shared("javascript:alert(1)"))
+        // Another app cannot make Zeno open local files or internal pages.
+        assertEquals(ddg.searchUrl("file:///data/data/com.blackcocadastudios.zeno/files"), shared("file:///data/data/com.blackcocadastudios.zeno/files"))
+        assertEquals(ddg.searchUrl("about:config"), shared("about:config"))
+        assertEquals(ddg.searchUrl("data:text/html,<b>x</b>"), shared("data:text/html,<b>x</b>"))
+    }
+
+    @Test
     fun `every engine builds valid urls`() {
         SearchEngines.all.forEach { engine ->
             val url = engine.searchUrl("café com leite")

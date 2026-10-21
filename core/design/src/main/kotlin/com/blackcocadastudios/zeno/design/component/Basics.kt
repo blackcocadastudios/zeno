@@ -28,6 +28,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
@@ -244,6 +245,48 @@ fun ZenoSwitchRow(
         onClick = { onCheckedChange(!checked) },
         trailing = { ZenoSwitch(checked = checked, onCheckedChange = null, enabled = enabled) },
     )
+}
+
+/**
+ * The one text button: a pill. [filled] is the single main action of a place
+ * (accent ground); outlined is everything else.
+ */
+@Composable
+fun ZenoPillButton(
+    text: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    filled: Boolean = false,
+    enabled: Boolean = true,
+) {
+    val colors = Zeno.colors
+    val shape = RoundedCornerShape(percent = 50)
+    Box(
+        modifier
+            .heightIn(min = 40.dp)
+            .then(
+                if (filled) {
+                    Modifier.background(if (enabled) colors.accent else colors.accent.copy(alpha = 0.4f), shape)
+                } else {
+                    Modifier.border(1.dp, if (enabled) colors.accent else colors.line, shape)
+                },
+            )
+            .clip(shape)
+            .clickable(enabled = enabled, role = Role.Button, onClick = onClick)
+            .padding(horizontal = Ma.xl, vertical = Ma.s),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(
+            text,
+            style = Zeno.type.label,
+            color = when {
+                filled -> colors.onAccent
+                enabled -> colors.accentInk
+                else -> colors.inkFaint
+            },
+            maxLines = 1,
+        )
+    }
 }
 
 /** Something absent, said quietly: a faint ensō and one line. */

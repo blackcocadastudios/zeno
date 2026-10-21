@@ -137,6 +137,33 @@ class BrowserController(
     }
 
     /**
+     * Brings back a tab closed a moment ago ("undo"), at [index], with its
+     * history. Its renderer is created when it is selected.
+     */
+    fun reopen(closed: TabState, index: Int, select: Boolean): String {
+        val now = clock()
+        val tab = closed.copy(
+            id = newId(),
+            parentId = closed.parentId?.takeIf { state.value.tab(it) != null },
+            lastAccessedAt = now,
+            isLive = false,
+            content = ContentState(),
+        )
+        val previous = state.value.selectedTabId
+        _state.update { current ->
+            val tabs = current.tabs.toMutableList()
+            tabs.add(index.coerceIn(0, tabs.size), tab)
+            current.copy(
+                tabs = tabs,
+                selectedTabId = if (select) tab.id else current.selectedTabId,
+                privateMode = if (select) tab.isPrivate else current.privateMode,
+            )
+        }
+        if (select) onSelected(tab.id, previous = previous)
+        return tab.id
+    }
+
+    /**
      * Shows a renderer the engine created by itself (an extension opening its
      * dashboard, for instance) in a new tab.
      */
@@ -387,7 +414,7 @@ class BrowserController(
     private fun bind(tabId: String, session: EngineSession) {
         session.observer = TabObserver(tabId)
         sessions[tabId] = session
-        updateTab(tabId) { it.copy(isLive = true) }
+        updateTab(tabId) { it.copy(isLive = true, rendererGeneration = it.rendererGeneration + 1) }
     }
 
     private fun releaseSession(id: String, tab: TabState) {

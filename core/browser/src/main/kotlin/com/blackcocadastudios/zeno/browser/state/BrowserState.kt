@@ -41,6 +41,8 @@ data class TabState(
     val engineState: EngineSessionState? = null,
     /** False while the tab is suspended (no renderer in memory). */
     val isLive: Boolean = false,
+    /** Changes whenever the tab gets a new renderer, so the view always shows the current one. */
+    val rendererGeneration: Int = 0,
     val content: ContentState = ContentState(),
 )
 

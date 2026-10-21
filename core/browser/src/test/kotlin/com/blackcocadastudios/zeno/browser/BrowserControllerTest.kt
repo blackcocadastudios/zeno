@@ -201,6 +201,23 @@ class BrowserControllerTest {
     }
 
     @Test
+    fun `a reopened tab comes back in place with its history`() {
+        val a = controller.newTab("https://a.example/")
+        val b = controller.newTab("https://b.example/")
+        controller.newTab("https://c.example/")
+        engine.created[1].observer!!.onStateUpdated(EngineSessionState("history-b"))
+        val closed = state.tab(b)!!
+        val index = state.tabs.indexOf(closed)
+        controller.closeTab(b)
+
+        val reopened = controller.reopen(closed, index, select = true)
+        assertEquals(listOf(a, reopened), state.tabs.take(2).map { it.id })
+        assertEquals(reopened, state.selectedTabId)
+        assertEquals("https://b.example/", state.tab(reopened)!!.url)
+        assertEquals(EngineSessionState("history-b"), engine.created.last().restored)
+    }
+
+    @Test
     fun `the visible tab is never suspended`() {
         controller.newTab("https://a.example/")
         now += 3_600_000

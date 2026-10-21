@@ -40,9 +40,15 @@ class GeckoEngine(context: Context, private val debug: Boolean = false) : Engine
 
     private var runtimeOrNull: GeckoRuntime? = null
 
-    /** Created on first access; must be the main thread. */
+    /** Created on first access; must be the main thread. Extensions start with it. */
     internal val runtime: GeckoRuntime
-        get() = runtimeOrNull ?: createRuntime().also { runtimeOrNull = it }
+        get() = runtimeOrNull ?: createRuntime().also {
+            runtimeOrNull = it
+            extensions.start()
+        }
+
+    /** Gecko's version, e.g. "158.0.1". */
+    val version: String get() = org.mozilla.geckoview.BuildConfig.MOZ_APP_VERSION
 
     override var requestInterceptor: RequestInterceptor? = null
     override var historyTracker: HistoryTracker? = null
@@ -54,7 +60,6 @@ class GeckoEngine(context: Context, private val debug: Boolean = false) : Engine
     /** Starts Gecko ahead of the first page load. */
     fun warmUp() {
         runtime
-        extensions.start()
     }
 
     override fun createSession(private: Boolean): EngineSession = GeckoEngineSession(this, private, open = true)
