@@ -54,6 +54,8 @@ adb shell wm dismiss-keyguard || true
 # dialogs would cover Zeno. Hide them (ui.py also answers any that still show).
 adb shell settings put global hide_error_dialogs 1 || true
 adb shell settings put secure anr_show_background 0 || true
+# What Gecko answers about each touch (scrollable directions, overscroll), for the logs.
+adb shell setprop log.tag.ZenoTouch DEBUG || true
 step "install $(basename "$apk")" adb install -r -g "$apk"
 adb logcat -c
 

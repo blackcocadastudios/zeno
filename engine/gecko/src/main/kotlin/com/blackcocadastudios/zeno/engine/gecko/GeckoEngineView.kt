@@ -3,6 +3,7 @@ package com.blackcocadastudios.zeno.engine.gecko
 import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Bitmap
+import android.util.Log
 import android.view.MotionEvent
 import android.widget.FrameLayout
 import com.blackcocadastudios.zeno.engine.EngineSession
@@ -128,7 +129,16 @@ class GeckoEngineView(context: Context) : FrameLayout(context) {
             if (event.actionMasked != MotionEvent.ACTION_DOWN) return super.onTouchEvent(event)
             // Same as onTouchEvent for Gecko, plus the answer about this touch.
             detail = null
-            onTouchEventForDetailResult(event).accept({ detail = it }, { detail = null })
+            onTouchEventForDetailResult(event).accept({ result ->
+                detail = result
+                if (result != null && Log.isLoggable(TAG, Log.DEBUG)) {
+                    Log.d(
+                        TAG,
+                        "touch: handled=${result.handledResult()} scrollable=${result.scrollableDirections()} " +
+                            "overscroll=${result.overscrollDirections()}",
+                    )
+                }
+            }, { detail = null })
             return true
         }
 
@@ -187,5 +197,8 @@ class GeckoEngineView(context: Context) : FrameLayout(context) {
     private companion object {
         const val OPEN_WAIT_MILLIS = 16L
         const val MAX_OPEN_WAITS = 120
+
+        /** `adb shell setprop log.tag.ZenoTouch DEBUG` shows what Gecko says about each touch. */
+        const val TAG = "ZenoTouch"
     }
 }

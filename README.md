@@ -7,6 +7,16 @@ Navegador Android pessoal: leve, silencioso e minimalista, com o motor do Firefo
 - **Silêncio.** Sem telemetria, sem contas, sem notícias, sem notificações que não sejam suas.
 - **Leve.** A página inicial é nativa (abre sem esperar o motor), abas paradas são suspensas e voltam onde estavam.
 
+<p>
+  <img src="docs/screenshots/inicio.png" width="160" alt="Página inicial: Zen com um ensō e ondas seigaiha">
+  <img src="docs/screenshots/pagina.png" width="160" alt="A Wikipédia aberta, barra de endereço embaixo">
+  <img src="docs/screenshots/lendo.png" width="160" alt="Lendo: a barra desceu e a página ocupa a tela">
+  <img src="docs/screenshots/abas.png" width="160" alt="Grade de abas com miniaturas e selos">
+  <img src="docs/screenshots/privado.png" width="160" alt="Navegação privada no tema Yoru">
+</p>
+
+Capturas do APK de release num emulador Android, tiradas pelo teste de fumaça do CI.
+
 O que já existe está em [`CHANGELOG.md`](CHANGELOG.md).
 
 ## Instalar
