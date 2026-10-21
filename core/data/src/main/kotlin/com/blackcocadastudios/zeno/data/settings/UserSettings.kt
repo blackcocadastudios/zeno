@@ -11,7 +11,6 @@ data class UserSettings(
     val searchEngineId: String = "duckduckgo",
     /** Sends each typed letter to the search engine; off by default for privacy. */
     val searchSuggestions: Boolean = false,
-    val toolbarAtBottom: Boolean = true,
     val hideToolbarOnScroll: Boolean = true,
     val appTheme: AppTheme = AppTheme.System,
     val webContentTheme: WebContentTheme = WebContentTheme.System,

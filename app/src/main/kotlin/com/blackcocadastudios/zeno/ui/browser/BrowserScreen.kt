@@ -1,5 +1,24 @@
 package com.blackcocadastudios.zeno.ui.browser
 
+import kotlin.math.min
+import androidx.compose.ui.draw.shadow
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.unit.IntOffset
+import androidx.compose.foundation.layout.offset
+import kotlin.math.roundToInt
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.Job
+import com.blackcocadastudios.zeno.design.theme.ZenoMotion
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.runtime.snapshotFlow
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.animate
 import android.app.Activity
 import android.content.ClipData
 import android.content.ClipboardManager
@@ -87,6 +106,9 @@ private const val UBLOCK_ID = "uBlock0@raymondhill.net"
 /** Time for a loaded page to settle (fonts, images) before its thumbnail is taken. */
 private const val THUMBNAIL_DELAY_MILLIS = 1_200L
 
+/** How far a page is pulled down to reload it. */
+private val PULL_TO_RELOAD = 96.dp
+
 /**
  * The browser: the page (or Zeno's home) above, the toolbar below, and every
  * overlay a page or the user can open. It stays composed under the other
@@ -115,6 +137,76 @@ fun BrowserScreen(vm: MainViewModel, engineView: GeckoEngineView, active: Boolea
     val keyboardForPage = keyboardShown && !vm.editing
     val showBar = !fullscreen && (!keyboardForPage || vm.findOpen)
     val coverColor = colors.paper.toArgb()
+    val density = LocalDensity.current
+
+    // With "hide the bar while scrolling", the page extends under the bar, which
+    // slides down as the page scrolls down and comes back when it scrolls up.
+    val overlayBar = settings.hideToolbarOnScroll && !fullscreen
+    val slidingBar = overlayBar && showBar && !showHome && !vm.findOpen && content?.crashed != true
+    var barHeightPx by remember { mutableIntStateOf(with(density) { 62.dp.roundToPx() }) }
+    var barOffset by remember { mutableFloatStateOf(0f) }
+    val scope = rememberCoroutineScope()
+    val settling = remember { JobSlot() }
+
+    // Pulling down a page that is at its top draws an ensō; let go once it closes to reload.
+    var pull by remember { mutableFloatStateOf(0f) }
+    val pullThreshold = with(density) { PULL_TO_RELOAD.toPx() }
+    val pulling = remember { JobSlot() }
+
+    // The bar comes back for every new page and new tab, and stays while it cannot slide.
+    LaunchedEffect(tab?.id, tab?.url, slidingBar) {
+        settling.job?.cancel()
+        if (!slidingBar) barOffset = 0f else animate(barOffset, 0f, animationSpec = tween(ZenoMotion.QUICK)) { value, _ -> barOffset = value }
+    }
+    val pageShown = session != null && !fullscreen && !showHome
+    DisposableEffect(engineView, pageShown, slidingBar, barHeightPx, tab?.id) {
+        val tabId = tab?.id
+        engineView.scrollListener = if (!pageShown) {
+            null
+        } else {
+            object : GeckoEngineView.ScrollListener {
+                override fun onScroll(dy: Float) {
+                    if (!slidingBar) return
+                    settling.job?.cancel()
+                    barOffset = (barOffset + dy).coerceIn(0f, barHeightPx.toFloat())
+                }
+
+                override fun onPull(distance: Float) {
+                    pulling.job?.cancel()
+                    pull = distance
+                }
+
+                override fun onScrollEnd() {
+                    if (pull > 0f) {
+                        if (pull >= pullThreshold && tabId != null) vm.controller.reload(tabId)
+                        pulling.job = scope.launch {
+                            animate(pull, 0f, animationSpec = tween(ZenoMotion.STANDARD, easing = ZenoMotion.Calm)) { value, _ -> pull = value }
+                        }
+                    }
+                    if (!slidingBar) return
+                    val target = if (barOffset > barHeightPx / 2f) barHeightPx.toFloat() else 0f
+                    settling.job = scope.launch {
+                        animate(barOffset, target, animationSpec = tween(ZenoMotion.QUICK, easing = ZenoMotion.Calm)) { value, _ -> barOffset = value }
+                    }
+                }
+            }
+        }
+        onDispose {
+            engineView.scrollListener = null
+            pull = 0f
+        }
+    }
+    // Gecko needs the bar's height, and how much of it covers the page right now, to keep
+    // fixed elements (cookie banners, chat buttons) above it.
+    LaunchedEffect(engineView, overlayBar, barHeightPx) {
+        engineView.setDynamicToolbarMaxHeight(if (overlayBar) barHeightPx else 0)
+    }
+    LaunchedEffect(engineView, overlayBar, showBar, barHeightPx) {
+        snapshotFlow { barOffset }.collect { offset ->
+            val covered = if (overlayBar && showBar) (barHeightPx - offset).roundToInt().coerceAtLeast(0) else 0
+            engineView.setVerticalClipping(-covered)
+        }
+    }
 
     FullscreenEffect(activity, fullscreen, content?.mediaLandscape)
 
@@ -156,10 +248,47 @@ fun BrowserScreen(vm: MainViewModel, engineView: GeckoEngineView, active: Boolea
                 // While the address is being edited, the page stays as it is under the editor.
                 .then(if (vm.editing) Modifier else Modifier.windowInsetsPadding(WindowInsets.imeAnimationTarget)),
         ) {
+            val bar: @Composable (Modifier) -> Unit = { modifier ->
+                if (vm.findOpen && tab != null) {
+                    FindBar(
+                        result = content?.find,
+                        onSearch = { vm.controller.find(tab.id, it) },
+                        onNext = { vm.controller.find(tab.id, it) },
+                        onPrevious = { vm.controller.find(tab.id, it, backwards = true) },
+                        onClose = {
+                            vm.findOpen = false
+                            vm.controller.clearFind(tab.id)
+                        },
+                        modifier = modifier,
+                    )
+                } else {
+                    Toolbar(
+                        display = addressDisplay(tab, searchEngine),
+                        tabCount = state.tabs.count { it.isPrivate == privateMode },
+                        privateMode = privateMode,
+                        onAddressClick = vm::startEditing,
+                        onReload = { tab?.let { vm.controller.reload(it.id) } },
+                        onStop = { tab?.let { vm.controller.stop(it.id) } },
+                        onTabsClick = {
+                            if (tab != null && session != null) {
+                                val id = tab.id
+                                engineView.capture { bitmap -> bitmap?.let { vm.container.thumbnails.put(id, it) } }
+                            }
+                            vm.showTabs = true
+                        },
+                        onMenuClick = { vm.showMenu = true },
+                        modifier = modifier,
+                    )
+                }
+            }
+            // Home and the crash view keep clear of a bar that floats over them.
+            val underBar = if (overlayBar && showBar) with(density) { barHeightPx.toDp() } else 0.dp
             Box(
                 Modifier
                     .weight(1f)
-                    .fillMaxWidth(),
+                    .fillMaxWidth()
+                    .then(if (overlayBar) Modifier.navigationBarsPadding() else Modifier)
+                    .clipToBounds(),
             ) {
                 AndroidView(
                     factory = { engineView.apply { (parent as? ViewGroup)?.removeView(this) } },
@@ -189,45 +318,23 @@ fun BrowserScreen(vm: MainViewModel, engineView: GeckoEngineView, active: Boolea
                         onOpenPrivate = { vm.openUrl(it.url, newTab = true, private = true) },
                         onRemove = vm::removeShortcut,
                         footer = footer,
+                        modifier = Modifier.padding(bottom = underBar),
                     )
                 }
                 if (tab != null && content?.crashed == true) {
-                    CrashedTab(onReload = { vm.controller.reload(tab.id) })
+                    CrashedTab(onReload = { vm.controller.reload(tab.id) }, modifier = Modifier.padding(bottom = underBar))
                 }
-            }
-            if (showBar) {
-                if (vm.findOpen && tab != null) {
-                    FindBar(
-                        result = content?.find,
-                        onSearch = { vm.controller.find(tab.id, it) },
-                        onNext = { vm.controller.find(tab.id, it) },
-                        onPrevious = { vm.controller.find(tab.id, it, backwards = true) },
-                        onClose = {
-                            vm.findOpen = false
-                            vm.controller.clearFind(tab.id)
-                        },
-                        modifier = Modifier.navigationBarsPadding(),
-                    )
-                } else {
-                    Toolbar(
-                        display = addressDisplay(tab, searchEngine),
-                        tabCount = state.tabs.count { it.isPrivate == privateMode },
-                        privateMode = privateMode,
-                        onAddressClick = vm::startEditing,
-                        onReload = { tab?.let { vm.controller.reload(it.id) } },
-                        onStop = { tab?.let { vm.controller.stop(it.id) } },
-                        onTabsClick = {
-                            if (tab != null && session != null) {
-                                val id = tab.id
-                                engineView.capture { bitmap -> bitmap?.let { vm.container.thumbnails.put(id, it) } }
-                            }
-                            vm.showTabs = true
-                        },
-                        onMenuClick = { vm.showMenu = true },
-                        modifier = Modifier.navigationBarsPadding(),
+                PullIndicator(pull = { pull }, threshold = pullThreshold, modifier = Modifier.align(Alignment.TopCenter))
+                if (overlayBar && showBar) {
+                    bar(
+                        Modifier
+                            .align(Alignment.BottomCenter)
+                            .onSizeChanged { barHeightPx = it.height }
+                            .graphicsLayer { translationY = barOffset },
                     )
                 }
             }
+            if (!overlayBar && showBar) bar(Modifier.navigationBarsPadding())
         }
 
         if (active && vm.editing) {
@@ -262,18 +369,17 @@ fun BrowserScreen(vm: MainViewModel, engineView: GeckoEngineView, active: Boolea
         }
 
         if (active) {
-            // Above the toolbar, or above the tab grid's button.
-            val lift = when {
-                vm.showTabs -> 88.dp
-                showBar -> 62.dp
-                else -> 0.dp
-            }
+            // Above the toolbar (following it as it slides), or above the tab grid's button.
             MessageHost(
                 vm.messages,
                 Modifier
                     .align(Alignment.BottomCenter)
                     .windowInsetsPadding(WindowInsets.navigationBars.union(WindowInsets.imeAnimationTarget))
-                    .padding(bottom = lift),
+                    .padding(bottom = if (vm.showTabs) 88.dp else 0.dp)
+                    .offset {
+                        val lift = if (!vm.showTabs && showBar) (barHeightPx - barOffset).roundToInt().coerceAtLeast(0) else 0
+                        IntOffset(0, -lift)
+                    },
             )
         }
     }
@@ -432,10 +538,10 @@ private fun menuActions(vm: MainViewModel, tab: TabState?, context: Context, act
 
 /** The renderer of this tab stopped. A broken ensō, and a way back. */
 @Composable
-internal fun CrashedTab(onReload: () -> Unit) {
+internal fun CrashedTab(onReload: () -> Unit, modifier: Modifier = Modifier) {
     val colors = Zeno.colors
     Column(
-        Modifier
+        modifier
             .fillMaxSize()
             .background(colors.paper)
             .padding(horizontal = Ma.xxl),
@@ -496,5 +602,33 @@ internal fun shareText(context: Context, text: String, title: String?) {
         .apply { if (!title.isNullOrBlank()) putExtra(Intent.EXTRA_SUBJECT, title) }
     runCatching {
         context.startActivity(Intent.createChooser(send, context.getString(R.string.share_via)).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+    }
+}
+
+/** Holds an animation's job outside of composition state. */
+private class JobSlot {
+    var job: Job? = null
+}
+
+/**
+ * The pull-to-reload mark: an ensō drawn as the page is pulled, closed when
+ * letting go reloads. Reads [pull] in its own scope so only it redraws.
+ */
+@Composable
+private fun PullIndicator(pull: () -> Float, threshold: Float, modifier: Modifier = Modifier) {
+    val distance = pull()
+    if (distance <= 0f) return
+    val progress = (distance / threshold).coerceIn(0f, 1f)
+    val colors = Zeno.colors
+    Box(
+        modifier
+            .offset { IntOffset(0, (min(distance, threshold * 1.4f) * 0.55f).roundToInt()) }
+            .graphicsLayer { alpha = progress }
+            .size(44.dp)
+            .shadow(4.dp, CircleShape)
+            .background(colors.paperRaised, CircleShape)
+            .padding(9.dp),
+    ) {
+        Enso(Modifier.fillMaxSize(), color = if (progress >= 1f) colors.accent else colors.inkSoft, drawProgress = progress)
     }
 }

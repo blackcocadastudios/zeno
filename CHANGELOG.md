@@ -8,7 +8,8 @@ Primeira versão utilizável.
 
 ### Navegação
 - Motor GeckoView 158 (o mesmo do Firefox 158), usado direto, sem Android Components.
-- Barra de endereço embaixo, com contador de abas e menu; some enquanto se digita numa página.
+- Barra de endereço embaixo, com contador de abas e menu; desce enquanto se lê e volta ao rolar para cima (como no Firefox), e some enquanto se digita numa página.
+- Puxar a página para baixo recarrega: um ensō se desenha enquanto se puxa.
 - Edição de endereço com sugestões do histórico e dos favoritos, completando o domínio enquanto se digita; sugestões do mecanismo de pesquisa só se ligadas.
 - Página inicial própria: ensō, atalhos (fixados e mais visitados) e ondas seigaiha.
 - Abas normais e privadas (tema Yoru), grade de abas com miniaturas em memória; fechar com um gesto para o lado, desfazer logo depois.
@@ -33,5 +34,4 @@ Primeira versão utilizável.
 - CI com build debug e release, testes, capturas de tela (Roborazzi), lint e teste de fumaça num emulador.
 
 ### Ainda não
-- Barra que se esconde ao rolar e barra no topo (as preferências existem, a interface ainda não).
-- Puxar para recarregar, modo leitura, gerenciador de senhas, exceções de proteção por site, notificações de sites.
+- Modo leitura, gerenciador de senhas, exceções de proteção por site, notificações de sites. A barra fica embaixo, de propósito (uma mão).

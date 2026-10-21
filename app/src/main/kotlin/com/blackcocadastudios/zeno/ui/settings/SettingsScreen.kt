@@ -76,6 +76,13 @@ fun SettingsScreen(settings: UserSettings, versions: String, actions: SettingsAc
                 onCheckedChange = { on -> actions.update { it.copy(searchSuggestions = on) } },
             )
             ZenoSwitchRow(
+                title = stringResource(R.string.settings_toolbar_hide),
+                subtitle = stringResource(R.string.settings_toolbar_hide_desc),
+                icon = ZenoIcons.PanelBottom,
+                checked = settings.hideToolbarOnScroll,
+                onCheckedChange = { on -> actions.update { it.copy(hideToolbarOnScroll = on) } },
+            )
+            ZenoSwitchRow(
                 title = stringResource(R.string.settings_shortcuts),
                 icon = ZenoIcons.Grid,
                 checked = settings.showShortcuts,

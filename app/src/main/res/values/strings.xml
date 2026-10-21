@@ -222,6 +222,8 @@
     <string name="settings_search_engine">Mecanismo de pesquisa</string>
     <string name="settings_search_suggestions">Sugestões de pesquisa</string>
     <string name="settings_search_suggestions_desc">Envia o que você digita ao mecanismo de pesquisa para sugerir termos</string>
+    <string name="settings_toolbar_hide">Esconder a barra ao rolar</string>
+    <string name="settings_toolbar_hide_desc">A barra desce enquanto você lê e volta ao rolar para cima</string>
     <string name="settings_shortcuts">Atalhos no início</string>
     <string name="settings_restore_tabs">Reabrir abas ao iniciar</string>
     <string name="settings_appearance">Aparência</string>

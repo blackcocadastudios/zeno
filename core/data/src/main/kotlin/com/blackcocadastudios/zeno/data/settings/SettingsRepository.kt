@@ -34,7 +34,6 @@ class SettingsRepository(context: Context) {
     private object Keys {
         val searchEngine = stringPreferencesKey("search_engine")
         val searchSuggestions = booleanPreferencesKey("search_suggestions")
-        val toolbarAtBottom = booleanPreferencesKey("toolbar_bottom")
         val hideToolbarOnScroll = booleanPreferencesKey("toolbar_hide_on_scroll")
         val appTheme = stringPreferencesKey("app_theme")
         val webTheme = stringPreferencesKey("web_theme")
@@ -61,7 +60,6 @@ class SettingsRepository(context: Context) {
         return UserSettings(
             searchEngineId = p[Keys.searchEngine] ?: d.searchEngineId,
             searchSuggestions = p[Keys.searchSuggestions] ?: d.searchSuggestions,
-            toolbarAtBottom = p[Keys.toolbarAtBottom] ?: d.toolbarAtBottom,
             hideToolbarOnScroll = p[Keys.hideToolbarOnScroll] ?: d.hideToolbarOnScroll,
             appTheme = enumOr(p[Keys.appTheme], d.appTheme),
             webContentTheme = enumOr(p[Keys.webTheme], d.webContentTheme),
@@ -87,7 +85,6 @@ class SettingsRepository(context: Context) {
     private fun write(p: MutablePreferences, s: UserSettings) {
         p[Keys.searchEngine] = s.searchEngineId
         p[Keys.searchSuggestions] = s.searchSuggestions
-        p[Keys.toolbarAtBottom] = s.toolbarAtBottom
         p[Keys.hideToolbarOnScroll] = s.hideToolbarOnScroll
         p[Keys.appTheme] = s.appTheme.name
         p[Keys.webTheme] = s.webContentTheme.name

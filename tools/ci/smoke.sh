@@ -98,6 +98,24 @@ adb shell am start -a android.intent.action.VIEW -d "https://pt.wikipedia.org/wi
 step "wikipedia opens" $ui wait "wikipedia\\.org" 30
 sleep 8
 shot 07-wikipedia
+# Reading down: the bar slides away; scrolling back up brings it back.
+adb shell input swipe 540 1700 540 700 400
+sleep 2
+shot 07b-scrolled-down
+adb shell input swipe 540 900 540 1500 400
+sleep 2
+shot 07c-scrolled-up
+step "the bar comes back when scrolling up" $ui wait "abas? abertas?" 10
+# Back to the top, then pull the page down: the ensō draws itself; letting go reloads.
+adb shell input swipe 540 700 540 2000 200
+adb shell input swipe 540 700 540 2000 200
+sleep 1
+adb shell input motionevent DOWN 540 600
+for y in 700 800 900 1000 1100 1200; do adb shell input motionevent MOVE 540 "$y"; done
+shot 07d-pulling
+adb shell input motionevent UP 540 1200
+sleep 1
+shot 07e-reloading
 step "open the tab grid" $ui tap "abas? abertas?" 10
 sleep 2
 shot 08-tabs
