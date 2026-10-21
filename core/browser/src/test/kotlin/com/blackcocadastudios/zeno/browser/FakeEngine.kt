@@ -14,6 +14,7 @@ import com.blackcocadastudios.zeno.engine.ExtensionPopup
 import com.blackcocadastudios.zeno.engine.ExtensionTabs
 import com.blackcocadastudios.zeno.engine.HistoryTracker
 import com.blackcocadastudios.zeno.engine.LoadFlags
+import com.blackcocadastudios.zeno.engine.ReaderMode
 import com.blackcocadastudios.zeno.engine.RequestInterceptor
 import com.blackcocadastudios.zeno.engine.SitePermission
 import com.blackcocadastudios.zeno.engine.SitePermissionStore
@@ -31,6 +32,10 @@ class FakeEngine : Engine {
     override var historyTracker: HistoryTracker? = null
     override val extensions = FakeExtensions()
     override val sitePermissions = FakeSitePermissions()
+    override val reader = object : ReaderMode {
+        override suspend fun readerUrl(url: String) = "reader:$url"
+        override fun originalUrl(url: String) = url.removePrefix("reader:").takeIf { it != url }
+    }
     override var notificationHandler: WebNotificationHandler? = null
     override var windowOpener: WindowOpener? = null
 

@@ -20,6 +20,8 @@
     <string name="toolbar_insecure">Conexão não segura</string>
     <string name="toolbar_private">Navegação privada</string>
     <string name="toolbar_site_info">%1$s. Informações do site</string>
+    <string name="toolbar_reader">Modo leitura</string>
+    <string name="toolbar_leave_reader">Modo leitura. Voltar para a página</string>
     <plurals name="toolbar_trackers_blocked">
         <item quantity="one">%1$d rastreador bloqueado</item>
         <item quantity="many">%1$d rastreadores bloqueados</item>
@@ -62,6 +64,9 @@
     <string name="menu_new_tab">Nova aba</string>
     <string name="menu_new_private_tab">Nova aba privada</string>
     <string name="menu_find">Encontrar na página</string>
+    <string name="menu_reader">Modo leitura</string>
+    <string name="menu_reader_leave">Sair do modo leitura</string>
+    <string name="reader_unavailable">O modo leitura não abriu agora. Tente de novo.</string>
     <string name="menu_translate">Traduzir página</string>
     <string name="menu_show_original">Mostrar original</string>
     <string name="menu_desktop">Versão para computador</string>
@@ -325,7 +330,7 @@
     <string name="settings_source">Código-fonte</string>
     <string name="settings_licenses">Licenças</string>
     <string name="settings_default_browser">Definir como navegador padrão</string>
-    <string name="settings_licenses_body">Zeno usa o GeckoView (MPL 2.0) da Mozilla; as fontes Zen Kaku Gothic New e Shippori Mincho (SIL Open Font License 1.1); e ícones Lucide (ISC).</string>
+    <string name="settings_licenses_body">Zeno usa o GeckoView (MPL 2.0) e o Readability (Apache 2.0) da Mozilla; as fontes Zen Kaku Gothic New e Shippori Mincho (SIL Open Font License 1.1); e ícones Lucide (ISC).</string>
 
     <!-- Common -->
     <string name="action_back">Voltar</string>

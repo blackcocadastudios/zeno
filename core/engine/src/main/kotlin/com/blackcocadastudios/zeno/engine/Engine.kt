@@ -27,6 +27,8 @@ interface Engine {
     /** Permissions sites were given or refused, and where tracking protection is off. */
     val sitePermissions: SitePermissionStore
 
+    val reader: ReaderMode
+
     /** Receives notifications from sites; without one, they are not shown. */
     var notificationHandler: WebNotificationHandler?
 

@@ -141,7 +141,8 @@ class GeckoExtensionController internal constructor(
     }
 
     private fun publish() {
-        _installed.value = extensions.values.map { it.toInfo() }.sortedBy { it.name.lowercase() }
+        // Zeno's own extensions (reader mode) are part of the browser, not the user's to manage.
+        _installed.value = extensions.values.filterNot { it.isBuiltIn }.map { it.toInfo() }.sortedBy { it.name.lowercase() }
         publishActions()
     }
 

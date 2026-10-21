@@ -71,7 +71,7 @@ O estado do navegador é um único `StateFlow` imutável dono das abas (`Browser
 
 - [`docs/PADROES.md`](docs/PADROES.md) — regras, orçamentos de desempenho, dependências, permissões.
 - [`docs/DESIGN.md`](docs/DESIGN.md) — cores tradicionais japonesas, tipografia, ícones, espaçamento.
-- [`docs/adr/`](docs/adr) — decisões: GeckoView direto, estado e navegação, silêncio e privacidade, SDK e assinatura.
+- [`docs/adr/`](docs/adr) — decisões: GeckoView direto, estado e navegação, silêncio e privacidade, SDK e assinatura, modo leitura.
 
 ## Verificação
 
@@ -79,4 +79,4 @@ O estado do navegador é um único `StateFlow` imutável dono das abas (`Browser
 
 ## Licenças
 
-O código do Zeno ainda não tem licença definida. Componentes de terceiros: GeckoView (MPL 2.0), fontes Zen Kaku Gothic New e Shippori Mincho (SIL Open Font License 1.1, em `third_party/fonts`) e ícones Lucide (ISC, em `third_party/lucide`).
+O código do Zeno ainda não tem licença definida. Componentes de terceiros: GeckoView (MPL 2.0), Readability da Mozilla (Apache 2.0, em `third_party/readability`), fontes Zen Kaku Gothic New e Shippori Mincho (SIL Open Font License 1.1, em `third_party/fonts`) e ícones Lucide (ISC, em `third_party/lucide`).

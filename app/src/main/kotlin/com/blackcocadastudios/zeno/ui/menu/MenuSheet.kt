@@ -41,7 +41,17 @@ data class MenuPage(
     val desktopMode: Boolean,
     val translated: Boolean,
     val trackersBlocked: Int,
+    val reader: ReaderState = ReaderState.Unavailable,
 )
+
+enum class ReaderState {
+    /** Not a web page. */
+    Unavailable,
+    Available,
+
+    /** The page is shown in reader mode. */
+    Active,
+}
 
 /** An extension's toolbar button, shown as a menu row. */
 data class MenuExtension(val id: String, val title: String, val badge: String?)
@@ -57,6 +67,7 @@ interface MenuActions {
     fun newTab(private: Boolean)
     fun find()
     fun translate()
+    fun toggleReader()
     fun setDesktopMode(enabled: Boolean)
     fun addToHome()
     fun extension(id: String)
@@ -142,6 +153,14 @@ fun MenuContent(page: MenuPage, extensions: List<MenuExtension>, showQuit: Boole
         ZenoListRow(stringResource(R.string.menu_new_private_tab), icon = ZenoIcons.MoonStar, dense = true, onClick = { actions.newTab(private = true) })
         if (page.hasPage) {
             ZenoListRow(stringResource(R.string.menu_find), icon = ZenoIcons.FindInPage, dense = true, onClick = actions::find)
+            if (page.reader != ReaderState.Unavailable) {
+                ZenoListRow(
+                    stringResource(if (page.reader == ReaderState.Active) R.string.menu_reader_leave else R.string.menu_reader),
+                    icon = ZenoIcons.Reader,
+                    dense = true,
+                    onClick = actions::toggleReader,
+                )
+            }
             ZenoListRow(
                 stringResource(if (page.translated) R.string.menu_show_original else R.string.menu_translate),
                 icon = ZenoIcons.Translate,

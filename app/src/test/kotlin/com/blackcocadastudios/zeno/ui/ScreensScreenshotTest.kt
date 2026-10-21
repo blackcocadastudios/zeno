@@ -49,6 +49,7 @@ import com.blackcocadastudios.zeno.ui.menu.MenuActions
 import com.blackcocadastudios.zeno.ui.menu.MenuContent
 import com.blackcocadastudios.zeno.ui.menu.MenuExtension
 import com.blackcocadastudios.zeno.ui.menu.MenuPage
+import com.blackcocadastudios.zeno.ui.menu.ReaderState
 import com.blackcocadastudios.zeno.ui.menu.SheetHandle
 import com.blackcocadastudios.zeno.ui.settings.SettingsActions
 import com.blackcocadastudios.zeno.ui.prompts.PermissionQuestion
@@ -128,6 +129,12 @@ class ScreensScreenshotTest {
     fun pageInsecure() = capture("page_insecure") {
         val tab = TabState("a", "http://neverssl.com/", "NeverSSL")
         BrowserFrame(tab, tabCount = 1) { FakePage() }
+    }
+
+    @Test
+    fun pageReader() = capture("page_reader") {
+        val tab = TabState("a", READER_URL, "O jardim de pedras de Ryōan-ji")
+        BrowserFrame(tab, tabCount = 3, readerOriginal = { url -> url.takeIf { it == READER_URL }?.let { "https://www.caderno.example/ryoanji" } }) { FakePage() }
     }
 
     @Test
@@ -367,6 +374,7 @@ class ScreensScreenshotTest {
                     desktopMode = false,
                     translated = false,
                     trackersBlocked = 14,
+                    reader = if (dark) ReaderState.Active else ReaderState.Available,
                 ),
                 extensions = listOf(MenuExtension("uBlock0@raymondhill.net", "uBlock Origin", "23")),
                 showQuit = dark,
@@ -397,6 +405,7 @@ class ScreensScreenshotTest {
     }
 
     private companion object {
+        const val READER_URL = "moz-extension://reader/reader.html?url=https%3A%2F%2Fwww.caderno.example%2Fryoanji"
         const val MINUTE = 60_000L
         const val HOUR = 60 * MINUTE
         const val DAY = 24 * HOUR
@@ -405,7 +414,13 @@ class ScreensScreenshotTest {
 
 /** The browser's frame as it looks in use: page above, toolbar below. */
 @Composable
-private fun BrowserFrame(tab: TabState?, tabCount: Int, privateMode: Boolean = false, page: @Composable () -> Unit) {
+private fun BrowserFrame(
+    tab: TabState?,
+    tabCount: Int,
+    privateMode: Boolean = false,
+    readerOriginal: (String) -> String? = { null },
+    page: @Composable () -> Unit,
+) {
     Column(Modifier.fillMaxSize()) {
         Box(
             Modifier
@@ -413,7 +428,7 @@ private fun BrowserFrame(tab: TabState?, tabCount: Int, privateMode: Boolean = f
                 .fillMaxWidth(),
         ) { page() }
         Toolbar(
-            display = addressDisplay(tab, SearchEngines.DuckDuckGo),
+            display = addressDisplay(tab, SearchEngines.DuckDuckGo, readerOriginal),
             tabCount = tabCount,
             privateMode = privateMode,
             onAddressClick = {},
@@ -482,6 +497,7 @@ private object NoMenuActions : MenuActions {
     override fun newTab(private: Boolean) = Unit
     override fun find() = Unit
     override fun translate() = Unit
+    override fun toggleReader() = Unit
     override fun setDesktopMode(enabled: Boolean) = Unit
     override fun addToHome() = Unit
     override fun extension(id: String) = Unit

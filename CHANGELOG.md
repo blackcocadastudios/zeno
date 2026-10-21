@@ -15,6 +15,7 @@ Primeira versão utilizável.
 - Abas normais e privadas (tema Yoru), grade de abas com miniaturas em memória; fechar com um gesto para o lado, desfazer logo depois.
 - Abas em segundo plano suspensas para poupar memória e restauradas ao voltar; sessão salva atomicamente.
 - Encontrar na página, tradução da página (modelos locais do Firefox), versão para computador, tela cheia de vídeo com rotação automática.
+- Modo leitura (menu → Modo leitura): só o texto do artigo, com a tipografia e as cores do Zeno, pelo Readability da Mozilla. Não custa nada às páginas comuns; voltar, ou tocar no livro da barra, retorna à página.
 - Menu de contexto para links, imagens e mídia; downloads com notificação e lista própria.
 - Diálogos de página (alerta, confirmação, login, cores, datas, arquivos), permissões de sites e do Android.
 - Painel do site no cadeado da barra: conexão e certificado, proteção contra rastreamento ligada ou desligada só para aquele site, permissões guardadas e “Apagar cookies e dados do site”.
@@ -39,4 +40,4 @@ Primeira versão utilizável.
 - CI com build debug e release, testes, capturas de tela (Roborazzi), lint e teste de fumaça num emulador.
 
 ### Ainda não
-- Modo leitura, gerenciador de senhas. Notificações de sites com a página fechada (push). A barra fica embaixo, de propósito (uma mão).
+- Gerenciador de senhas. Notificações de sites com a página fechada (push). A barra fica embaixo, de propósito (uma mão).

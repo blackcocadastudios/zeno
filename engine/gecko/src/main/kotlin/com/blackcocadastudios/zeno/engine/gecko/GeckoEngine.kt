@@ -10,6 +10,7 @@ import com.blackcocadastudios.zeno.engine.EngineSession
 import com.blackcocadastudios.zeno.engine.EngineSettings
 import com.blackcocadastudios.zeno.engine.HistoryTracker
 import com.blackcocadastudios.zeno.engine.HttpsOnly
+import com.blackcocadastudios.zeno.engine.ReaderMode
 import com.blackcocadastudios.zeno.engine.RequestInterceptor
 import com.blackcocadastudios.zeno.engine.SecureDns
 import com.blackcocadastudios.zeno.engine.SitePermissionStore
@@ -55,6 +56,7 @@ class GeckoEngine(context: Context, private val debug: Boolean = false) : Engine
         get() = runtimeOrNull ?: createRuntime().also {
             runtimeOrNull = it
             extensions.start()
+            readerMode.start()
         }
 
     /** Gecko's version, e.g. "158.0.1". */
@@ -72,6 +74,10 @@ class GeckoEngine(context: Context, private val debug: Boolean = false) : Engine
     internal val permissionStore by lazy { GeckoSitePermissions(this) }
 
     override val sitePermissions: SitePermissionStore get() = permissionStore
+
+    private val readerMode by lazy { GeckoReaderMode(this) }
+
+    override val reader: ReaderMode get() = readerMode
 
     internal val oneTimeGrants by lazy { OneTimeGrants(File(appContext.noBackupFilesDir, ONE_TIME_GRANTS_FILE), scope) }
 

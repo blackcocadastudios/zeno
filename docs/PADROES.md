@@ -43,6 +43,7 @@ Toda dependência custa tamanho e superfície de ataque, então cada uma precisa
 | kotlinx.coroutines | concorrência estruturada |
 | kotlinx.serialization | gravar e restaurar a sessão de abas |
 | ProfileInstaller | aplica os perfis de compilação do Compose em instalações fora da Play Store |
+| Readability (Mozilla, copiado) | o modo leitura do Firefox, rodando numa página de extensão embutida (ver ADR 0005) |
 | Testes: JUnit, Robolectric, Roborazzi, Turbine | testes na JVM e capturas de tela da interface |
 
 Sem bibliotecas de rede (o GeckoView já faz requisições), sem bibliotecas de imagem, sem navegação de terceiros, sem DI por reflexão. Versões ficam travadas no catálogo `gradle/libs.versions.toml`; o GeckoView é atualizado com prioridade, porque motor desatualizado é a maior brecha de um navegador.

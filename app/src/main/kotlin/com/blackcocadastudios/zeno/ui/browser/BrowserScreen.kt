@@ -94,6 +94,7 @@ import com.blackcocadastudios.zeno.ui.menu.MenuActions
 import com.blackcocadastudios.zeno.ui.menu.MenuExtension
 import com.blackcocadastudios.zeno.ui.menu.MenuPage
 import com.blackcocadastudios.zeno.ui.menu.MenuSheet
+import com.blackcocadastudios.zeno.ui.menu.ReaderState
 import com.blackcocadastudios.zeno.ui.prompts.AppPermissionHost
 import com.blackcocadastudios.zeno.ui.prompts.PermissionHost
 import com.blackcocadastudios.zeno.ui.prompts.PromptHost
@@ -271,7 +272,7 @@ fun BrowserScreen(vm: MainViewModel, engineView: GeckoEngineView, active: Boolea
                     )
                 } else {
                     Toolbar(
-                        display = addressDisplay(tab, searchEngine),
+                        display = addressDisplay(tab, searchEngine, vm::readerOriginal),
                         tabCount = state.tabs.count { it.isPrivate == privateMode },
                         privateMode = privateMode,
                         onAddressClick = vm::startEditing,
@@ -286,6 +287,7 @@ fun BrowserScreen(vm: MainViewModel, engineView: GeckoEngineView, active: Boolea
                         },
                         onMenuClick = { vm.showMenu = true },
                         onSiteInfo = { vm.showSiteInfo = true },
+                        onLeaveReader = vm::toggleReader,
                         modifier = modifier,
                     )
                 }
@@ -396,7 +398,7 @@ fun BrowserScreen(vm: MainViewModel, engineView: GeckoEngineView, active: Boolea
     if (!active) return
 
     if (vm.showMenu) {
-        val url = tab?.url
+        val url = vm.pageUrl(tab)
         val bookmarked by remember(url) { vm.isBookmarked(url) }.collectAsStateWithLifecycle(initialValue = false)
         val extensionActions by vm.container.engine.extensions.actions.collectAsStateWithLifecycle()
         MenuSheet(
@@ -409,6 +411,11 @@ fun BrowserScreen(vm: MainViewModel, engineView: GeckoEngineView, active: Boolea
                 desktopMode = tab?.desktopMode == true,
                 translated = content?.translation?.isTranslated == true,
                 trackersBlocked = content?.trackersBlocked ?: 0,
+                reader = when {
+                    tab?.url?.let(vm::readerOriginal) != null -> ReaderState.Active
+                    url != null && (url.startsWith("https://") || url.startsWith("http://")) -> ReaderState.Available
+                    else -> ReaderState.Unavailable
+                },
             ),
             extensions = extensionActions.mapNotNull { (id, action) ->
                 val info = installed.firstOrNull { it.id == id && it.enabled } ?: return@mapNotNull null
@@ -501,10 +508,20 @@ fun BrowserScreen(vm: MainViewModel, engineView: GeckoEngineView, active: Boolea
     }
 }
 
-/** What the address pill says about [tab]: search terms, the host, or nothing (home). */
-internal fun addressDisplay(tab: TabState?, engine: SearchEngine): AddressDisplay {
+/**
+ * What the address pill says about [tab]: search terms, the host, or nothing
+ * (home). [readerOriginal] tells the page a reader-mode address shows.
+ */
+internal fun addressDisplay(
+    tab: TabState?,
+    engine: SearchEngine,
+    readerOriginal: (String) -> String? = { null },
+): AddressDisplay {
     val url = tab?.url ?: return AddressDisplay(null, AddressKind.Home, loading = false, progress = 0, canReload = false)
     val content = tab.content
+    readerOriginal(url)?.let { original ->
+        return AddressDisplay(UrlDisplay.shortHost(original), AddressKind.Reader, content.loading, content.progress, canReload = true)
+    }
     val terms = UrlDisplay.searchTerms(url, engine)
     val https = url.startsWith("https://", ignoreCase = true)
     val kind = when {
@@ -547,7 +564,7 @@ private fun menuActions(vm: MainViewModel, tab: TabState?, context: Context, act
     }
 
     override fun share() {
-        tab?.url?.let { shareText(context, it, tab.title) }
+        vm.pageUrl(tab)?.let { shareText(context, it, tab?.title) }
         close()
     }
 
@@ -561,6 +578,11 @@ private fun menuActions(vm: MainViewModel, tab: TabState?, context: Context, act
     override fun translate() {
         close()
         vm.translate()
+    }
+
+    override fun toggleReader() {
+        close()
+        vm.toggleReader()
     }
 
     override fun setDesktopMode(enabled: Boolean) = onTab { vm.controller.setDesktopMode(it, enabled) }

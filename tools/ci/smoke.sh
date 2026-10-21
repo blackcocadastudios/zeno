@@ -244,14 +244,27 @@ step "tap the site's notification" $ui tap "Olá do site de teste" 10
 sleep 2
 step "Zeno comes back on the site's tab" $ui wait "^localhost$" 10
 adb shell cmd statusbar collapse || true
+
+# 11. Reader mode on a local article: the article alone, then back to the page.
+adb shell am start -a android.intent.action.VIEW -d "http://localhost:8765/article.html" -n "$activity"
+step "the article page opens" $ui wait "Menu do site de teste" 20
+step "open the menu for reader mode" $ui tap "^Menu$" 10
+sleep 1
+step "enter reader mode" $ui tap "^Modo leitura$" 10
+step "reader mode shows the article" $ui wait "min de leitura" 20
+step "reader mode leaves the site's menu out" absent "Menu do site de teste" 3
+step "the address keeps the site, with a book" $ui wait "Modo leitura. Voltar para a página" 5
+shot 21-reader
+step "the book goes back to the page" $ui tap "Modo leitura. Voltar para a página" 10
+step "the page is back" $ui wait "Menu do site de teste" 15
 kill "$http_pid" 2>/dev/null || true
 
-# 11. Background and back: the session survives.
+# 12. Background and back: the session survives.
 adb shell input keyevent KEYCODE_HOME
 sleep 3
 adb shell am start -W -n "$activity" > "$out/start-warm.txt"
 sleep 3
-shot 20-back
+shot 22-back
 
 # Measurements.
 adb shell dumpsys meminfo "$pkg" > "$out/meminfo-main.txt" 2>&1

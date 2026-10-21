@@ -45,7 +45,16 @@ data class AddressDisplay(
     val canReload: Boolean,
 )
 
-enum class AddressKind { Home, Secure, Insecure, Search, Internal }
+enum class AddressKind {
+    Home,
+    Secure,
+    Insecure,
+    Search,
+    Internal,
+
+    /** Reader mode: the article of the page whose host is shown. */
+    Reader,
+}
 
 /**
  * The bottom bar, Firefox-style: address pill, tab counter, menu. Everything a
@@ -64,6 +73,8 @@ fun Toolbar(
     modifier: Modifier = Modifier,
     /** The lock opens the site panel (connection, tracking protection, permissions). */
     onSiteInfo: (() -> Unit)? = null,
+    /** In reader mode the book icon goes back to the page. */
+    onLeaveReader: (() -> Unit)? = null,
 ) {
     val colors = Zeno.colors
     Column(
@@ -89,6 +100,7 @@ fun Toolbar(
                 onReload = onReload,
                 onStop = onStop,
                 onSiteInfo = onSiteInfo,
+                onLeaveReader = onLeaveReader,
                 modifier = Modifier.weight(1f),
             )
             Spacer(Modifier.width(Ma.xs))
@@ -106,12 +118,17 @@ private fun AddressPill(
     onReload: () -> Unit,
     onStop: () -> Unit,
     onSiteInfo: (() -> Unit)?,
+    onLeaveReader: (() -> Unit)?,
     modifier: Modifier = Modifier,
 ) {
     val colors = Zeno.colors
     val hint = stringResource(if (privateMode) R.string.toolbar_hint_private else R.string.toolbar_hint)
-    // Only a web page has a site to tell about.
-    val siteInfo = onSiteInfo?.takeIf { display.kind == AddressKind.Secure || display.kind == AddressKind.Insecure }
+    // Only a web page has a site to tell about; in reader mode the icon leaves it.
+    val siteInfo = when (display.kind) {
+        AddressKind.Secure, AddressKind.Insecure -> onSiteInfo
+        AddressKind.Reader -> onLeaveReader
+        else -> null
+    }
     Row(
         modifier
             .height(44.dp)
@@ -125,7 +142,11 @@ private fun AddressPill(
         val tint = if (display.kind == AddressKind.Insecure) colors.seal else colors.inkSoft
         if (siteInfo != null) {
             // Within a pixel or two of the plain icon's place, with a 40dp target.
-            val label = stringResource(R.string.toolbar_site_info, description.orEmpty())
+            val label = if (display.kind == AddressKind.Reader) {
+                stringResource(R.string.toolbar_leave_reader)
+            } else {
+                stringResource(R.string.toolbar_site_info, description.orEmpty())
+            }
             Box(
                 Modifier
                     .size(40.dp)
@@ -166,6 +187,7 @@ private fun leadingIcon(kind: AddressKind, privateMode: Boolean): Pair<ImageVect
     kind == AddressKind.Home || kind == AddressKind.Search -> ZenoIcons.Search to null
     kind == AddressKind.Secure -> ZenoIcons.Lock to stringResource(R.string.toolbar_secure)
     kind == AddressKind.Insecure -> ZenoIcons.LockOpen to stringResource(R.string.toolbar_insecure)
+    kind == AddressKind.Reader -> ZenoIcons.Reader to stringResource(R.string.toolbar_reader)
     else -> ZenoIcons.Globe to null
 }
 

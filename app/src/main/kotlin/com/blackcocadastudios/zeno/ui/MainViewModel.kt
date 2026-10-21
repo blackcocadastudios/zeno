@@ -14,6 +14,7 @@ import com.blackcocadastudios.zeno.R
 import com.blackcocadastudios.zeno.browser.BackResult
 import com.blackcocadastudios.zeno.browser.state.BrowserState
 import com.blackcocadastudios.zeno.browser.state.TabOrigin
+import com.blackcocadastudios.zeno.browser.state.TabState
 import com.blackcocadastudios.zeno.browser.url.UrlDisplay
 import com.blackcocadastudios.zeno.browser.url.UrlInput
 import com.blackcocadastudios.zeno.data.bookmarks.Bookmark
@@ -198,7 +199,7 @@ class MainViewModel(val container: AppContainer) : ViewModel() {
 
     /** Text the address bar starts with when editing. */
     fun editableAddress(): String {
-        val url = state.value.selectedTab?.url ?: return ""
+        val url = pageUrl(state.value.selectedTab) ?: return ""
         return UrlDisplay.editableText(url, container.searchEngine)
     }
 
@@ -302,7 +303,7 @@ class MainViewModel(val container: AppContainer) : ViewModel() {
 
     fun toggleBookmark() {
         val tab = state.value.selectedTab ?: return
-        val url = tab.url ?: return
+        val url = pageUrl(tab) ?: return
         viewModelScope.launch {
             val bookmarked = container.bookmarks.isBookmarked(url).first()
             if (bookmarked) {
@@ -317,7 +318,7 @@ class MainViewModel(val container: AppContainer) : ViewModel() {
 
     fun addToHome() {
         val tab = state.value.selectedTab ?: return
-        val url = tab.url ?: return
+        val url = pageUrl(tab) ?: return
         viewModelScope.launch {
             container.bookmarks.add(url, tab.title.ifBlank { UrlDisplay.siteName(url) }, pinned = true)
             message(app.getString(R.string.menu_added_to_home))
@@ -343,6 +344,32 @@ class MainViewModel(val container: AppContainer) : ViewModel() {
                 if (state.value.tab(id) != null) controller.selectTab(id)
             },
         )
+    }
+
+    /** The page [url] shows in reader mode, or null when it is not reader mode. */
+    fun readerOriginal(url: String): String? = container.engine.reader.originalUrl(url)
+
+    /** The address of what [tab] shows, for bookmarks and sharing: in reader mode, the page being read. */
+    fun pageUrl(tab: TabState?): String? = tab?.url?.let { readerOriginal(it) ?: it }
+
+    /** Reader mode on, or back to the page. */
+    fun toggleReader() {
+        val tab = state.value.selectedTab ?: return
+        val url = tab.url ?: return
+        val original = readerOriginal(url)
+        if (original != null) {
+            // Reader mode was opened from the page, so going back returns to it (scroll position included).
+            if (tab.content.canGoBack) controller.goBack(tab.id) else controller.load(original, tab.id, LoadFlags(replaceHistory = true))
+            return
+        }
+        viewModelScope.launch {
+            val reader = container.engine.reader.readerUrl(url)
+            if (reader == null) {
+                message(app.getString(R.string.reader_unavailable))
+                return@launch
+            }
+            if (state.value.selectedTab?.id == tab.id) controller.load(reader, tab.id)
+        }
     }
 
     /** Translates the page into the user's language, or shows the original again. */

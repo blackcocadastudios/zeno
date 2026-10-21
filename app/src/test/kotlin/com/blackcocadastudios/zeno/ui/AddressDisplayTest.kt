@@ -39,6 +39,14 @@ class AddressDisplayTest {
     }
 
     @Test
+    fun `reader mode shows the host of the page being read`() {
+        val reader = "moz-extension://abc/reader.html?url=https%3A%2F%2Fwww.example.com%2Fartigo"
+        val display = addressDisplay(TabState("t", reader), ddg) { url -> if (url == reader) "https://www.example.com/artigo" else null }
+        assertEquals("example.com", display.text)
+        assertEquals(AddressKind.Reader, display.kind)
+    }
+
+    @Test
     fun `searches show their terms`() {
         val search = display(ddg.searchUrl("jardim zen"))
         assertEquals("jardim zen", search.text)
