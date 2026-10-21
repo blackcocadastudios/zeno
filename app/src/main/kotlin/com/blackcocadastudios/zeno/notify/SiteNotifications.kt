@@ -26,8 +26,8 @@ class SiteNotifications(
     /** Shown and not yet tapped, by tag. Kept small: old ones are simply forgotten. */
     private val shown = LinkedHashMap<String, WebNotification>()
 
-    /** Proves a tap came from one of Zeno's own notifications, not from another app. */
-    private val token = UUID.randomUUID().toString()
+    /** Proves a tap came from one of Zeno's own notifications, not from another app. Made when first needed. */
+    private val token by lazy { UUID.randomUUID().toString() }
 
     override fun show(notification: WebNotification) {
         if (!enabled() || notification.private) {

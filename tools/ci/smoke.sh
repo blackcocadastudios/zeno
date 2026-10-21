@@ -83,12 +83,17 @@ adb shell setprop log.tag.ZenoTouch DEBUG || true
 step "install $(basename "$apk")" adb install -r -g "$apk"
 adb logcat -c
 
-# 1. First launch, then a measured cold start (the first one also pays for installing).
+# 1. First launch, then measured cold starts (the first one also pays for installing).
+# The CI emulator is noisy: five cold starts, and the median is what compares across versions.
 adb shell am start -W -a android.intent.action.MAIN -c android.intent.category.LAUNCHER -n "$activity" > "$out/start-first.txt"
 sleep 8
-adb shell am force-stop "$pkg"
-sleep 2
-adb shell am start -W -a android.intent.action.MAIN -c android.intent.category.LAUNCHER -n "$activity" > "$out/start-cold.txt"
+: > "$out/start-cold.txt"
+for i in 1 2 3 4 5; do
+  adb shell am force-stop "$pkg"
+  sleep 2
+  adb shell am start -W -a android.intent.action.MAIN -c android.intent.category.LAUNCHER -n "$activity" >> "$out/start-cold.txt"
+  sleep 3
+done
 step "home page shows the wordmark and the uBlock card" $ui wait "Sem anúncios" 20
 sleep 2
 shot 01-home
@@ -322,7 +327,9 @@ cat "$out"/logcat-before-pull.txt "$out/logcat.txt" 2>/dev/null | grep -E "FATAL
   echo '```'
   echo "apk: $(basename "$apk")"
   grep -E "TotalTime" "$out/start-first.txt" | sed 's/^/first launch: /'
-  grep -E "TotalTime|WaitTime" "$out/start-cold.txt" | sed 's/^/cold start: /'
+  cold=$(grep -E "TotalTime" "$out/start-cold.txt" | awk '{print $2}' | sort -n | tr '\n' ' ')
+  echo "cold starts (ms): $cold"
+  echo "cold start median: $(echo "$cold" | awk '{print $3}') ms"
   grep -E "TotalTime" "$out/start-warm.txt" | sed 's/^/warm start: /'
   grep -E "TOTAL PSS|TOTAL RSS|TOTAL:" "$out/meminfo-main.txt" | head -3 | sed 's/^/main process: /'
   echo "Zeno processes (PSS, KB):"
