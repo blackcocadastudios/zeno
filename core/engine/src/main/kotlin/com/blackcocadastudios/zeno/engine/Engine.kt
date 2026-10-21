@@ -34,6 +34,12 @@ interface Engine {
     fun speculativeConnect(url: String)
 
     /**
+     * Requests [url] as a file (for "save image", "download link"), with the
+     * cookies of the normal or private context. Null when the server refuses.
+     */
+    suspend fun download(url: String, private: Boolean): DownloadRequest?
+
+    /**
      * Fetches a small text resource through the engine's network stack, so it
      * obeys the same proxy, DNS and privacy settings as pages. Returns null on failure.
      */

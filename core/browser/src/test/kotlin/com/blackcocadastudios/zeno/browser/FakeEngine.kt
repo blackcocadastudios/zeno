@@ -1,6 +1,7 @@
 package com.blackcocadastudios.zeno.browser
 
 import com.blackcocadastudios.zeno.engine.BrowsingData
+import com.blackcocadastudios.zeno.engine.DownloadRequest
 import com.blackcocadastudios.zeno.engine.Engine
 import com.blackcocadastudios.zeno.engine.EngineSession
 import com.blackcocadastudios.zeno.engine.EngineSessionState
@@ -31,6 +32,7 @@ class FakeEngine : Engine {
     override suspend fun clearData(data: Set<BrowsingData>) = Unit
     override suspend fun clearSiteData(host: String) = Unit
     override fun speculativeConnect(url: String) = Unit
+    override suspend fun download(url: String, private: Boolean): DownloadRequest? = null
     override suspend fun fetchText(url: String, private: Boolean, timeoutMillis: Long): String? = null
 }
 

@@ -5,7 +5,6 @@
     <string name="error_advanced">Avançado</string>
     <string name="error_accept_risk">Aceitar o risco e continuar</string>
     <string name="error_continue_http">Continuar no site sem HTTPS</string>
-    <string name="error_go_back">Voltar</string>
 
     <string name="error_generic_title">Não foi possível abrir esta página</string>
     <string name="error_generic_body">Algo deu errado ao carregar o endereço.</string>

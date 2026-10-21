@@ -1,7 +1,6 @@
 package com.blackcocadastudios.zeno.engine.gecko
 
 import com.blackcocadastudios.zeno.engine.BlockedTracker
-import com.blackcocadastudios.zeno.engine.DownloadRequest
 import com.blackcocadastudios.zeno.engine.EngineSession
 import com.blackcocadastudios.zeno.engine.EngineSessionState
 import com.blackcocadastudios.zeno.engine.FindResult
@@ -186,22 +185,12 @@ class GeckoEngineSession internal constructor(
         }
 
         override fun onExternalResponse(session: GeckoSession, response: WebResponse) {
-            val headers = response.headers.mapKeys { it.key.lowercase() }
             val target = observer
             if (target == null) {
                 runCatching { response.body?.close() }
                 return
             }
-            target.onDownload(
-                DownloadRequest(
-                    url = response.uri,
-                    fileName = headers["content-disposition"]?.let(ContentDisposition::fileName),
-                    contentType = headers["content-type"]?.substringBefore(';')?.trim()?.ifEmpty { null },
-                    contentLength = headers["content-length"]?.trim()?.toLongOrNull()?.takeIf { it >= 0 },
-                    isPrivate = isPrivate,
-                    body = response.body,
-                ),
-            )
+            target.onDownload(response.toDownloadRequest(isPrivate))
         }
 
         override fun onCrash(session: GeckoSession) {

@@ -1,7 +1,9 @@
 package com.blackcocadastudios.zeno.engine.gecko
 
+import android.annotation.SuppressLint
 import android.content.Context
 import com.blackcocadastudios.zeno.engine.BrowsingData
+import com.blackcocadastudios.zeno.engine.DownloadRequest
 import com.blackcocadastudios.zeno.engine.Engine
 import com.blackcocadastudios.zeno.engine.EngineSession
 import com.blackcocadastudios.zeno.engine.EngineSettings
@@ -114,6 +116,21 @@ class GeckoEngine(context: Context, private val debug: Boolean = false) : Engine
         runCatching { GeckoWebExecutor(runtime).speculativeConnect(url) }
     }
 
+    // GeckoWebExecutor.FetchFlags lacks `flag = true`, so Lint rejects combined flags.
+    @SuppressLint("WrongConstant")
+    override suspend fun download(url: String, private: Boolean): DownloadRequest? {
+        val flags = if (private) GeckoWebExecutor.FETCH_FLAGS_PRIVATE else GeckoWebExecutor.FETCH_FLAGS_NONE
+        val response = runCatching {
+            GeckoWebExecutor(runtime).fetch(WebRequest.Builder(url).build(), flags).await()
+        }.getOrNull() ?: return null
+        if (response.statusCode !in 200..299) {
+            runCatching { response.body?.close() }
+            return null
+        }
+        return response.toDownloadRequest(private)
+    }
+
+    @SuppressLint("WrongConstant")
     override suspend fun fetchText(url: String, private: Boolean, timeoutMillis: Long): String? {
         val executor = GeckoWebExecutor(runtime)
         val flags = GeckoWebExecutor.FETCH_FLAGS_ANONYMOUS or

@@ -1,4 +1,291 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Zeno</string>
+    <string name="process_text_label">Pesquisar no Zeno</string>
+
+    <!-- Toolbar -->
+    <string name="toolbar_hint">Pesquisar ou digitar endereço</string>
+    <string name="toolbar_hint_private">Pesquisar em privado</string>
+    <string name="toolbar_tabs">Abas abertas: %1$d</string>
+    <string name="toolbar_menu">Menu</string>
+    <string name="toolbar_reload">Recarregar</string>
+    <string name="toolbar_stop">Parar</string>
+    <string name="toolbar_clear">Limpar</string>
+    <string name="toolbar_cancel">Cancelar</string>
+    <string name="toolbar_secure">Conexão segura</string>
+    <string name="toolbar_insecure">Conexão não segura</string>
+    <string name="toolbar_private">Navegação privada</string>
+    <string name="toolbar_trackers_blocked">%1$d rastreadores bloqueados</string>
+
+    <!-- Suggestions -->
+    <string name="suggestion_search_with">Pesquisar com %1$s</string>
+    <string name="suggestion_go_to">Ir para %1$s</string>
+    <string name="suggestion_fill">Completar com %1$s</string>
+    <string name="suggestion_bookmark">Favorito</string>
+
+    <!-- Home -->
+    <string name="home_private_title">Navegação privada</string>
+    <string name="home_private_body">O que você fizer nas abas privadas não fica salvo: nem histórico, nem cookies, nem abas. Sites e sua rede ainda podem ver o que você acessa.</string>
+    <string name="home_shortcut_remove">Remover do início</string>
+    <string name="home_shortcut_open_private">Abrir em aba privada</string>
+    <string name="home_shortcut_hide">Esconder este site</string>
+
+    <!-- Tabs -->
+    <string name="tabs_title">Abas</string>
+    <string name="tabs_normal">Abas</string>
+    <string name="tabs_private">Privadas</string>
+    <string name="tabs_new">Nova aba</string>
+    <string name="tabs_new_private">Nova aba privada</string>
+    <string name="tabs_close">Fechar aba</string>
+    <string name="tabs_close_all">Fechar todas</string>
+    <string name="tabs_close_all_private">Fechar abas privadas</string>
+    <string name="tabs_empty">Nenhuma aba aberta</string>
+    <string name="tabs_empty_private">Nenhuma aba privada</string>
+    <string name="tabs_new_tab_title">Nova aba</string>
+    <string name="tabs_closed">Aba fechada</string>
+    <string name="tabs_undo">Desfazer</string>
+
+    <!-- Menu -->
+    <string name="menu_back">Voltar</string>
+    <string name="menu_forward">Avançar</string>
+    <string name="menu_reload">Recarregar</string>
+    <string name="menu_bookmark">Favoritar</string>
+    <string name="menu_bookmarked">Favoritado</string>
+    <string name="menu_share">Compartilhar</string>
+    <string name="menu_new_tab">Nova aba</string>
+    <string name="menu_new_private_tab">Nova aba privada</string>
+    <string name="menu_find">Encontrar na página</string>
+    <string name="menu_translate">Traduzir página</string>
+    <string name="menu_show_original">Mostrar original</string>
+    <string name="menu_desktop">Versão para computador</string>
+    <string name="menu_add_to_home">Adicionar ao início</string>
+    <string name="menu_bookmarks">Favoritos</string>
+    <string name="menu_history">Histórico</string>
+    <string name="menu_downloads">Downloads</string>
+    <string name="menu_extensions">Extensões</string>
+    <string name="menu_settings">Configurações</string>
+    <string name="menu_quit">Sair</string>
+    <string name="menu_site_protection">Proteção neste site</string>
+    <string name="menu_added_to_home">Adicionado ao início</string>
+    <string name="menu_bookmark_added">Salvo nos favoritos</string>
+    <string name="menu_bookmark_removed">Removido dos favoritos</string>
+
+    <!-- Find in page -->
+    <string name="find_hint">Encontrar na página</string>
+    <string name="find_count">%1$d de %2$d</string>
+    <string name="find_none">Nada encontrado</string>
+    <string name="find_previous">Anterior</string>
+    <string name="find_next">Próximo</string>
+    <string name="find_close">Fechar busca</string>
+
+    <!-- Context menu -->
+    <string name="context_open_new_tab">Abrir em nova aba</string>
+    <string name="context_open_private_tab">Abrir em aba privada</string>
+    <string name="context_copy_link">Copiar link</string>
+    <string name="context_share_link">Compartilhar link</string>
+    <string name="context_download_link">Baixar link</string>
+    <string name="context_open_image">Abrir imagem em nova aba</string>
+    <string name="context_save_image">Salvar imagem</string>
+    <string name="context_copy_image_link">Copiar endereço da imagem</string>
+    <string name="context_share_image">Compartilhar imagem</string>
+    <string name="context_copy_media_link">Copiar endereço da mídia</string>
+    <string name="context_copied">Copiado</string>
+    <string name="context_opened_in_background">Aberta em nova aba</string>
+    <string name="context_switch">Ver</string>
+
+    <!-- Prompts -->
+    <string name="prompt_ok">OK</string>
+    <string name="prompt_cancel">Cancelar</string>
+    <string name="prompt_confirm">Confirmar</string>
+    <string name="prompt_allow">Permitir</string>
+    <string name="prompt_block">Bloquear</string>
+    <string name="prompt_page_says">%1$s diz</string>
+    <string name="prompt_auth_title">Entrar em %1$s</string>
+    <string name="prompt_auth_failed">Usuário ou senha incorretos. Tente de novo.</string>
+    <string name="prompt_username">Usuário</string>
+    <string name="prompt_password">Senha</string>
+    <string name="prompt_popup_title">Janela pop-up bloqueada</string>
+    <string name="prompt_popup_body">Este site quer abrir outra janela: %1$s</string>
+    <string name="prompt_popup_body_unknown">Este site quer abrir outra janela.</string>
+    <string name="prompt_leave_title">Sair desta página?</string>
+    <string name="prompt_leave_body">O que você digitou pode não ser salvo.</string>
+    <string name="prompt_leave">Sair</string>
+    <string name="prompt_stay">Ficar</string>
+    <string name="prompt_repost_title">Reenviar dados?</string>
+    <string name="prompt_repost_body">Recarregar esta página vai enviar o formulário de novo, o que pode repetir uma compra ou mensagem.</string>
+    <string name="prompt_resend">Reenviar</string>
+    <string name="prompt_color_title">Escolha uma cor</string>
+    <string name="prompt_clear">Limpar</string>
+    <string name="prompt_choose">Escolher</string>
+
+    <!-- Permissions -->
+    <string name="permission_location">%1$s quer saber sua localização.</string>
+    <string name="permission_camera">%1$s quer usar sua câmera.</string>
+    <string name="permission_microphone">%1$s quer usar seu microfone.</string>
+    <string name="permission_camera_microphone">%1$s quer usar sua câmera e seu microfone.</string>
+    <string name="permission_drm">%1$s quer reproduzir conteúdo protegido (DRM).</string>
+    <string name="permission_storage">%1$s quer guardar dados permanentemente neste aparelho.</string>
+    <string name="permission_storage_access">%1$s quer usar cookies em outro site que você visita.</string>
+    <string name="permission_local_network">%1$s quer acessar aparelhos da sua rede local.</string>
+    <string name="permission_other">%1$s quer uma permissão especial.</string>
+    <string name="permission_denied_system">Permita o acesso nas configurações do Android para que sites possam usar este recurso.</string>
+
+    <!-- Downloads -->
+    <string name="download_started">Baixando %1$s</string>
+    <string name="download_complete">Download concluído</string>
+    <string name="download_failed">O download falhou</string>
+    <string name="download_open">Abrir</string>
+    <string name="download_cancel">Cancelar</string>
+    <string name="download_retry">Tentar de novo</string>
+    <string name="download_no_app">Nenhum app abre este arquivo</string>
+    <string name="download_channel">Downloads</string>
+    <string name="download_channel_description">Progresso dos arquivos baixados</string>
+    <string name="download_notification_progress">%1$s · %2$d%%</string>
+
+    <!-- Library -->
+    <string name="history_title">Histórico</string>
+    <string name="history_empty">Nenhuma página visitada</string>
+    <string name="history_empty_body">Páginas que você visitar aparecem aqui. Abas privadas não deixam rastro.</string>
+    <string name="history_today">Hoje</string>
+    <string name="history_yesterday">Ontem</string>
+    <string name="history_this_week">Nesta semana</string>
+    <string name="history_older">Antes</string>
+    <string name="history_clear">Limpar histórico</string>
+    <string name="history_clear_body">Escolha o período a apagar.</string>
+    <string name="history_clear_hour">Última hora</string>
+    <string name="history_clear_day">Hoje e ontem</string>
+    <string name="history_clear_all">Tudo</string>
+    <string name="history_delete">Apagar</string>
+    <string name="history_search">Pesquisar no histórico</string>
+    <string name="bookmarks_title">Favoritos</string>
+    <string name="bookmarks_empty">Nenhum favorito</string>
+    <string name="bookmarks_empty_body">Toque na estrela do menu para guardar uma página.</string>
+    <string name="bookmarks_rename">Renomear</string>
+    <string name="bookmarks_delete">Remover</string>
+    <string name="bookmarks_pin">Fixar no início</string>
+    <string name="bookmarks_unpin">Desafixar do início</string>
+    <string name="bookmarks_name">Nome</string>
+    <string name="downloads_title">Downloads</string>
+    <string name="downloads_empty">Nenhum download</string>
+    <string name="downloads_empty_body">Arquivos que você baixar aparecem aqui.</string>
+    <string name="downloads_clear">Limpar lista</string>
+    <string name="downloads_delete">Remover da lista</string>
+    <string name="downloads_running">Baixando…</string>
+    <string name="downloads_failed">Falhou</string>
+    <string name="downloads_cancelled">Cancelado</string>
+
+    <!-- Extensions -->
+    <string name="extensions_title">Extensões</string>
+    <string name="extensions_installed">Instaladas</string>
+    <string name="extensions_recommended">Recomendadas</string>
+    <string name="extensions_none">Nenhuma extensão instalada</string>
+    <string name="extensions_install">Instalar</string>
+    <string name="extensions_installing">Instalando…</string>
+    <string name="extensions_remove">Remover</string>
+    <string name="extensions_options">Opções</string>
+    <string name="extensions_allow_private">Permitir em abas privadas</string>
+    <string name="extensions_browse">Explorar addons.mozilla.org</string>
+    <string name="extensions_failed">Não foi possível instalar</string>
+    <string name="extensions_installed_toast">%1$s instalada</string>
+    <string name="extensions_prompt_title">Instalar %1$s?</string>
+    <string name="extensions_prompt_body">A extensão poderá:</string>
+    <string name="extensions_prompt_no_permissions">A extensão não pede permissões especiais.</string>
+    <string name="extensions_ublock_name">uBlock Origin</string>
+    <string name="extensions_ublock_desc">Bloqueia anúncios, rastreadores e avisos de cookies. Leve e eficiente.</string>
+    <string name="extensions_darkreader_name">Dark Reader</string>
+    <string name="extensions_darkreader_desc">Deixa qualquer site em modo escuro.</string>
+    <string name="extensions_violentmonkey_name">Violentmonkey</string>
+    <string name="extensions_violentmonkey_desc">Roda scripts de usuário para personalizar sites.</string>
+    <string name="extensions_sponsorblock_name">SponsorBlock</string>
+    <string name="extensions_sponsorblock_desc">Pula patrocínios e vinhetas em vídeos do YouTube.</string>
+    <string name="permission_all_sites">Ler e alterar seus dados em todos os sites</string>
+    <string name="permission_some_sites">Ler e alterar seus dados em %1$d sites</string>
+    <string name="permission_tabs">Acessar suas abas</string>
+    <string name="permission_history">Acessar o histórico</string>
+    <string name="permission_bookmarks">Ler e alterar favoritos</string>
+    <string name="permission_downloads">Gerenciar downloads</string>
+    <string name="permission_storage_ext">Guardar dados no aparelho</string>
+    <string name="permission_privacy">Ler e alterar configurações de privacidade</string>
+    <string name="permission_clipboard">Acessar a área de transferência</string>
+    <string name="permission_notifications">Mostrar notificações</string>
+    <string name="permission_web_requests">Bloquear e alterar conteúdo de páginas</string>
+    <string name="permission_generic">Usar a permissão \"%1$s\"</string>
+
+    <!-- Settings -->
+    <string name="settings_title">Configurações</string>
+    <string name="settings_general">Geral</string>
+    <string name="settings_search_engine">Mecanismo de pesquisa</string>
+    <string name="settings_search_suggestions">Sugestões de pesquisa</string>
+    <string name="settings_search_suggestions_desc">Envia o que você digita ao mecanismo de pesquisa para sugerir termos</string>
+    <string name="settings_toolbar_bottom">Barra de endereço embaixo</string>
+    <string name="settings_toolbar_hide">Esconder a barra ao rolar</string>
+    <string name="settings_shortcuts">Atalhos no início</string>
+    <string name="settings_restore_tabs">Reabrir abas ao iniciar</string>
+    <string name="settings_appearance">Aparência</string>
+    <string name="settings_theme">Tema</string>
+    <string name="settings_theme_system">Igual ao sistema</string>
+    <string name="settings_theme_light">Claro</string>
+    <string name="settings_theme_dark">Escuro</string>
+    <string name="settings_web_theme">Tema dos sites</string>
+    <string name="settings_web_theme_desc">O que os sites veem como preferência de cor</string>
+    <string name="settings_privacy">Privacidade e segurança</string>
+    <string name="settings_tracking">Proteção contra rastreamento</string>
+    <string name="settings_tracking_standard">Padrão</string>
+    <string name="settings_tracking_standard_desc">Bloqueia rastreadores sociais, mineradores e impressões digitais; isola cookies por site</string>
+    <string name="settings_tracking_strict">Estrita</string>
+    <string name="settings_tracking_strict_desc">Bloqueia também conteúdo rastreador; alguns sites podem quebrar</string>
+    <string name="settings_tracking_off">Desligada</string>
+    <string name="settings_tracking_off_desc">Não recomendado</string>
+    <string name="settings_https_only">Somente HTTPS</string>
+    <string name="settings_https_private">Em abas privadas</string>
+    <string name="settings_https_always">Sempre</string>
+    <string name="settings_https_off">Desligado</string>
+    <string name="settings_gpc">Pedir para não vender meus dados</string>
+    <string name="settings_gpc_desc">Envia o sinal Global Privacy Control aos sites</string>
+    <string name="settings_secure_dns">DNS seguro</string>
+    <string name="settings_dns_default">Padrão do navegador</string>
+    <string name="settings_dns_increased">Proteção maior</string>
+    <string name="settings_dns_increased_desc">Usa DNS seguro e volta ao comum se falhar</string>
+    <string name="settings_dns_max">Proteção máxima</string>
+    <string name="settings_dns_max_desc">Só usa DNS seguro; sem ele, nada carrega</string>
+    <string name="settings_dns_off">Desligado</string>
+    <string name="settings_dns_provider">Provedor de DNS</string>
+    <string name="settings_autoplay">Bloquear vídeos com som</string>
+    <string name="settings_autoplay_desc">Vídeos só tocam com som depois de um toque</string>
+    <string name="settings_clear_on_exit">Apagar dados ao sair</string>
+    <string name="settings_clear_on_exit_desc">Histórico, cookies e abas são apagados ao tocar em Sair</string>
+    <string name="settings_clear_now">Apagar dados de navegação</string>
+    <string name="settings_clear_now_desc">Histórico, cookies, cache e dados de sites</string>
+    <string name="settings_cleared">Dados apagados</string>
+    <string name="settings_sites">Sites</string>
+    <string name="settings_javascript">JavaScript</string>
+    <string name="settings_desktop_default">Versão para computador por padrão</string>
+    <string name="settings_font_auto">Tamanho do texto automático</string>
+    <string name="settings_font_auto_desc">Segue o tamanho de fonte do Android</string>
+    <string name="settings_font_size">Tamanho do texto: %1$d%%</string>
+    <string name="settings_force_zoom">Permitir zoom em qualquer site</string>
+    <string name="settings_advanced">Avançado</string>
+    <string name="settings_remote_debugging">Depuração remota (USB)</string>
+    <string name="settings_about_config">Configurações avançadas (about:config)</string>
+    <string name="settings_about">Sobre</string>
+    <string name="settings_version">Versão %1$s · Gecko %2$s</string>
+    <string name="settings_source">Código-fonte</string>
+    <string name="settings_licenses">Licenças</string>
+    <string name="settings_default_browser">Definir como navegador padrão</string>
+    <string name="settings_licenses_body">Zeno usa o GeckoView (MPL 2.0) da Mozilla; as fontes Zen Kaku Gothic New e Shippori Mincho (SIL Open Font License 1.1); e ícones Lucide (ISC).</string>
+
+    <!-- Common -->
+    <string name="action_back">Voltar</string>
+    <string name="action_close">Fechar</string>
+    <string name="action_more">Mais opções</string>
+    <string name="action_save">Salvar</string>
+    <string name="action_delete">Apagar</string>
+    <string name="action_open">Abrir</string>
+    <string name="action_share">Compartilhar</string>
+    <string name="action_copy">Copiar</string>
+    <string name="crash_title">Esta aba parou</string>
+    <string name="crash_body">O processo da página foi encerrado. Recarregar costuma resolver.</string>
+    <string name="crash_reload">Recarregar aba</string>
+    <string name="no_app_for_link">Nenhum app abre este link</string>
+    <string name="share_via">Compartilhar com</string>
 </resources>

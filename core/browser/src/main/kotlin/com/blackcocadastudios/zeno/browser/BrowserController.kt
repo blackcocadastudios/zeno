@@ -270,6 +270,9 @@ class BrowserController(
 
     // region Engine sessions
 
+    /** The renderer [tabId] has right now, without creating one. Safe to call while drawing. */
+    fun liveSession(tabId: String): EngineSession? = sessions[tabId]
+
     /** The renderer for [tabId], created (and restored) if the tab was suspended. */
     fun sessionFor(tabId: String): EngineSession? {
         sessions[tabId]?.let { return it }
