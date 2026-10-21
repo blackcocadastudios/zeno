@@ -1,0 +1,7 @@
+Starting: Intent { act=android.intent.action.MAIN cat=[android.intent.category.LAUNCHER] cmp=com.blackcocadastudios.zeno/.MainActivity }
+Status: ok
+LaunchState: COLD
+Activity: com.blackcocadastudios.zeno/.MainActivity
+TotalTime: 2727
+WaitTime: 2739
+Complete

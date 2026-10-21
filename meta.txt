@@ -1,0 +1,6 @@
+label=smoke
+sha=ee5487ffe500fb1112fa4add7dd0743455d1f981
+ref=refs/heads/feat/zeno-0.1
+run_id=39596439440
+run_attempt=1
+date=2026-10-21T12:16:27Z

@@ -1,0 +1,20 @@
+Performing Streamed Install
+Success
+wait: 'Sem anúncios' at (440, 1073)
+tap: '^Instalar$' at (843, 1381)
+wait: 'Instalar uBlock Origin' at (408, 977)
+tap: '^Instalar$' at (796, 1457)
+wait: '^example\\.com$' at (414, 2258)
+tap: '^example\\.com$' at (414, 2258)
+wait: '^jardim zen kyoto$' at (414, 2258)
+wait: 'wikipedia\\.org' at (414, 2258)
+wait: 'abas? abertas?' at (880, 2258)
+wait: timed out waiting for '^Copiar link$'
+wait: 'abas? abertas?' at (880, 2258)
+tap: 'abas? abertas?' at (880, 2258)
+tap: '^Menu$' at (1006, 2258)
+wait: 'uBlock Origin' at (320, 844)
+tap: '^Nova aba privada$' at (328, 1097)
+tap: '^Menu$' at (1006, 2258)
+tap: '^Configurações$' at (298, 2232)
+failures=0

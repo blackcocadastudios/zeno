@@ -1,0 +1,59 @@
+Applications Memory Usage (in Kilobytes):
+Uptime: 186606 Realtime: 186606
+
+** MEMINFO in pid 4530 [com.blackcocadastudios.zeno] **
+                   Pss  Private  Private  SwapPss      Rss     Heap     Heap     Heap
+                 Total    Dirty    Clean    Dirty    Total     Size    Alloc     Free
+                ------   ------   ------   ------   ------   ------   ------   ------
+  Native Heap    13488    12460     1012    14632    14372    39752    29728     5812
+  Dalvik Heap     5589     5028      544      156     6164    10294     5163     5131
+ Dalvik Other     3557     2224       84       77     5000                           
+        Stack     1188     1072      116      484     1196                           
+       Ashmem      156       12        0        0      952                           
+    Other dev        9        0        8        0      232                           
+     .so mmap     2949      124      832      131    29636                           
+    .jar mmap     1961        0      480        0    25296                           
+    .apk mmap    16099     1748     4448     4184    50256                           
+    .ttf mmap       68        0        0        0      392                           
+    .dex mmap     2099        0     1184        4     5704                           
+    .oat mmap      927        0       32        0    12108                           
+    .art mmap     1135      476      216      156    15704                           
+   Other mmap       56        8       44        0      812                           
+      Unknown    68826    65216     3608    42904    69128                           
+        TOTAL   180835    88368    12608    62728   236952    50046    34891    10943
+ 
+ App Summary
+                       Pss(KB)                        Rss(KB)
+                        ------                         ------
+           Java Heap:     5720                          21868
+         Native Heap:    12460                          14372
+                Code:     8956                         125996
+               Stack:     1072                           1196
+            Graphics:        0                              0
+       Private Other:    72768
+              System:    79859
+             Unknown:                                   73520
+ 
+           TOTAL PSS:   180835            TOTAL RSS:   236952       TOTAL SWAP PSS:    62728
+ 
+ Objects
+               Views:       23         ViewRootImpl:        1
+         AppContexts:        6           Activities:        1
+              Assets:       18        AssetManagers:        0
+       Local Binders:       68        Proxy Binders:       51
+       Parcel memory:       11         Parcel count:       47
+    Death Recipients:       10             WebViews:        0
+ 
+ SQL
+         MEMORY_USED:      231
+  PAGECACHE_OVERFLOW:       75          MALLOC_SIZE:       46
+ 
+ DATABASES
+      pgsz     dbsz   Lookaside(b) cache hits cache misses cache size  Dbname
+PER CONNECTION STATS
+         4       56            104    58    84     9  /data/user/0/com.blackcocadastudios.zeno/databases/zeno.db
+         4        8                    0     0     0    (attached) temp
+         4       56            114    60    28    11  /data/user/0/com.blackcocadastudios.zeno/databases/zeno.db (1)
+POOL STATS
+     cache hits  cache misses    cache size  Dbname
+            118           116           234  /data/user/0/com.blackcocadastudios.zeno/databases/zeno.db
