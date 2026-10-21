@@ -1,5 +1,5 @@
-# Temporary: discovers current dependency versions and fetches the GeckoView
-# public API sources so the project is written against real APIs.
+# Temporary: fetches design assets (fonts, icon sources) that cannot be
+# downloaded from the development environment. Removed before merge.
 name: probe
 
 on:
@@ -12,127 +12,59 @@ permissions:
   contents: write
 
 jobs:
-  probe:
+  assets:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
 
-      - name: Probe versions
+      - name: Fetch fonts
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -u
-          mkdir -p report
-          G=https://dl.google.com/dl/android/maven2
-          C=https://repo1.maven.org/maven2
-          P=https://plugins.gradle.org/m2
-          M=https://maven.mozilla.org/maven2
-          meta() {
-            local base=$1 g=$2 a=$3
-            local xml
-            xml=$(curl -fsSL "$base/${g//.//}/$a/maven-metadata.xml" 2>/dev/null || echo "")
-            local rel latest recent
-            rel=$(echo "$xml" | grep -oP '(?<=<release>)[^<]+' | head -1 || true)
-            latest=$(echo "$xml" | grep -oP '(?<=<latest>)[^<]+' | head -1 || true)
-            recent=$(echo "$xml" | grep -oP '(?<=<version>)[^<]+' | tail -30 | tr '\n' ' ' || true)
-            echo "$g:$a | release=$rel | latest=$latest | recent: $recent"
-          }
-          {
-            echo "## Google Maven"
-            meta $G com.android.tools.build gradle
-            meta $G androidx.compose compose-bom
-            meta $G androidx.compose.material3 material3
-            meta $G androidx.activity activity-compose
-            meta $G androidx.core core-ktx
-            meta $G androidx.core core-splashscreen
-            meta $G androidx.lifecycle lifecycle-runtime-compose
-            meta $G androidx.lifecycle lifecycle-viewmodel-compose
-            meta $G androidx.lifecycle lifecycle-process
-            meta $G androidx.navigation navigation-compose
-            meta $G androidx.room room-runtime
-            meta $G androidx.room room-compiler
-            meta $G androidx.room androidx.room.gradle.plugin
-            meta $G androidx.datastore datastore-preferences
-            meta $G androidx.datastore datastore
-            meta $G androidx.browser browser
-            meta $G androidx.webkit webkit
-            meta $G androidx.test.ext junit
-            meta $G androidx.test runner
-            meta $G androidx.test core
-            meta $G androidx.test.espresso espresso-core
-            meta $G androidx.test.uiautomator uiautomator
-            meta $G androidx.benchmark benchmark-macro-junit4
-            meta $G androidx.profileinstaller profileinstaller
-            meta $G androidx.baselineprofile androidx.baselineprofile.gradle.plugin
-            meta $G com.android.tools.build aapt2
-            echo
-            echo "## Maven Central"
-            meta $C org.jetbrains.kotlin kotlin-gradle-plugin
-            meta $C org.jetbrains.kotlin kotlin-stdlib
-            meta $C org.jetbrains.kotlin.plugin.compose org.jetbrains.kotlin.plugin.compose.gradle.plugin
-            meta $C com.google.devtools.ksp symbol-processing-gradle-plugin
-            meta $C com.google.devtools.ksp com.google.devtools.ksp.gradle.plugin
-            meta $C org.jetbrains.kotlinx kotlinx-coroutines-android
-            meta $C org.jetbrains.kotlinx kotlinx-coroutines-test
-            meta $C org.jetbrains.kotlinx kotlinx-serialization-json
-            meta $C junit junit
-            meta $C org.robolectric robolectric
-            meta $C io.github.takahirom.roborazzi roborazzi
-            meta $C io.github.takahirom.roborazzi roborazzi-compose
-            meta $C io.github.takahirom.roborazzi roborazzi-gradle-plugin
-            meta $C app.cash.turbine turbine
-            meta $C org.jetbrains.kotlin kotlin-test
-            echo
-            echo "## Gradle Plugin Portal"
-            meta $P org.jetbrains.kotlin.android org.jetbrains.kotlin.android.gradle.plugin
-            meta $P io.github.takahirom.roborazzi io.github.takahirom.roborazzi.gradle.plugin
-            meta $P org.jetbrains.kotlin.plugin.serialization org.jetbrains.kotlin.plugin.serialization.gradle.plugin
-            meta $P com.google.devtools.ksp com.google.devtools.ksp.gradle.plugin
-            echo
-            echo "## Mozilla Maven"
-            meta $M org.mozilla.geckoview geckoview
-            meta $M org.mozilla.geckoview geckoview-beta
-            meta $M org.mozilla.geckoview geckoview-omni
-            meta $M org.mozilla.geckoview geckoview-arm64-v8a
-            meta $M org.mozilla.geckoview geckoview-omni-arm64-v8a
-            echo
-            echo "## Gradle"
-            curl -fsSL https://services.gradle.org/versions/current
-            echo
-            curl -fsSL https://services.gradle.org/versions/all | python3 -c "import json,sys; v=[x for x in json.load(sys.stdin) if not x['snapshot'] and not x['nightly'] and not x['releaseNightly'] and x['rcFor']=='' and x['milestoneFor']=='' and not x['broken']]; print(' '.join(x['version'] for x in v[:25]))"
-          } > report/versions.txt 2>&1
-          cat report/versions.txt
+          pip install --quiet fonttools brotli
+          mkdir -p report/fonts-full report/fonts report/font-licenses
+          for fam in zenkakugothicnew zenmarugothic shipporimincho zenoldmincho mplus1p kleeone bizudpgothic zenkakugothicantique; do
+            gh api "repos/google/fonts/contents/ofl/$fam" --jq '.[] | select(.name | test("\\.(ttf|txt)$")) | [.name, .download_url] | @tsv' > /tmp/list.tsv || { echo "no $fam"; continue; }
+            while IFS=$'\t' read -r name url; do
+              case "$name" in
+                *.txt) curl -fsSL -o "report/font-licenses/$fam-$name" "$url" ;;
+                *.ttf) curl -fsSL -o "report/fonts-full/$name" "$url" ;;
+              esac
+            done < /tmp/list.tsv
+          done
+          ls -la report/fonts-full
+          # Latin + Latin Extended-A, punctuation, arrows, and a few decorative kanji.
+          UNI="U+0020-007E,U+00A0-017F,U+2010-2027,U+2030-205E,U+20AC,U+2122,U+2190-2199,U+2212,U+3000-3003,U+300C-300D,U+7985,U+7A7A,U+6C34,U+591C,U+9593,U+5186,U+76F8,U+548C,U+9759,U+98A8,U+6708,U+96EA,U+82B1"
+          for f in report/fonts-full/*.ttf; do
+            b=$(basename "$f" .ttf)
+            pyftsubset "$f" --unicodes="$UNI" --layout-features='kern,liga,calt,locl,mark,mkmk,palt,pnum,tnum,lnum,onum' --output-file="report/fonts/$b.ttf" || true
+          done
+          rm -rf report/fonts-full
+          ls -la report/fonts
 
-      - name: Fetch GeckoView API
+      - name: Fetch icon sources
         run: |
           set -u
-          M=https://maven.mozilla.org/maven2/org/mozilla/geckoview/geckoview
-          GV=$(curl -fsSL $M/maven-metadata.xml | grep -oP '(?<=<release>)[^<]+')
-          echo "GV=$GV" | tee report/geckoview-version.txt
-          curl -fsSL -o report/geckoview-sources.jar "$M/$GV/geckoview-$GV-sources.jar" || echo "no sources jar" >> report/geckoview-version.txt
-          curl -fsSL -o report/geckoview.pom "$M/$GV/geckoview-$GV.pom" || true
-          curl -fsSL -o report/geckoview.module "$M/$GV/geckoview-$GV.module" || true
-          curl -fsSL -o /tmp/gv.aar "$M/$GV/geckoview-$GV.aar"
-          ls -la /tmp/gv.aar > report/geckoview-aar-listing.txt
-          unzip -l /tmp/gv.aar >> report/geckoview-aar-listing.txt
-          unzip -p /tmp/gv.aar AndroidManifest.xml > report/geckoview-AndroidManifest.xml || true
-          unzip -p /tmp/gv.aar proguard.txt > report/geckoview-proguard.txt || true
-          curl -fsSL "https://maven.mozilla.org/maven2/org/mozilla/geckoview/" | grep -oP 'href="[^"]+"' | head -60 > report/geckoview-artifacts.txt || true
-
-      - name: Runner facts
-        run: |
-          {
-            echo "## java"; java -version 2>&1
-            echo "## android sdk"; echo "ANDROID_HOME=$ANDROID_HOME"
-            ls "$ANDROID_HOME/platforms" "$ANDROID_HOME/build-tools" 2>&1
-            ls "$ANDROID_HOME/cmdline-tools" 2>&1
-            echo "## kvm"; ls -l /dev/kvm 2>&1 || true
-            echo "## cpu/mem"; nproc; free -g
-            echo "## AMO"; curl -sSI https://addons.mozilla.org/firefox/downloads/latest/ublock-origin/latest.xpi | head -5
-          } > report/runner.txt 2>&1
-          cat report/runner.txt
+          mkdir -p report/icons/lucide report/icons/material-rounded-300
+          cd /tmp
+          npm pack lucide-static@latest --silent > /dev/null
+          tar xzf lucide-static-*.tgz
+          cp package/LICENSE "$GITHUB_WORKSPACE/report/icons/lucide/LICENSE" || true
+          node -e "console.log(require('./package/package.json').version)" > "$GITHUB_WORKSPACE/report/icons/lucide/VERSION"
+          ls package/icons | sed 's/\.svg$//' > "$GITHUB_WORKSPACE/report/icons/lucide/ALL.txt"
+          LUCIDE="arrow-left arrow-right rotate-cw x plus ellipsis-vertical ellipsis search lock lock-open shield shield-check shield-off bookmark bookmark-plus bookmark-check star history clock download arrow-down-to-line settings settings-2 sliders-horizontal share share-2 monitor smartphone puzzle languages text-search file-search sun moon moon-star eye-off venetian-mask trash-2 copy external-link image link house layers square-stack check chevron-down chevron-up chevron-right chevron-left info globe book-open zoom-in a-large-small pin grid-2x2 layout-grid list arrow-up-left circle-x triangle-alert cookie wifi-off ban files file folder-open printer qr-code mic undo-2 refresh-cw square copy-plus app-window panel-bottom panel-top type circle-help heart key-round scan-text clipboard sparkles minus maximize-2 minimize-2 lock-keyhole earth flame leaf wind waves"
+          for i in $LUCIDE; do cp "package/icons/$i.svg" "$GITHUB_WORKSPACE/report/icons/lucide/" 2>/dev/null || echo "missing lucide $i"; done
+          rm -rf package
+          npm pack @material-symbols/svg-300@latest --silent > /dev/null
+          tar xzf material-symbols-svg-300-*.tgz
+          cp package/LICENSE "$GITHUB_WORKSPACE/report/icons/material-rounded-300/LICENSE" || true
+          MAT="arrow_back arrow_forward refresh close add more_vert search lock lock_open shield bookmark bookmark_add star history schedule download settings tune share desktop_windows smartphone extension translate find_in_page light_mode dark_mode bedtime visibility_off delete content_copy open_in_new image link home tab layers check expand_more expand_less chevron_right chevron_left info language menu_book zoom_in text_fields push_pin grid_view list north_west cancel warning cookie wifi_off block folder_open print mic undo tabs"
+          for i in $MAT; do cp "package/rounded/$i.svg" "$GITHUB_WORKSPACE/report/icons/material-rounded-300/" 2>/dev/null || echo "missing material $i"; done
 
       - name: Publish report
         if: always()
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: bash tools/ci/publish-report.sh report probe
+        run: bash tools/ci/publish-report.sh report assets
