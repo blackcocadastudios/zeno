@@ -43,6 +43,7 @@ interface SettingsActions {
     fun clearBrowsingData()
     fun openUrl(url: String)
     fun makeDefaultBrowser()
+    fun sitePermissions()
     fun back()
 }
 
@@ -120,6 +121,12 @@ fun SettingsScreen(settings: UserSettings, versions: String, actions: SettingsAc
                 subtitle = trackingLabel(settings.trackingProtection),
                 icon = ZenoIcons.Shield,
                 onClick = { choice = Choice.Tracking },
+            )
+            ZenoListRow(
+                title = stringResource(R.string.settings_site_permissions),
+                subtitle = stringResource(R.string.settings_site_permissions_desc),
+                icon = ZenoIcons.GlobeLock,
+                onClick = actions::sitePermissions,
             )
             ZenoListRow(
                 title = stringResource(R.string.settings_https_only),

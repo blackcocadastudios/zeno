@@ -62,6 +62,8 @@ fun Toolbar(
     onTabsClick: () -> Unit,
     onMenuClick: () -> Unit,
     modifier: Modifier = Modifier,
+    /** The lock opens the site panel (connection, tracking protection, permissions). */
+    onSiteInfo: (() -> Unit)? = null,
 ) {
     val colors = Zeno.colors
     Column(
@@ -86,6 +88,7 @@ fun Toolbar(
                 onClick = onAddressClick,
                 onReload = onReload,
                 onStop = onStop,
+                onSiteInfo = onSiteInfo,
                 modifier = Modifier.weight(1f),
             )
             Spacer(Modifier.width(Ma.xs))
@@ -102,27 +105,46 @@ private fun AddressPill(
     onClick: () -> Unit,
     onReload: () -> Unit,
     onStop: () -> Unit,
+    onSiteInfo: (() -> Unit)?,
     modifier: Modifier = Modifier,
 ) {
     val colors = Zeno.colors
     val hint = stringResource(if (privateMode) R.string.toolbar_hint_private else R.string.toolbar_hint)
+    // Only a web page has a site to tell about.
+    val siteInfo = onSiteInfo?.takeIf { display.kind == AddressKind.Secure || display.kind == AddressKind.Insecure }
     Row(
         modifier
             .height(44.dp)
             .clip(ZenoShapes.pill)
             .background(colors.paperSunken)
             .clickable(onClick = onClick, role = Role.Button)
-            .padding(start = Ma.l, end = Ma.xxs),
+            .padding(start = if (siteInfo != null) Ma.xs else Ma.l, end = Ma.xxs),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         val (icon, description) = leadingIcon(display.kind, privateMode)
-        Icon(
-            imageVector = icon,
-            contentDescription = description,
-            tint = if (display.kind == AddressKind.Insecure) colors.seal else colors.inkSoft,
-            modifier = Modifier.size(18.dp),
-        )
-        Spacer(Modifier.width(Ma.s))
+        val tint = if (display.kind == AddressKind.Insecure) colors.seal else colors.inkSoft
+        if (siteInfo != null) {
+            // Within a pixel or two of the plain icon's place, with a 40dp target.
+            val label = stringResource(R.string.toolbar_site_info, description.orEmpty())
+            Box(
+                Modifier
+                    .size(40.dp)
+                    .clip(ZenoShapes.pill)
+                    .clickable(onClick = siteInfo, role = Role.Button)
+                    .semantics { contentDescription = label },
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(imageVector = icon, contentDescription = null, tint = tint, modifier = Modifier.size(18.dp))
+            }
+        } else {
+            Icon(
+                imageVector = icon,
+                contentDescription = description,
+                tint = tint,
+                modifier = Modifier.size(18.dp),
+            )
+            Spacer(Modifier.width(Ma.s))
+        }
         Text(
             text = display.text ?: hint,
             style = Zeno.type.url,

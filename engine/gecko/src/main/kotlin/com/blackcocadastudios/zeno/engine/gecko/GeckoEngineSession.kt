@@ -54,12 +54,19 @@ class GeckoEngineSession internal constructor(
     internal var scrollY = 0
         private set
 
+    /**
+     * The current site's tracking protection entry. GeckoView sends one with
+     * every page (a placeholder when there is no exception), and changing its
+     * value is the only way to add or remove an exception.
+     */
+    private var trackingPermission: GeckoSession.PermissionDelegate.ContentPermission? = null
+
     init {
         geckoSession.contentDelegate = ContentDelegate()
         geckoSession.progressDelegate = ProgressDelegate()
         geckoSession.navigationDelegate = NavigationDelegate()
         geckoSession.promptDelegate = GeckoPromptDelegate(engine.appContext) { observer }
-        geckoSession.permissionDelegate = GeckoPermissionDelegate(engine) { observer }
+        geckoSession.permissionDelegate = GeckoPermissionDelegate(engine, this)
         geckoSession.contentBlockingDelegate = BlockingDelegate()
         geckoSession.mediaSessionDelegate = MediaDelegate()
         geckoSession.translationsSessionDelegate = TranslationDelegate()
@@ -151,10 +158,21 @@ class GeckoEngineSession internal constructor(
         geckoSession.sessionTranslation?.restoreOriginalPage()
     }
 
+    override fun setProtectionException(excepted: Boolean) {
+        val permission = trackingPermission ?: return
+        engine.runtime.storageController.setPermission(
+            permission,
+            if (excepted) GeckoSession.PermissionDelegate.ContentPermission.VALUE_ALLOW else GeckoSession.PermissionDelegate.ContentPermission.VALUE_PROMPT,
+        )
+        observer?.onProtectionExceptionChange(excepted)
+        geckoSession.reload()
+    }
+
     override fun close() {
         if (closed) return
         closed = true
         observer = null
+        engine.oneTimeGrants.revoke(engine.runtime.storageController, this)
         attachedView?.detach()
         engine.onSessionClosed(this)
         engine.extensions.onSessionClosed(this)
@@ -269,7 +287,14 @@ class GeckoEngineSession internal constructor(
             perms: List<GeckoSession.PermissionDelegate.ContentPermission>,
             hasUserGesture: Boolean,
         ) {
-            if (url != null) observer?.onLocationChange(url, hasUserGesture)
+            if (url == null) return
+            // Leaving a site takes back what it was allowed only this time.
+            engine.oneTimeGrants.revoke(engine.runtime.storageController, this@GeckoEngineSession, keepOrigin = originOf(url))
+            trackingPermission = perms.firstOrNull { it.permission == GeckoSession.PermissionDelegate.PERMISSION_TRACKING }
+            observer?.onLocationChange(url, hasUserGesture)
+            observer?.onProtectionExceptionChange(
+                trackingPermission?.value == GeckoSession.PermissionDelegate.ContentPermission.VALUE_ALLOW,
+            )
         }
 
         override fun onCanGoBack(session: GeckoSession, canGoBack: Boolean) {

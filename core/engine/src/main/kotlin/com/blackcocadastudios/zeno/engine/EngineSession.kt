@@ -43,6 +43,12 @@ interface EngineSession {
 
     fun restoreOriginalLanguage()
 
+    /**
+     * Turns tracking protection off ([excepted]) or back on for the site this
+     * session shows, and reloads the page so it applies.
+     */
+    fun setProtectionException(excepted: Boolean)
+
     /** Releases the renderer. The session cannot be used afterwards. */
     fun close()
 
@@ -55,6 +61,9 @@ interface EngineSession {
         fun onNavigationStateChange(canGoBack: Boolean? = null, canGoForward: Boolean? = null) {}
         fun onSecurityChange(security: SecurityInfo) {}
         fun onTrackerBlocked(tracker: BlockedTracker) {}
+
+        /** Whether tracking protection is off for the site now shown; reported with each page. */
+        fun onProtectionExceptionChange(excepted: Boolean) {}
         fun onFullscreenChange(enabled: Boolean) {}
         fun onMediaFullscreen(enabled: Boolean, landscape: Boolean?) {}
         fun onStateUpdated(state: EngineSessionState) {}

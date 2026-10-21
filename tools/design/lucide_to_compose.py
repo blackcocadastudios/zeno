@@ -3,6 +3,12 @@
 
 usage: lucide_to_compose.py <lucide-icons-dir> <output.kt>
 
+The icons come from the Lucide repository:
+  git clone --depth 1 --filter=blob:none --sparse https://github.com/lucide-icons/lucide
+  git -C lucide sparse-checkout set icons
+  python3 tools/design/lucide_to_compose.py lucide/icons \
+    core/design/src/main/kotlin/com/blackcocadastudios/zeno/design/icon/ZenoIcons.kt
+
 Every SVG element (path, circle, rect, line, polyline, polygon, ellipse) becomes
 an SVG path string; strokes are drawn at 1.5 (Zeno's ink weight) with round caps.
 """
@@ -29,7 +35,7 @@ ICONS = {
     "Bookmark": "bookmark",
     "BookmarkAdd": "bookmark-plus",
     "BookmarkCheck": "bookmark-check",
-    "History": "history",
+    "History": "rotate-ccw-clock",
     "Download": "download",
     "Settings": "settings",
     "Sliders": "sliders-horizontal",
@@ -43,7 +49,7 @@ ICONS = {
     "Moon": "moon",
     "MoonStar": "moon-star",
     "Mask": "venetian-mask",
-    "Delete": "trash-2",
+    "Delete": "trash",
     "Copy": "copy",
     "OpenExternal": "external-link",
     "Image": "image",
@@ -75,16 +81,22 @@ ICONS = {
     "CopyPlus": "copy-plus",
     "PanelBottom": "panel-bottom",
     "PanelTop": "panel-top",
-    "Help": "circle-help",
+    "Help": "circle-question-mark",
     "Key": "key-round",
     "Clipboard": "clipboard",
     "Minus": "minus",
     "Leaf": "leaf",
-    "Waves": "waves",
+    "Waves": "waves-horizontal",
     "Wind": "wind",
     "Flame": "flame",
     "Code": "code",
     "ZoomIn": "zoom-in",
+    "MapPin": "map-pin",
+    "Bell": "bell",
+    "HardDrive": "hard-drive",
+    "MonitorPlay": "monitor-play",
+    "Network": "network",
+    "GlobeLock": "globe-lock",
 }
 
 NUM = r"-?\d*\.?\d+(?:e-?\d+)?"

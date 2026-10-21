@@ -635,9 +635,66 @@ object ZenoIcons {
         lineIcon(
             "ZoomIn",
             "M3 11a8 8 0 1 0 16 0a8 8 0 1 0 -16 0Z",
-            "m21 21-4.35-4.35",
-            "M11 8v6",
-            "M8 11h6",
+            "M21 21L16.65 16.65",
+            "M11 8L11 14",
+            "M8 11L14 11",
+        )
+    }
+
+    val MapPin: ImageVector by lazy {
+        lineIcon(
+            "MapPin",
+            "M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0",
+            "M9 10a3 3 0 1 0 6 0a3 3 0 1 0 -6 0Z",
+        )
+    }
+
+    val Bell: ImageVector by lazy {
+        lineIcon(
+            "Bell",
+            "M10.268 21a2 2 0 0 0 3.464 0",
+            "M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326",
+        )
+    }
+
+    val HardDrive: ImageVector by lazy {
+        lineIcon(
+            "HardDrive",
+            "M10 16h.01",
+            "M2.212 11.577a2 2 0 0 0-.212.896V18a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-5.527a2 2 0 0 0-.212-.896L18.55 5.11A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z",
+            "M21.946 12.013H2.054",
+            "M6 16h.01",
+        )
+    }
+
+    val MonitorPlay: ImageVector by lazy {
+        lineIcon(
+            "MonitorPlay",
+            "M15.033 9.44a.647.647 0 0 1 0 1.12l-4.065 2.352a.645.645 0 0 1-.968-.56V7.648a.645.645 0 0 1 .967-.56z",
+            "M12 17v4",
+            "M8 21h8",
+            "M4 3h16a2 2 0 0 1 2 2v10a2 2 0 0 1 -2 2h-16a2 2 0 0 1 -2 -2v-10a2 2 0 0 1 2 -2Z",
+        )
+    }
+
+    val Network: ImageVector by lazy {
+        lineIcon(
+            "Network",
+            "M17 16h4a1 1 0 0 1 1 1v4a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1v-4a1 1 0 0 1 1 -1Z",
+            "M3 16h4a1 1 0 0 1 1 1v4a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1v-4a1 1 0 0 1 1 -1Z",
+            "M10 2h4a1 1 0 0 1 1 1v4a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1v-4a1 1 0 0 1 1 -1Z",
+            "M5 16v-3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3",
+            "M12 12V8",
+        )
+    }
+
+    val GlobeLock: ImageVector by lazy {
+        lineIcon(
+            "GlobeLock",
+            "M15.686 15A14.5 14.5 0 0 1 12 22a14.5 14.5 0 0 1 0-20 10 10 0 1 0 9.542 13",
+            "M2 12h8.5",
+            "M20 6V4a2 2 0 1 0-4 0v2",
+            "M15 6h6a1 1 0 0 1 1 1v3a1 1 0 0 1 -1 1h-6a1 1 0 0 1 -1 -1v-3a1 1 0 0 1 1 -1Z",
         )
     }
 
@@ -716,5 +773,11 @@ object ZenoIcons {
             "Flame" to Flame,
             "Code" to Code,
             "ZoomIn" to ZoomIn,
+            "MapPin" to MapPin,
+            "Bell" to Bell,
+            "HardDrive" to HardDrive,
+            "MonitorPlay" to MonitorPlay,
+            "Network" to Network,
+            "GlobeLock" to GlobeLock,
         )
 }

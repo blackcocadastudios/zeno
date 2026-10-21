@@ -24,6 +24,9 @@ interface Engine {
 
     val extensions: ExtensionController
 
+    /** Permissions sites were given or refused, and where tracking protection is off. */
+    val sitePermissions: SitePermissionStore
+
     /** Clears stored browsing data held by the engine (cookies, cache, site data…). */
     suspend fun clearData(data: Set<BrowsingData>)
 

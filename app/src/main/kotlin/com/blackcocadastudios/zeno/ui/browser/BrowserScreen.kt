@@ -17,6 +17,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.core.animate
 import android.app.Activity
@@ -79,6 +80,9 @@ import com.blackcocadastudios.zeno.design.component.Enso
 import com.blackcocadastudios.zeno.design.component.ZenoPillButton
 import com.blackcocadastudios.zeno.design.theme.Ma
 import com.blackcocadastudios.zeno.design.theme.Zeno
+import com.blackcocadastudios.zeno.engine.PermissionKind
+import com.blackcocadastudios.zeno.engine.SitePermission
+import com.blackcocadastudios.zeno.engine.TrackingProtection
 import com.blackcocadastudios.zeno.engine.gecko.GeckoEngineView
 import com.blackcocadastudios.zeno.ui.MainViewModel
 import com.blackcocadastudios.zeno.ui.Screen
@@ -92,6 +96,9 @@ import com.blackcocadastudios.zeno.ui.menu.MenuSheet
 import com.blackcocadastudios.zeno.ui.prompts.AppPermissionHost
 import com.blackcocadastudios.zeno.ui.prompts.PermissionHost
 import com.blackcocadastudios.zeno.ui.prompts.PromptHost
+import com.blackcocadastudios.zeno.ui.site.SiteInfo
+import com.blackcocadastudios.zeno.ui.site.SitePanelActions
+import com.blackcocadastudios.zeno.ui.site.SitePanelSheet
 import com.blackcocadastudios.zeno.ui.tabs.TabsScreen
 import com.blackcocadastudios.zeno.ui.toolbar.AddressDisplay
 import com.blackcocadastudios.zeno.ui.toolbar.AddressEditor
@@ -277,6 +284,7 @@ fun BrowserScreen(vm: MainViewModel, engineView: GeckoEngineView, active: Boolea
                             vm.showTabs = true
                         },
                         onMenuClick = { vm.showMenu = true },
+                        onSiteInfo = { vm.showSiteInfo = true },
                         modifier = modifier,
                     )
                 }
@@ -412,6 +420,38 @@ fun BrowserScreen(vm: MainViewModel, engineView: GeckoEngineView, active: Boolea
     }
 
     if (tab == null) return
+
+    val siteUrl = tab.url
+    if (vm.showSiteInfo && siteUrl != null && content != null) {
+        var permissions by remember(siteUrl) { mutableStateOf(emptyList<SitePermission>()) }
+        LaunchedEffect(siteUrl, tab.isPrivate, vm.sitePermissionsVersion) {
+            // Tracking protection has its own switch in the panel.
+            permissions = vm.sitePermissions(siteUrl, tab.isPrivate).filter { it.kind != PermissionKind.Trackers }
+        }
+        SitePanelSheet(
+            info = SiteInfo(
+                url = siteUrl,
+                secure = addressDisplay(tab, searchEngine).kind != AddressKind.Insecure,
+                security = content.security,
+                trackersBlocked = content.trackersBlocked,
+                protectionAvailable = settings.trackingProtection != TrackingProtection.Off,
+                protectionException = content.protectionException,
+            ),
+            permissions = permissions,
+            actions = remember(vm) {
+                object : SitePanelActions {
+                    override fun setProtection(enabled: Boolean) = vm.setProtection(enabled)
+
+                    override fun changePermission(permission: SitePermission, allowed: Boolean?) =
+                        vm.setSitePermission(permission, allowed)
+
+                    override fun clearSiteData() = vm.clearSiteData()
+                }
+            },
+            onDismiss = { vm.showSiteInfo = false },
+        )
+    }
+
     val context = LocalContext.current
     val copied = stringResource(R.string.context_copied)
     val deniedBySystem = stringResource(R.string.permission_denied_system)

@@ -281,6 +281,9 @@ class BrowserController(
 
     fun restoreOriginalLanguage(tabId: String) = sessions[tabId]?.restoreOriginalLanguage() ?: Unit
 
+    /** Tracking protection off ([excepted]) or back on for the site in [tabId]; the page reloads. */
+    fun setProtectionException(tabId: String, excepted: Boolean) = sessions[tabId]?.setProtectionException(excepted) ?: Unit
+
     // endregion
 
     // region Requests from the page
@@ -476,6 +479,9 @@ class BrowserController(
 
         override fun onTrackerBlocked(tracker: BlockedTracker) =
             updateContent(tabId) { it.copy(trackersBlocked = it.trackersBlocked + 1) }
+
+        override fun onProtectionExceptionChange(excepted: Boolean) =
+            updateContent(tabId) { it.copy(protectionException = excepted) }
 
         override fun onFullscreenChange(enabled: Boolean) = updateContent(tabId) {
             it.copy(fullscreen = enabled, mediaLandscape = if (enabled) it.mediaLandscape else null)

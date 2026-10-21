@@ -4,6 +4,8 @@ import com.blackcocadastudios.zeno.browser.session.SessionSnapshot
 import com.blackcocadastudios.zeno.browser.session.TabSnapshot
 import com.blackcocadastudios.zeno.browser.state.TabOrigin
 import com.blackcocadastudios.zeno.engine.EngineSessionState
+import com.blackcocadastudios.zeno.engine.PermissionKind
+import com.blackcocadastudios.zeno.engine.PermissionRequest
 import com.blackcocadastudios.zeno.engine.PromptRequest
 import com.blackcocadastudios.zeno.engine.WindowRequest
 import org.junit.Test
@@ -285,6 +287,42 @@ class BrowserControllerTest {
         controller.setDesktopMode(id, false)
         assertFalse(engine.created.single().desktop)
         assertFalse(state.tab(id)!!.desktopMode)
+    }
+
+    @Test
+    fun `tracking protection exception is reported per page and changed through the renderer`() {
+        val id = controller.newTab("https://a.example/")
+        val session = engine.created.single()
+        session.observer!!.onProtectionExceptionChange(true)
+        assertTrue(state.tab(id)!!.content.protectionException)
+
+        controller.setProtectionException(id, excepted = false)
+        assertEquals(false, session.protectionException)
+    }
+
+    @Test
+    fun `closing a tab refuses its permission questions without remembering`() {
+        val id = controller.newTab("https://a.example/")
+        val answers = mutableListOf<Pair<Boolean, Boolean>>()
+        val request = PermissionRequest("a.example", PermissionKind.Location, canRemember = true) { allowed, remember ->
+            answers += allowed to remember
+        }
+        engine.created.single().observer!!.onPermissionRequest(request)
+        assertEquals(listOf(request), state.tab(id)!!.content.permissionRequests)
+
+        controller.closeTab(id)
+        assertEquals(listOf(false to false), answers)
+    }
+
+    @Test
+    fun `a permission is remembered only where it can be`() {
+        val answers = mutableListOf<Pair<Boolean, Boolean>>()
+        val camera = PermissionRequest("a.example", PermissionKind.Camera, canRemember = false) { allowed, remember ->
+            answers += allowed to remember
+        }
+        camera.grant(remember = true)
+        camera.deny(remember = true)
+        assertEquals(listOf(true to false), answers)
     }
 
     @Test

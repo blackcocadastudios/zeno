@@ -2,6 +2,7 @@ package com.blackcocadastudios.zeno.ui
 
 import android.app.Application
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -9,12 +10,16 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.Row
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.blackcocadastudios.zeno.R
 import com.blackcocadastudios.zeno.browser.search.SearchEngines
 import com.blackcocadastudios.zeno.browser.state.ContentState
 import com.blackcocadastudios.zeno.browser.state.TabState
@@ -28,7 +33,9 @@ import com.blackcocadastudios.zeno.design.theme.ZenoShapes
 import com.blackcocadastudios.zeno.design.theme.ZenoTheme
 import com.blackcocadastudios.zeno.engine.ExtensionInfo
 import com.blackcocadastudios.zeno.engine.FindResult
+import com.blackcocadastudios.zeno.engine.PermissionKind
 import com.blackcocadastudios.zeno.engine.SecurityInfo
+import com.blackcocadastudios.zeno.engine.SitePermission
 import com.blackcocadastudios.zeno.ui.browser.CrashedTab
 import com.blackcocadastudios.zeno.ui.browser.addressDisplay
 import com.blackcocadastudios.zeno.ui.extensions.ExtensionsActions
@@ -44,7 +51,12 @@ import com.blackcocadastudios.zeno.ui.menu.MenuExtension
 import com.blackcocadastudios.zeno.ui.menu.MenuPage
 import com.blackcocadastudios.zeno.ui.menu.SheetHandle
 import com.blackcocadastudios.zeno.ui.settings.SettingsActions
+import com.blackcocadastudios.zeno.ui.prompts.PermissionQuestion
 import com.blackcocadastudios.zeno.ui.settings.SettingsScreen
+import com.blackcocadastudios.zeno.ui.settings.SitePermissionsScreen
+import com.blackcocadastudios.zeno.ui.site.SiteInfo
+import com.blackcocadastudios.zeno.ui.site.SitePanelActions
+import com.blackcocadastudios.zeno.ui.site.SitePanelContent
 import com.blackcocadastudios.zeno.ui.tabs.TabsScreen
 import com.blackcocadastudios.zeno.ui.toolbar.FindBar
 import com.blackcocadastudios.zeno.ui.toolbar.Toolbar
@@ -201,6 +213,72 @@ class ScreensScreenshotTest {
     @Test
     fun crashed() = capture("crashed", dark = true) { CrashedTab(onReload = {}) }
 
+    @Test
+    fun sitePanel() = capture("site_panel") {
+        SheetOverPage {
+            SitePanelContent(
+                info = SiteInfo(
+                    url = "https://www.openstreetmap.org/",
+                    secure = true,
+                    security = SecurityInfo(secure = true, host = "www.openstreetmap.org", issuer = "Let's Encrypt"),
+                    trackersBlocked = 3,
+                    protectionAvailable = true,
+                    protectionException = false,
+                ),
+                permissions = listOf(
+                    SitePermission("https://www.openstreetmap.org", PermissionKind.Location, allowed = true),
+                    SitePermission("https://www.openstreetmap.org", PermissionKind.PersistentStorage, allowed = false),
+                ),
+                actions = NoSitePanelActions,
+            )
+        }
+    }
+
+    @Test
+    fun sitePanelInsecure() = capture("site_panel_insecure", dark = true) {
+        SheetOverPage {
+            SitePanelContent(
+                info = SiteInfo(
+                    url = "http://neverssl.com/",
+                    secure = false,
+                    security = SecurityInfo(secure = false),
+                    trackersBlocked = 0,
+                    protectionAvailable = true,
+                    protectionException = true,
+                ),
+                permissions = emptyList(),
+                actions = NoSitePanelActions,
+            )
+        }
+    }
+
+    @Test
+    fun sitePermissions() = capture("site_permissions") {
+        SitePermissionsScreen(
+            permissions = listOf(
+                SitePermission("https://www.openstreetmap.org", PermissionKind.Location, allowed = true),
+                SitePermission("https://www.openstreetmap.org", PermissionKind.PersistentStorage, allowed = false),
+                SitePermission("https://music.example", PermissionKind.ProtectedMedia, allowed = true),
+                SitePermission("https://news.example", PermissionKind.Notifications, allowed = false),
+                SitePermission("https://bank.example", PermissionKind.Trackers, allowed = true),
+            ),
+            onChange = { _, _ -> },
+            onBack = {},
+        )
+    }
+
+    @Test
+    fun sitePermissionsEmpty() = capture("site_permissions_empty", dark = true) {
+        SitePermissionsScreen(permissions = emptyList(), onChange = { _, _ -> }, onBack = {})
+    }
+
+    @Test
+    fun permissionPrompt() = capture("permission_prompt") {
+        DialogOverPage {
+            PermissionQuestion(PermissionKind.Location, "openstreetmap.org", canRemember = true, remember = true, onRememberChange = {})
+        }
+    }
+
     @Composable
     private fun Home(privateMode: Boolean, withCard: Boolean) {
         BrowserFrame(tab = null, tabCount = if (privateMode) 1 else 5, privateMode = privateMode) {
@@ -220,8 +298,9 @@ class ScreensScreenshotTest {
         }
     }
 
+    /** A bottom sheet as it sits over a page. */
     @Composable
-    private fun MenuOverPage(dark: Boolean) {
+    private fun SheetOverPage(content: @Composable () -> Unit) {
         Box(Modifier.fillMaxSize()) {
             FakePage()
             Box(
@@ -237,22 +316,62 @@ class ScreensScreenshotTest {
                     .background(Zeno.colors.paperRaised),
             ) {
                 Box(Modifier.align(Alignment.CenterHorizontally)) { SheetHandle() }
-                MenuContent(
-                    page = MenuPage(
-                        hasPage = true,
-                        canGoBack = true,
-                        canGoForward = false,
-                        loading = false,
-                        bookmarked = !dark,
-                        desktopMode = false,
-                        translated = false,
-                        trackersBlocked = 14,
-                    ),
-                    extensions = listOf(MenuExtension("uBlock0@raymondhill.net", "uBlock Origin", "23")),
-                    showQuit = dark,
-                    actions = NoMenuActions,
-                )
+                content()
             }
+        }
+    }
+
+    /** A dialog's body and buttons, drawn in place (real dialogs open in their own window). */
+    @Composable
+    private fun DialogOverPage(content: @Composable () -> Unit) {
+        Box(Modifier.fillMaxSize()) {
+            FakePage()
+            Box(
+                Modifier
+                    .fillMaxSize()
+                    .background(Zeno.colors.scrim),
+            )
+            Column(
+                Modifier
+                    .align(Alignment.Center)
+                    .padding(horizontal = 40.dp)
+                    .fillMaxWidth()
+                    .clip(ZenoShapes.large)
+                    .background(Zeno.colors.paperRaised)
+                    .padding(24.dp),
+            ) {
+                content()
+                Row(
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(top = 16.dp),
+                    horizontalArrangement = Arrangement.End,
+                ) {
+                    Text(stringResource(R.string.prompt_block), style = Zeno.type.label, color = Zeno.colors.inkSoft, modifier = Modifier.padding(12.dp))
+                    Text(stringResource(R.string.prompt_allow), style = Zeno.type.label, color = Zeno.colors.accentInk, modifier = Modifier.padding(12.dp))
+                }
+            }
+        }
+    }
+
+    @Composable
+    private fun MenuOverPage(dark: Boolean) {
+        SheetOverPage {
+            MenuContent(
+                page = MenuPage(
+                    hasPage = true,
+                    canGoBack = true,
+                    canGoForward = false,
+                    loading = false,
+                    bookmarked = !dark,
+                    desktopMode = false,
+                    translated = false,
+                    trackersBlocked = 14,
+                ),
+                extensions = listOf(MenuExtension("uBlock0@raymondhill.net", "uBlock Origin", "23")),
+                showQuit = dark,
+                actions = NoMenuActions,
+            )
         }
     }
 
@@ -379,7 +498,14 @@ private object NoSettingsActions : SettingsActions {
     override fun clearBrowsingData() = Unit
     override fun openUrl(url: String) = Unit
     override fun makeDefaultBrowser() = Unit
+    override fun sitePermissions() = Unit
     override fun back() = Unit
+}
+
+private object NoSitePanelActions : SitePanelActions {
+    override fun setProtection(enabled: Boolean) = Unit
+    override fun changePermission(permission: SitePermission, allowed: Boolean?) = Unit
+    override fun clearSiteData() = Unit
 }
 
 private object NoExtensionsActions : ExtensionsActions {

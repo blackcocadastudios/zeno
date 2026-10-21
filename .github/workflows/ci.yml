@@ -105,6 +105,11 @@ jobs:
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -no-snapshot
           script: bash tools/ci/smoke.sh apks
 
+      # The steps and measurements as an annotation: readable on the run page and through the API.
+      - name: Summarize smoke test
+        if: always()
+        run: python3 tools/ci/annotate.py "Smoke test" smoke-report/steps.md
+
       - name: Upload smoke report
         if: always()
         uses: actions/upload-artifact@v4

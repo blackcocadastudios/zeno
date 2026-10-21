@@ -19,6 +19,7 @@
     <string name="toolbar_secure">Conexão segura</string>
     <string name="toolbar_insecure">Conexão não segura</string>
     <string name="toolbar_private">Navegação privada</string>
+    <string name="toolbar_site_info">%1$s. Informações do site</string>
     <plurals name="toolbar_trackers_blocked">
         <item quantity="one">%1$d rastreador bloqueado</item>
         <item quantity="many">%1$d rastreadores bloqueados</item>
@@ -130,8 +131,47 @@
     <string name="permission_storage">%1$s quer guardar dados permanentemente neste aparelho.</string>
     <string name="permission_storage_access">%1$s quer usar cookies em outro site que você visita.</string>
     <string name="permission_local_network">%1$s quer acessar aparelhos da sua rede local.</string>
+    <string name="permission_site_notifications">%1$s quer mostrar notificações.</string>
+    <string name="permission_local_device">%1$s quer acessar apps e serviços deste aparelho.</string>
     <string name="permission_other">%1$s quer uma permissão especial.</string>
     <string name="permission_denied_system">Permita o acesso nas configurações do Android para que sites possam usar este recurso.</string>
+    <string name="permission_remember">Lembrar para este site</string>
+
+    <!-- Site panel (the lock in the address bar) -->
+    <string name="site_insecure_body">O que você envia ou recebe neste site pode ser visto por outros na rede.</string>
+    <string name="site_issuer">Certificado emitido por %1$s</string>
+    <string name="site_mixed">Parte desta página chega sem segurança.</string>
+    <string name="site_protection">Proteção contra rastreamento</string>
+    <plurals name="site_trackers_blocked">
+        <item quantity="one">%1$d rastreador bloqueado nesta página</item>
+        <item quantity="many">%1$d rastreadores bloqueados nesta página</item>
+        <item quantity="other">%1$d rastreadores bloqueados nesta página</item>
+    </plurals>
+    <string name="site_no_trackers">Nenhum rastreador nesta página</string>
+    <string name="site_protection_off_here">Desligada neste site</string>
+    <string name="site_protection_off_everywhere">Desligada nas configurações</string>
+    <string name="site_protection_turned_off">Proteção desligada em %1$s</string>
+    <string name="site_protection_turned_on">Proteção ligada em %1$s</string>
+    <string name="site_permissions">Permissões</string>
+    <string name="site_clear">Apagar cookies e dados do site</string>
+    <string name="site_clear_title">Apagar dados de %1$s?</string>
+    <string name="site_clear_body">Cookies, dados guardados e permissões deste site serão apagados. Talvez você precise entrar na sua conta de novo.</string>
+    <string name="site_cleared">Dados de %1$s apagados</string>
+    <string name="site_permission_location">Localização</string>
+    <string name="site_permission_notifications">Notificações</string>
+    <string name="site_permission_storage">Armazenamento permanente</string>
+    <string name="site_permission_drm">Conteúdo protegido (DRM)</string>
+    <string name="site_permission_local_network">Aparelhos da rede local</string>
+    <string name="site_permission_local_device">Apps deste aparelho</string>
+    <string name="site_permission_trackers">Proteção contra rastreamento</string>
+    <string name="site_permission_other">Outra permissão</string>
+    <string name="site_permission_allowed">Permitido</string>
+    <string name="site_permission_blocked">Bloqueado</string>
+    <string name="site_permission_ask">Perguntar sempre</string>
+    <string name="site_permission_in">%1$s em %2$s</string>
+    <string name="site_protect_title">Ligar a proteção em %1$s?</string>
+    <string name="site_protect_body">Os rastreadores deste site voltam a ser bloqueados.</string>
+    <string name="site_protect">Ligar</string>
 
     <!-- Downloads -->
     <string name="download_started">Baixando %1$s</string>
@@ -262,6 +302,10 @@
     <string name="settings_clear_now_desc">Histórico, cookies, cache e dados de sites</string>
     <string name="settings_cleared">Dados apagados</string>
     <string name="settings_sites">Sites</string>
+    <string name="settings_site_permissions">Permissões dos sites</string>
+    <string name="settings_site_permissions_desc">O que cada site pode usar e onde a proteção está desligada</string>
+    <string name="site_permissions_empty">Nada guardado</string>
+    <string name="site_permissions_empty_body">Quando você permitir ou bloquear algo para um site e pedir para lembrar, a escolha aparece aqui. Sites sem proteção contra rastreamento também.</string>
     <string name="settings_javascript">JavaScript</string>
     <string name="settings_desktop_default">Versão para computador por padrão</string>
     <string name="settings_font_auto">Tamanho do texto automático</string>

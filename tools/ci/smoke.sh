@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
-# Emulator smoke test: installs the debug APK and uses Zeno the way a person
+# Emulator smoke test: installs the release APK and uses Zeno the way a person
 # would (home, a link from another app, searching, tabs, menu, private mode,
-# settings, installing uBlock Origin). Records screenshots, cold start time,
-# memory and crashes in smoke-report/. Every step is attempted; the job fails
-# at the end if Zeno crashed or a step did not work.
+# settings, installing uBlock Origin, a site asking for the location).
+# Records screenshots, cold start time, memory and crashes in smoke-report/.
+# Every step is attempted; the job fails at the end if Zeno crashed or a step
+# did not work. Probes record what is worth knowing without failing the job.
 #
 # usage: smoke.sh <dir-with-apks>
 set -uo pipefail
@@ -27,6 +28,22 @@ step() {
     echo "- ✗ $name" >> "$steps"
     failures=$((failures + 1))
   fi
+}
+
+probe() {
+  # probe <name> <command...>: like step, but only informs.
+  local name="$1"
+  shift
+  if "$@" >> "$out/steps.log" 2>&1; then
+    echo "- ✓ $name (probe)" >> "$steps"
+  else
+    echo "- ○ $name (probe: no)" >> "$steps"
+  fi
+}
+
+absent() {
+  # absent <regex> <seconds>: the text does not show up in that time.
+  ! $ui wait "$1" "$2"
 }
 
 shot() {
@@ -159,12 +176,47 @@ shot 12-settings
 adb shell input keyevent KEYCODE_BACK
 sleep 1
 
-# 9. Background and back: the session survives.
+# 9. A site asks for the location; the answer is remembered and shown in the site panel.
+# Test pages are served from this machine and reach the emulator through adb reverse.
+python3 -m http.server 8765 --bind 127.0.0.1 --directory tools/ci/pages > "$out/http.log" 2>&1 &
+http_pid=$!
+adb reverse tcp:8765 tcp:8765
+sleep 1
+adb shell am start -a android.intent.action.VIEW -d "http://localhost:8765/geo.html" -n "$activity"
+step "a site asks for the location" $ui wait "quer saber sua localização" 30
+shot 13-geo-question
+step "allow, remembering for the site" $ui tap "^Permitir$" 10
+probe "page text is visible to UI Automator" $ui wait "geo: (granted|error)" 20
+step "reload the page" $ui tap "^Recarregar$" 10
+step "the kept answer is used: no second question" absent "quer saber sua localização" 8
+step "the lock opens the site panel" $ui tap "Informações do site" 10
+step "the panel shows tracking protection" $ui wait "^Proteção contra rastreamento$" 10
+step "the panel lists the location as allowed" $ui wait "^Localização$" 5
+shot 14-site-panel
+adb shell input keyevent KEYCODE_BACK
+sleep 1
+step "open the menu for settings" $ui tap "^Menu$" 10
+sleep 1
+step "open settings again" $ui tap "^Configurações$" 10
+sleep 1
+# The row is in the privacy section, below the first screenful.
+adb shell input swipe 540 1700 540 900 300
+sleep 1
+step "open site permissions" $ui tap "^Permissões dos sites$" 10
+step "settings list the site" $ui wait "^localhost$" 10
+shot 15-site-permissions
+adb shell input keyevent KEYCODE_BACK
+sleep 1
+adb shell input keyevent KEYCODE_BACK
+sleep 1
+kill "$http_pid" 2>/dev/null || true
+
+# 10. Background and back: the session survives.
 adb shell input keyevent KEYCODE_HOME
 sleep 3
 adb shell am start -W -n "$activity" > "$out/start-warm.txt"
 sleep 3
-shot 13-back
+shot 16-back
 
 # Measurements.
 adb shell dumpsys meminfo "$pkg" > "$out/meminfo-main.txt" 2>&1

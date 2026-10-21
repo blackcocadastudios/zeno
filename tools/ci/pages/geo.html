@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="pt-BR">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width">
+<title>Zeno: localização</title>
+<h1 id="status">geo: perguntando</h1>
+<p>Página de teste do Zeno: pede a localização assim que abre.</p>
+<script>
+  const status = document.getElementById("status");
+  const show = (text) => { status.textContent = text; document.title = text; };
+  navigator.geolocation.getCurrentPosition(
+    () => show("geo: granted"),
+    (error) => show(error.code === 1 ? "geo: denied" : "geo: error " + error.code),
+    { timeout: 15000 },
+  );
+</script>
+</html>

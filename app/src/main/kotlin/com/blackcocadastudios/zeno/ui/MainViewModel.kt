@@ -1,6 +1,7 @@
 package com.blackcocadastudios.zeno.ui
 
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -24,6 +25,7 @@ import com.blackcocadastudios.zeno.download.DownloadNotifications
 import com.blackcocadastudios.zeno.engine.ExtensionInstallRequest
 import com.blackcocadastudios.zeno.engine.ExtensionPopup
 import com.blackcocadastudios.zeno.engine.LoadFlags
+import com.blackcocadastudios.zeno.engine.SitePermission
 import com.blackcocadastudios.zeno.ui.library.HistoryRange
 import com.blackcocadastudios.zeno.web.Suggestions
 import kotlinx.coroutines.CompletableDeferred
@@ -45,7 +47,7 @@ import java.util.Calendar
 import java.util.Locale
 
 /** Full-screen places besides the browser itself. */
-enum class Screen { Browser, Settings, History, Bookmarks, Downloads, Extensions }
+enum class Screen { Browser, Settings, SitePermissions, History, Bookmarks, Downloads, Extensions }
 
 /** A short message shown above the toolbar. */
 data class UiMessage(val text: String, val actionLabel: String? = null, val action: (() -> Unit)? = null)
@@ -77,7 +79,12 @@ class MainViewModel(val container: AppContainer) : ViewModel() {
         private set
     var showTabs by mutableStateOf(false)
     var showMenu by mutableStateOf(false)
+    var showSiteInfo by mutableStateOf(false)
     var findOpen by mutableStateOf(false)
+
+    /** Changes whenever a site permission changes, so lists showing them reload. */
+    var sitePermissionsVersion by mutableIntStateOf(0)
+        private set
     var extensionPopup by mutableStateOf<ExtensionPopup?>(null)
     var pendingInstall by mutableStateOf<PendingInstall?>(null)
         private set
@@ -170,6 +177,7 @@ class MainViewModel(val container: AppContainer) : ViewModel() {
         editing = false
         showTabs = false
         showMenu = false
+        showSiteInfo = false
     }
 
     // endregion
@@ -178,6 +186,7 @@ class MainViewModel(val container: AppContainer) : ViewModel() {
 
     fun startEditing() {
         showMenu = false
+        showSiteInfo = false
         showTabs = false
         findOpen = false
         editing = true
@@ -341,6 +350,45 @@ class MainViewModel(val container: AppContainer) : ViewModel() {
         controller.translate(tab.id, from, to)
         message(app.getString(R.string.translate_working))
     }
+
+    // region Site permissions
+
+    suspend fun sitePermissions(url: String, private: Boolean): List<SitePermission> =
+        runCatching { container.engine.sitePermissions.forSite(url, private) }.getOrDefault(emptyList())
+
+    suspend fun allSitePermissions(): List<SitePermission> =
+        runCatching { container.engine.sitePermissions.all() }.getOrDefault(emptyList())
+
+    fun setSitePermission(permission: SitePermission, allowed: Boolean?) {
+        viewModelScope.launch {
+            runCatching { container.engine.sitePermissions.set(permission, allowed) }
+            sitePermissionsVersion++
+        }
+    }
+
+    /** Tracking protection on or off for the site in the current tab; the page reloads. */
+    fun setProtection(enabled: Boolean) {
+        val tab = state.value.selectedTab ?: return
+        val url = tab.url ?: return
+        controller.setProtectionException(tab.id, excepted = !enabled)
+        showSiteInfo = false
+        val site = UrlDisplay.shortHost(url)
+        message(app.getString(if (enabled) R.string.site_protection_turned_on else R.string.site_protection_turned_off, site))
+    }
+
+    /** Cookies, storage and permissions of the current tab's site. */
+    fun clearSiteData() {
+        val url = state.value.selectedTab?.url ?: return
+        val host = UrlDisplay.host(url) ?: return
+        showSiteInfo = false
+        viewModelScope.launch {
+            runCatching { container.engine.clearSiteData(host) }
+            sitePermissionsVersion++
+            message(app.getString(R.string.site_cleared, UrlDisplay.shortHost(url)))
+        }
+    }
+
+    // endregion
 
     /** Saves [url] (a link or an image) as a file. */
     fun download(url: String) {

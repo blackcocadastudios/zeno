@@ -10,7 +10,9 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -20,6 +22,7 @@ import com.blackcocadastudios.zeno.R
 import com.blackcocadastudios.zeno.data.settings.AppTheme
 import com.blackcocadastudios.zeno.data.settings.UserSettings
 import com.blackcocadastudios.zeno.design.theme.ZenoTheme
+import com.blackcocadastudios.zeno.engine.SitePermission
 import com.blackcocadastudios.zeno.engine.gecko.GeckoEngineView
 import com.blackcocadastudios.zeno.ui.browser.BrowserScreen
 import com.blackcocadastudios.zeno.ui.common.MessageHost
@@ -32,6 +35,7 @@ import com.blackcocadastudios.zeno.ui.library.DownloadsScreen
 import com.blackcocadastudios.zeno.ui.library.HistoryScreen
 import com.blackcocadastudios.zeno.ui.settings.SettingsActions
 import com.blackcocadastudios.zeno.ui.settings.SettingsScreen
+import com.blackcocadastudios.zeno.ui.settings.SitePermissionsScreen
 
 /** What the interface asks of the activity hosting it. */
 interface AppHost {
@@ -110,10 +114,17 @@ private fun LibraryOrSettings(vm: MainViewModel, screen: Screen, settings: UserS
 
                     override fun makeDefaultBrowser() = host.makeDefaultBrowser()
 
+                    override fun sitePermissions() = vm.open(Screen.SitePermissions)
+
                     override fun back() = goBack()
                 }
             },
         )
+        Screen.SitePermissions -> {
+            var permissions by remember { mutableStateOf<List<SitePermission>?>(null) }
+            LaunchedEffect(vm.sitePermissionsVersion) { permissions = vm.allSitePermissions() }
+            SitePermissionsScreen(permissions = permissions, onChange = vm::setSitePermission, onBack = goBack)
+        }
         Screen.History -> {
             val entries by remember { vm.container.history.recent() }.collectAsStateWithLifecycle(initialValue = emptyList())
             val now = remember { System.currentTimeMillis() }

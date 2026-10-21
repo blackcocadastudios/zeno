@@ -71,6 +71,8 @@ data class ContentState(
     val canGoForward: Boolean = false,
     val security: SecurityInfo = SecurityInfo.Unknown,
     val trackersBlocked: Int = 0,
+    /** Tracking protection is off for this site. */
+    val protectionException: Boolean = false,
     val fullscreen: Boolean = false,
     /** Video in fullscreen; true when it is wider than tall. */
     val mediaLandscape: Boolean? = null,

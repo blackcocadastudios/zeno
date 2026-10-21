@@ -17,6 +17,7 @@ Primeira versão utilizável.
 - Encontrar na página, tradução da página (modelos locais do Firefox), versão para computador, tela cheia de vídeo com rotação automática.
 - Menu de contexto para links, imagens e mídia; downloads com notificação e lista própria.
 - Diálogos de página (alerta, confirmação, login, cores, datas, arquivos), permissões de sites e do Android.
+- Painel do site no cadeado da barra: conexão e certificado, proteção contra rastreamento ligada ou desligada só para aquele site, permissões guardadas e “Apagar cookies e dados do site”.
 - Abre links de outros apps, texto compartilhado e texto selecionado; atalhos no ícone (nova aba, aba privada); pode ser o navegador padrão.
 
 ### Privacidade
@@ -24,6 +25,9 @@ Primeira versão utilizável.
 - DNS seguro opcional (Cloudflare, Quad9, NextDNS, Mullvad), apagar dados ao sair.
 - Outros apps só conseguem abrir páginas web (http/https) no Zeno; links `intent:` de páginas não escolhem componentes nem levam permissões.
 - Downloads de abas privadas são listados só em memória e esquecidos quando elas fecham.
+- Permissões de sites lembradas: ao permitir ou bloquear, “Lembrar para este site” (marcado por padrão) guarda a escolha. Sem marcar, a permissão vale só enquanto você está no site e é desfeita ao sair dele ou fechar a aba, mesmo se o Zeno for fechado antes. Câmera e microfone são perguntados toda vez; nas abas privadas nada é lembrado.
+- Configurações → Permissões dos sites mostra o que cada site pode usar e onde a proteção está desligada, e permite mudar ou esquecer cada escolha.
+- Localização para sites no Android 12 e mais novos: o Zeno pede a localização aproximada junto com a precisa, como o sistema exige.
 
 ### Extensões
 - Extensões do addons.mozilla.org, com pedido de permissões, ativar/desativar, abas privadas e remover.
@@ -34,4 +38,4 @@ Primeira versão utilizável.
 - CI com build debug e release, testes, capturas de tela (Roborazzi), lint e teste de fumaça num emulador.
 
 ### Ainda não
-- Modo leitura, gerenciador de senhas, exceções de proteção por site, lembrar permissões de sites (hoje o Zeno pergunta de novo a cada visita), notificações de sites. A barra fica embaixo, de propósito (uma mão).
+- Modo leitura, gerenciador de senhas, notificações de sites. A barra fica embaixo, de propósito (uma mão).

@@ -55,6 +55,8 @@ if wrong:
     out("## What went wrong\n")
     for w in wrong[:15]:
         out("```\n" + w.strip()[:4000] + "\n```")
+    for w in wrong[:3]:
+        annotate("error", w.strip()[:6000])
     out()
 
 # Warnings worth seeing (deprecations in our code)
@@ -88,6 +90,7 @@ for cls, name, text in failures[:50]:
 out()
 
 # Lint
+lint_counts = []
 for lint_xml in glob.glob("**/build/reports/lint-results-*.xml", recursive=True):
     try:
         tree = ET.parse(lint_xml)
@@ -97,12 +100,19 @@ for lint_xml in glob.glob("**/build/reports/lint-results-*.xml", recursive=True)
     errors = [i for i in issues if i.get("severity") in ("Error", "Fatal")]
     warnings = [i for i in issues if i.get("severity") == "Warning"]
     out(f"## Lint `{lint_xml}`: {len(errors)} errors, {len(warnings)} warnings\n")
-    for issue in (errors + warnings)[:80]:
+    lint_counts.append((len(errors), len(warnings)))
+    for n, issue in enumerate(errors + warnings):
         loc = issue.find("location")
         where = ""
+        rel = None
         if loc is not None:
-            where = f"{os.path.relpath(loc.get('file', ''), ROOT)}:{loc.get('line', '')}"
-        out(f"- **{issue.get('severity')}** `{issue.get('id')}` {where} — {issue.get('message')}")
+            rel = os.path.relpath(loc.get("file", ""), ROOT)
+            where = f"{rel}:{loc.get('line', '')}"
+        if n < 80:
+            out(f"- **{issue.get('severity')}** `{issue.get('id')}` {where} — {issue.get('message')}")
+        if n < 10:
+            level = "error" if issue in errors else "warning"
+            annotate(level, f"Lint {issue.get('id')}: {issue.get('message')}", rel, loc.get("line") if loc is not None else None)
     shutil.copy(lint_xml, os.path.join(REPORT, os.path.basename(lint_xml)))
     out()
 
@@ -140,6 +150,26 @@ if schemas:
         shutil.copy(schema, target)
         out(f"- `{schema}`")
     out()
+
+# New or changed Room schemas, in full: they must be committed, and the artifact
+# is not always at hand.
+try:
+    import subprocess
+    changed = subprocess.run(
+        ["git", "status", "--porcelain", "--untracked-files=all", "core/data/schemas"],
+        capture_output=True, text=True, check=False,
+    ).stdout.split("\n")
+    for line in changed:
+        path = line[3:].strip()
+        if path.endswith(".json") and os.path.exists(path):
+            annotate("notice", open(path).read()[:60000], path)
+except OSError:
+    pass
+
+# One line with the totals, for a quick look at the run.
+lint_text = ", ".join(f"lint {e} errors / {w} warnings" for e, w in lint_counts) or "lint not run"
+apk_text = ", ".join(f"{os.path.basename(a)} {os.path.getsize(a) / 1024 / 1024:.1f} MiB" for a in apks if "release" in a)
+annotate("notice", f"Gradle exit {code}; {total} tests, {len(failures)} failed; {lint_text}; {apk_text}")
 
 with open(os.path.join(REPORT, "summary.md"), "w") as f:
     f.write("\n".join(lines) + "\n")

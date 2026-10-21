@@ -17,7 +17,10 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
@@ -249,6 +252,37 @@ fun ZenoSwitchRow(
         onClick = { onCheckedChange(!checked) },
         trailing = { ZenoSwitch(checked = checked, onCheckedChange = null, enabled = enabled) },
     )
+}
+
+/** A small yes/no inside a dialog ("remember for this site"): the whole line toggles. */
+@Composable
+fun ZenoCheckRow(
+    text: String,
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val colors = Zeno.colors
+    Row(
+        modifier
+            .fillMaxWidth()
+            .heightIn(min = Ma.touch)
+            .clip(RoundedCornerShape(10.dp))
+            .toggleable(value = checked, role = Role.Checkbox, onValueChange = onCheckedChange),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Checkbox(
+            checked = checked,
+            onCheckedChange = null,
+            colors = CheckboxDefaults.colors(
+                checkedColor = colors.accent,
+                uncheckedColor = colors.inkFaint,
+                checkmarkColor = colors.onAccent,
+            ),
+        )
+        Spacer(Modifier.width(Ma.s))
+        Text(text, style = Zeno.type.bodySmall, color = colors.ink)
+    }
 }
 
 /**

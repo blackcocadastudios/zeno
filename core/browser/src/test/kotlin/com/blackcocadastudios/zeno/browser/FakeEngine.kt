@@ -15,6 +15,8 @@ import com.blackcocadastudios.zeno.engine.ExtensionTabs
 import com.blackcocadastudios.zeno.engine.HistoryTracker
 import com.blackcocadastudios.zeno.engine.LoadFlags
 import com.blackcocadastudios.zeno.engine.RequestInterceptor
+import com.blackcocadastudios.zeno.engine.SitePermission
+import com.blackcocadastudios.zeno.engine.SitePermissionStore
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -26,6 +28,7 @@ class FakeEngine : Engine {
     override var requestInterceptor: RequestInterceptor? = null
     override var historyTracker: HistoryTracker? = null
     override val extensions = FakeExtensions()
+    override val sitePermissions = FakeSitePermissions()
 
     override fun createSession(private: Boolean): EngineSession = FakeSession(private).also { created += it }
     override fun applySettings(settings: EngineSettings) = Unit
@@ -45,6 +48,7 @@ class FakeSession(override val isPrivate: Boolean) : EngineSession {
     var backCalls = 0
     var desktop = false
     var exitedFullscreen = false
+    var protectionException: Boolean? = null
 
     override fun load(url: String, flags: LoadFlags) {
         loaded += url
@@ -72,6 +76,9 @@ class FakeSession(override val isPrivate: Boolean) : EngineSession {
     override fun purgeHistory() = Unit
     override fun translate(fromLanguage: String, toLanguage: String) = Unit
     override fun restoreOriginalLanguage() = Unit
+    override fun setProtectionException(excepted: Boolean) {
+        protectionException = excepted
+    }
     override fun close() {
         closed = true
     }
@@ -92,5 +99,16 @@ class FakeExtensions : ExtensionController {
     override fun clickAction(id: String) = Unit
     override fun setActiveSession(session: EngineSession) {
         lastActive = session
+    }
+}
+
+class FakeSitePermissions : SitePermissionStore {
+    val stored = mutableListOf<SitePermission>()
+    override suspend fun all(): List<SitePermission> = stored.filter { !it.private }
+    override suspend fun forSite(url: String, private: Boolean): List<SitePermission> =
+        stored.filter { it.private == private && url.startsWith(it.origin) }
+    override suspend fun set(permission: SitePermission, allowed: Boolean?) {
+        stored.removeAll { it.origin == permission.origin && it.kind == permission.kind && it.private == permission.private }
+        if (allowed != null) stored += permission.copy(allowed = allowed)
     }
 }

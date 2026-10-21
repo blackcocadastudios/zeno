@@ -12,6 +12,7 @@ import com.blackcocadastudios.zeno.engine.HistoryTracker
 import com.blackcocadastudios.zeno.engine.HttpsOnly
 import com.blackcocadastudios.zeno.engine.RequestInterceptor
 import com.blackcocadastudios.zeno.engine.SecureDns
+import com.blackcocadastudios.zeno.engine.SitePermissionStore
 import com.blackcocadastudios.zeno.engine.TrackingProtection
 import com.blackcocadastudios.zeno.engine.WebContentTheme
 import kotlinx.coroutines.CoroutineScope
@@ -25,6 +26,7 @@ import org.mozilla.geckoview.GeckoRuntimeSettings
 import org.mozilla.geckoview.GeckoWebExecutor
 import org.mozilla.geckoview.StorageController
 import org.mozilla.geckoview.WebRequest
+import java.io.File
 
 /**
  * [Engine] backed by GeckoView. One per process.
@@ -57,6 +59,12 @@ class GeckoEngine(context: Context, private val debug: Boolean = false) : Engine
     private val liveSessions = LinkedHashSet<GeckoEngineSession>()
 
     override val extensions: GeckoExtensionController by lazy { GeckoExtensionController(this) }
+
+    internal val permissionStore by lazy { GeckoSitePermissions(this) }
+
+    override val sitePermissions: SitePermissionStore get() = permissionStore
+
+    internal val oneTimeGrants by lazy { OneTimeGrants(File(appContext.noBackupFilesDir, ONE_TIME_GRANTS_FILE), scope) }
 
     /** Starts Gecko ahead of the first page load. */
     fun warmUp() {
@@ -192,6 +200,7 @@ class GeckoEngine(context: Context, private val debug: Boolean = false) : Engine
 
         val rt = GeckoRuntime.create(appContext, builder.build())
         applySecureDns(rt.settings, settings.secureDns)
+        oneTimeGrants.revokeLeftovers(rt.storageController)
         return rt
     }
 
@@ -211,6 +220,8 @@ class GeckoEngine(context: Context, private val debug: Boolean = false) : Engine
     }
 
     private companion object {
+        const val ONE_TIME_GRANTS_FILE = "one-time-permissions.json"
+
         fun colorScheme(theme: WebContentTheme) = when (theme) {
             WebContentTheme.System -> GeckoRuntimeSettings.COLOR_SCHEME_SYSTEM
             WebContentTheme.Light -> GeckoRuntimeSettings.COLOR_SCHEME_LIGHT
