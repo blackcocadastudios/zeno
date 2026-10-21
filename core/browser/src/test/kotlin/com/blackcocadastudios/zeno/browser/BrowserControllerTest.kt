@@ -95,9 +95,11 @@ class BrowserControllerTest {
         val n = controller.newTab("https://n.example/")
         controller.newTab("https://p1.example/", private = true)
         controller.newTab("https://p2.example/", private = true)
+        assertTrue(state.privateMode)
         controller.closeAllTabs(private = true)
         assertEquals(listOf(n), state.tabs.map { it.id })
         assertNull(state.selectedTabId)
+        assertFalse(state.privateMode)
     }
 
     @Test

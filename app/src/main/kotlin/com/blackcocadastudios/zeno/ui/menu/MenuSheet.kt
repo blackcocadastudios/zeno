@@ -132,18 +132,20 @@ fun MenuContent(page: MenuPage, extensions: List<MenuExtension>, showQuit: Boole
                     icon = ZenoIcons.Extensions,
                     trailing = ext.badge?.let { badge -> { Badge(badge) } },
                     onClick = { actions.extension(ext.id) },
+                    dense = true,
                 )
             }
             Hairline(Modifier.padding(horizontal = Ma.xl))
         }
 
-        ZenoListRow(stringResource(R.string.menu_new_tab), icon = ZenoIcons.Add, onClick = { actions.newTab(private = false) })
-        ZenoListRow(stringResource(R.string.menu_new_private_tab), icon = ZenoIcons.MoonStar, onClick = { actions.newTab(private = true) })
+        ZenoListRow(stringResource(R.string.menu_new_tab), icon = ZenoIcons.Add, dense = true, onClick = { actions.newTab(private = false) })
+        ZenoListRow(stringResource(R.string.menu_new_private_tab), icon = ZenoIcons.MoonStar, dense = true, onClick = { actions.newTab(private = true) })
         if (page.hasPage) {
-            ZenoListRow(stringResource(R.string.menu_find), icon = ZenoIcons.FindInPage, onClick = actions::find)
+            ZenoListRow(stringResource(R.string.menu_find), icon = ZenoIcons.FindInPage, dense = true, onClick = actions::find)
             ZenoListRow(
                 stringResource(if (page.translated) R.string.menu_show_original else R.string.menu_translate),
                 icon = ZenoIcons.Translate,
+                dense = true,
                 onClick = actions::translate,
             )
             ZenoSwitchRow(
@@ -151,20 +153,22 @@ fun MenuContent(page: MenuPage, extensions: List<MenuExtension>, showQuit: Boole
                 icon = ZenoIcons.Desktop,
                 checked = page.desktopMode,
                 onCheckedChange = actions::setDesktopMode,
+                dense = true,
             )
-            ZenoListRow(stringResource(R.string.menu_add_to_home), icon = ZenoIcons.Pin, onClick = actions::addToHome)
+            ZenoListRow(stringResource(R.string.menu_add_to_home), icon = ZenoIcons.Pin, dense = true, onClick = actions::addToHome)
         }
         Hairline(Modifier.padding(horizontal = Ma.xl))
-        ZenoListRow(stringResource(R.string.menu_bookmarks), icon = ZenoIcons.Bookmark, onClick = actions::bookmarks)
-        ZenoListRow(stringResource(R.string.menu_history), icon = ZenoIcons.History, onClick = actions::history)
-        ZenoListRow(stringResource(R.string.menu_downloads), icon = ZenoIcons.Download, onClick = actions::downloads)
-        ZenoListRow(stringResource(R.string.menu_extensions), icon = ZenoIcons.Extensions, onClick = actions::extensions)
-        ZenoListRow(stringResource(R.string.menu_settings), icon = ZenoIcons.Settings, onClick = actions::settings)
+        ZenoListRow(stringResource(R.string.menu_bookmarks), icon = ZenoIcons.Bookmark, dense = true, onClick = actions::bookmarks)
+        ZenoListRow(stringResource(R.string.menu_history), icon = ZenoIcons.History, dense = true, onClick = actions::history)
+        ZenoListRow(stringResource(R.string.menu_downloads), icon = ZenoIcons.Download, dense = true, onClick = actions::downloads)
+        ZenoListRow(stringResource(R.string.menu_extensions), icon = ZenoIcons.Extensions, dense = true, onClick = actions::extensions)
+        ZenoListRow(stringResource(R.string.menu_settings), icon = ZenoIcons.Settings, dense = true, onClick = actions::settings)
         if (showQuit) {
             ZenoListRow(
                 stringResource(R.string.menu_quit),
                 icon = ZenoIcons.Flame,
                 titleColor = Zeno.colors.seal,
+                dense = true,
                 onClick = actions::quit,
             )
         }

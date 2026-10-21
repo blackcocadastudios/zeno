@@ -164,6 +164,8 @@ fun ZenoListRow(
     trailing: (@Composable () -> Unit)? = null,
     titleColor: Color = Zeno.colors.ink,
     enabled: Boolean = true,
+    /** Shorter rows for long menus; still a full 48dp touch target. */
+    dense: Boolean = false,
     onClick: (() -> Unit)? = null,
 ) {
     val clickable = if (onClick != null) Modifier.clickable(enabled = enabled, onClick = onClick) else Modifier
@@ -171,8 +173,8 @@ fun ZenoListRow(
         modifier = modifier
             .fillMaxWidth()
             .then(clickable)
-            .heightIn(min = 56.dp)
-            .padding(horizontal = Ma.xl, vertical = Ma.s),
+            .heightIn(min = if (dense) Ma.touch else 56.dp)
+            .padding(horizontal = Ma.xl, vertical = if (dense) Ma.xs else Ma.s),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         if (leading != null) {
@@ -235,12 +237,14 @@ fun ZenoSwitchRow(
     subtitle: String? = null,
     icon: ImageVector? = null,
     enabled: Boolean = true,
+    dense: Boolean = false,
 ) {
     ZenoListRow(
         title = title,
         subtitle = subtitle,
         icon = icon,
         enabled = enabled,
+        dense = dense,
         modifier = modifier,
         onClick = { onCheckedChange(!checked) },
         trailing = { ZenoSwitch(checked = checked, onCheckedChange = null, enabled = enabled) },

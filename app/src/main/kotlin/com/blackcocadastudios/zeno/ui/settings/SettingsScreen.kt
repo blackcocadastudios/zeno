@@ -16,6 +16,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import com.blackcocadastudios.zeno.R
 import com.blackcocadastudios.zeno.browser.search.SearchEngines
 import com.blackcocadastudios.zeno.data.settings.AppTheme
@@ -70,16 +71,19 @@ fun SettingsScreen(settings: UserSettings, versions: String, actions: SettingsAc
             ZenoSwitchRow(
                 title = stringResource(R.string.settings_search_suggestions),
                 subtitle = stringResource(R.string.settings_search_suggestions_desc),
+                icon = ZenoIcons.List,
                 checked = settings.searchSuggestions,
                 onCheckedChange = { on -> actions.update { it.copy(searchSuggestions = on) } },
             )
             ZenoSwitchRow(
                 title = stringResource(R.string.settings_shortcuts),
+                icon = ZenoIcons.Grid,
                 checked = settings.showShortcuts,
                 onCheckedChange = { on -> actions.update { it.copy(showShortcuts = on) } },
             )
             ZenoSwitchRow(
                 title = stringResource(R.string.settings_restore_tabs),
+                icon = ZenoIcons.Tabs,
                 checked = settings.restoreTabs,
                 onCheckedChange = { on -> actions.update { it.copy(restoreTabs = on) } },
             )
@@ -119,6 +123,7 @@ fun SettingsScreen(settings: UserSettings, versions: String, actions: SettingsAc
             ZenoSwitchRow(
                 title = stringResource(R.string.settings_gpc),
                 subtitle = stringResource(R.string.settings_gpc_desc),
+                icon = ZenoIcons.ShieldCheck,
                 checked = settings.globalPrivacyControl,
                 onCheckedChange = { on -> actions.update { it.copy(globalPrivacyControl = on) } },
             )
@@ -132,18 +137,21 @@ fun SettingsScreen(settings: UserSettings, versions: String, actions: SettingsAc
                 ZenoListRow(
                     title = stringResource(R.string.settings_dns_provider),
                     subtitle = settings.secureDnsProvider.label,
+                    icon = ZenoIcons.Globe,
                     onClick = { choice = Choice.DnsProvider },
                 )
             }
             ZenoSwitchRow(
                 title = stringResource(R.string.settings_autoplay),
                 subtitle = stringResource(R.string.settings_autoplay_desc),
+                icon = ZenoIcons.Block,
                 checked = settings.blockAudibleAutoplay,
                 onCheckedChange = { on -> actions.update { it.copy(blockAudibleAutoplay = on) } },
             )
             ZenoSwitchRow(
                 title = stringResource(R.string.settings_clear_on_exit),
                 subtitle = stringResource(R.string.settings_clear_on_exit_desc),
+                icon = ZenoIcons.Flame,
                 checked = settings.clearOnExit,
                 onCheckedChange = { on -> actions.update { it.copy(clearOnExit = on) } },
             )
@@ -158,17 +166,20 @@ fun SettingsScreen(settings: UserSettings, versions: String, actions: SettingsAc
             SectionLabel(stringResource(R.string.settings_sites))
             ZenoSwitchRow(
                 title = stringResource(R.string.settings_javascript),
+                icon = ZenoIcons.Code,
                 checked = settings.javascriptEnabled,
                 onCheckedChange = { on -> actions.update { it.copy(javascriptEnabled = on) } },
             )
             ZenoSwitchRow(
                 title = stringResource(R.string.settings_desktop_default),
+                icon = ZenoIcons.Desktop,
                 checked = settings.desktopModeByDefault,
                 onCheckedChange = { on -> actions.update { it.copy(desktopModeByDefault = on) } },
             )
             ZenoSwitchRow(
                 title = stringResource(R.string.settings_font_auto),
                 subtitle = stringResource(R.string.settings_font_auto_desc),
+                icon = ZenoIcons.TextSize,
                 checked = settings.automaticFontSize,
                 onCheckedChange = { on -> actions.update { it.copy(automaticFontSize = on) } },
             )
@@ -177,6 +188,7 @@ fun SettingsScreen(settings: UserSettings, versions: String, actions: SettingsAc
             }
             ZenoSwitchRow(
                 title = stringResource(R.string.settings_force_zoom),
+                icon = ZenoIcons.ZoomIn,
                 checked = settings.forceZoom,
                 onCheckedChange = { on -> actions.update { it.copy(forceZoom = on) } },
             )
@@ -184,6 +196,7 @@ fun SettingsScreen(settings: UserSettings, versions: String, actions: SettingsAc
             SectionLabel(stringResource(R.string.settings_advanced))
             ZenoSwitchRow(
                 title = stringResource(R.string.settings_remote_debugging),
+                icon = ZenoIcons.Phone,
                 checked = settings.remoteDebugging,
                 onCheckedChange = { on -> actions.update { it.copy(remoteDebugging = on) } },
             )
@@ -319,7 +332,8 @@ private fun <E> EnumChoice(
 @Composable
 private fun FontSizeSlider(factor: Float, onChange: (Float) -> Unit) {
     var value by remember(factor) { mutableFloatStateOf(factor) }
-    Column(Modifier.padding(horizontal = Ma.xl, vertical = Ma.s)) {
+    // Aligned with the rows' titles: row padding, 22dp icon, gap.
+    Column(Modifier.padding(start = Ma.xl + 22.dp + Ma.l, end = Ma.xl, top = Ma.xs, bottom = Ma.s)) {
         Text(
             stringResource(R.string.settings_font_size, (value * 100).roundToInt()),
             style = Zeno.type.bodySmall,

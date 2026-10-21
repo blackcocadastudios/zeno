@@ -23,7 +23,7 @@ Abas em segundo plano são suspensas depois de um tempo sem uso (o estado é sal
 
 ## Arquitetura
 
-- Camadas finas: **interface (Compose) → estado (`BrowserStore`) → motor (`Engine`)**. Só o módulo `:engine:gecko` conhece o GeckoView.
+- Camadas finas: **interface (Compose) → estado (`BrowserController`) → motor (`Engine`)**. Só o módulo `:engine:gecko` conhece o GeckoView.
 - `:core:engine` e `:core:browser` são Kotlin puro (sem Android) e testados na JVM com um motor falso.
 - Estado imutável em um único `StateFlow`; a interface só lê estado e envia ações.
 - Injeção de dependência manual (`AppContainer`). Nada de reflexão em tempo de execução.
@@ -51,10 +51,20 @@ Sem bibliotecas de rede (o GeckoView já faz requisições), sem bibliotecas de 
 
 - Sem telemetria, sem contas, sem rede além da navegação (e da instalação de extensões pedida pelo usuário).
 - HTTPS-first, proteção contra rastreamento ligada por padrão, Global Privacy Control ligado.
-- Permissões mínimas no manifesto; cada permissão nova precisa de motivo nesta lista.
+- Permissões mínimas no manifesto; cada permissão nova precisa de motivo na tabela abaixo.
 - Dados de navegação nunca vão para backup na nuvem (`allowBackup=false` e regras de extração vazias).
 - Abas privadas não gravam histórico, sessão nem miniaturas em disco.
-- Intents e esquemas externos são tratados como entrada não confiável.
+- Intents e esquemas externos são tratados como entrada não confiável: outros apps só abrem páginas `http`/`https`; texto compartilhado vira pesquisa, nunca `file:`, `about:`, `data:` ou `javascript:`.
+
+### Permissões
+
+| Permissão | Por quê | Quando é pedida |
+| --- | --- | --- |
+| `INTERNET` | navegar | nunca (concedida na instalação) |
+| `ACCESS_COARSE_LOCATION`, `ACCESS_FINE_LOCATION` | sites de mapas e entregas | só quando um site pede e você permite no Zeno |
+| `CAMERA`, `RECORD_AUDIO` | videochamadas e leitura de códigos na web | idem |
+| `POST_NOTIFICATIONS` | progresso e fim de downloads | no primeiro download (Android 13+) |
+| `FOREGROUND_SERVICE`, `FOREGROUND_SERVICE_DATA_SYNC` | um download continua com a tela apagada | nunca (concedida na instalação) |
 
 ## Interface
 
@@ -67,7 +77,7 @@ Sem bibliotecas de rede (o GeckoView já faz requisições), sem bibliotecas de 
 
 - Testes unitários para a lógica (`:core:browser`, `:core:data`), capturas de tela (Roborazzi) para componentes e telas.
 - Lint sem erros. Avisos novos precisam de justificativa.
-- O CI roda build debug e release, testes, capturas e lint a cada push.
+- O CI roda build debug e release, testes, capturas e lint a cada push, e um teste de fumaça num emulador (`tools/ci/smoke.sh`) que usa o app de verdade: abre páginas, pesquisa, troca de aba, instala o uBlock Origin, mede abertura e memória.
 - Revisão de cada etapa com a instrução de **tentar quebrar** o código, não de aprovar.
 
 ## Processo

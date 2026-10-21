@@ -83,6 +83,8 @@ ICONS = {
     "Waves": "waves",
     "Wind": "wind",
     "Flame": "flame",
+    "Code": "code",
+    "ZoomIn": "zoom-in",
 }
 
 NUM = r"-?\d*\.?\d+(?:e-?\d+)?"

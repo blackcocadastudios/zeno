@@ -112,7 +112,10 @@ class BrowserController(
         if (before.selectedTabId == id && selected != null) onSelected(selected, previous = null)
     }
 
-    /** Closes every private (or every normal) tab. Private data is discarded with them. */
+    /**
+     * Closes every private (or every normal) tab. Private data is discarded
+     * with them, and closing the private tabs leaves private mode.
+     */
     fun closeAllTabs(private: Boolean) {
         val doomed = state.value.tabs.filter { it.isPrivate == private }
         doomed.forEach { releaseSession(it.id, it) }
@@ -122,6 +125,7 @@ class BrowserController(
             current.copy(
                 tabs = remaining,
                 selectedTabId = current.selectedTabId?.takeUnless { it in doomedIds },
+                privateMode = current.privateMode && !private,
             )
         }
     }

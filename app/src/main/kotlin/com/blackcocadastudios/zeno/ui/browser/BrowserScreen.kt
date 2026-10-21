@@ -79,9 +79,13 @@ import com.blackcocadastudios.zeno.ui.toolbar.AddressEditor
 import com.blackcocadastudios.zeno.ui.toolbar.AddressKind
 import com.blackcocadastudios.zeno.ui.toolbar.FindBar
 import com.blackcocadastudios.zeno.ui.toolbar.Toolbar
+import kotlinx.coroutines.delay
 
 /** uBlock Origin's add-on id, to know whether the home page should suggest it. */
 private const val UBLOCK_ID = "uBlock0@raymondhill.net"
+
+/** Time for a loaded page to settle (fonts, images) before its thumbnail is taken. */
+private const val THUMBNAIL_DELAY_MILLIS = 1_200L
 
 /**
  * The browser: the page (or Zeno's home) above, the toolbar below, and every
@@ -113,6 +117,14 @@ fun BrowserScreen(vm: MainViewModel, engineView: GeckoEngineView, active: Boolea
     val coverColor = colors.paper.toArgb()
 
     FullscreenEffect(activity, fullscreen, content?.mediaLandscape)
+
+    // A picture for the tab grid once a page has loaded and painted.
+    LaunchedEffect(tab?.id, content?.loading, session) {
+        val id = tab?.id ?: return@LaunchedEffect
+        if (session == null || content?.loading != false) return@LaunchedEffect
+        delay(THUMBNAIL_DELAY_MILLIS)
+        engineView.capture { bitmap -> bitmap?.let { vm.container.thumbnails.put(id, it) } }
+    }
 
     // Back handlers: later ones win, so the most specific come last.
     BackHandler(enabled = active && !vm.editing && !vm.showTabs && !vm.findOpen) {

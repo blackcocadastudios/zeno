@@ -2,6 +2,7 @@ package com.blackcocadastudios.zeno.engine.gecko
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.res.Configuration
 import com.blackcocadastudios.zeno.engine.BrowsingData
 import com.blackcocadastudios.zeno.engine.DownloadRequest
 import com.blackcocadastudios.zeno.engine.Engine
@@ -60,6 +61,17 @@ class GeckoEngine(context: Context, private val debug: Boolean = false) : Engine
     /** Starts Gecko ahead of the first page load. */
     fun warmUp() {
         runtime
+    }
+
+    /**
+     * Zeno's activity handles configuration changes itself (no restart on
+     * rotation or dark mode), so Gecko is told directly: pages see the new
+     * `prefers-color-scheme` and screen orientation.
+     */
+    fun onConfigurationChanged(configuration: Configuration) {
+        val rt = runtimeOrNull ?: return
+        rt.configurationChanged(configuration)
+        rt.orientationChanged()
     }
 
     override fun createSession(private: Boolean): EngineSession = GeckoEngineSession(this, private, open = true)

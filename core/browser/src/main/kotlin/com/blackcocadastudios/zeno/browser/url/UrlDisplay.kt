@@ -24,6 +24,13 @@ object UrlDisplay {
         return noisePrefixes.fold(host) { acc, prefix -> acc.removePrefix(prefix) }
     }
 
+    /** Domains that host many separate sites, one per subdomain: there the subdomain is the site. */
+    private val hostingDomains = setOf(
+        "uol.com.br", "globo.com", "blogspot.com", "wordpress.com", "github.io", "gitlab.io", "substack.com",
+        "tumblr.com", "medium.com", "fandom.com", "neocities.org", "itch.io", "bandcamp.com", "readthedocs.io",
+        "netlify.app", "vercel.app", "pages.dev", "web.app", "firebaseapp.com", "herokuapp.com", "appspot.com",
+    )
+
     /** The site's own name, e.g. "wikipedia" for pt.wikipedia.org, "folha" for folha.uol.com.br. */
     fun siteName(url: String): String {
         val host = host(url) ?: return url
@@ -31,6 +38,11 @@ object UrlDisplay {
         if (labels.size < 2) return labels.firstOrNull() ?: host
         val lastTwo = labels.takeLast(2).joinToString(".")
         val nameIndex = if (lastTwo in secondLevelSuffixes && labels.size >= 3) labels.size - 3 else labels.size - 2
+        val domain = labels.drop(nameIndex).joinToString(".")
+        if (domain in hostingDomains && nameIndex >= 1) {
+            val site = labels[nameIndex - 1]
+            if (noisePrefixes.none { it == "$site." }) return site
+        }
         return labels[nameIndex]
     }
 

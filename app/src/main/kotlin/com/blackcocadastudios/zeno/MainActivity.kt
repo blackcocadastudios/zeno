@@ -80,6 +80,11 @@ class MainActivity : ComponentActivity(), AppHost {
         container.saveSessionNow()
     }
 
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+        container.engine.onConfigurationChanged(newConfig)
+    }
+
     override fun onDestroy() {
         super.onDestroy()
         engineView.release()

@@ -61,8 +61,8 @@ class UrlAndSearchTest {
         assertEquals("pt.wikipedia.org", UrlDisplay.shortHost("https://pt.wikipedia.org/wiki/A"))
         assertEquals("example.com", UrlDisplay.shortHost("https://m.example.com/"))
         assertEquals("wikipedia", UrlDisplay.siteName("https://pt.wikipedia.org/wiki/A"))
-        // The registrable domain is uol.com.br, so the site is "uol".
-        assertEquals("uol", UrlDisplay.siteName("https://www1.folha.uol.com.br/"))
+        // uol.com.br hosts many sites; the one before it is the site.
+        assertEquals("folha", UrlDisplay.siteName("https://www1.folha.uol.com.br/"))
         assertEquals("bbc", UrlDisplay.siteName("https://www.bbc.co.uk/news"))
         assertEquals("G", UrlDisplay.sealLetter("https://github.com"))
     }
@@ -83,6 +83,18 @@ class UrlAndSearchTest {
         assertEquals(emptyList(), SearchEngine.parseSuggestions("<html>"))
         assertEquals(emptyList(), SearchEngine.parseSuggestions("""{"q":1}"""))
         assertEquals(2, SearchEngine.parseSuggestions("""["q",["a","b","c"]]""", limit = 2).size)
+    }
+
+    @Test
+    fun `site names come from the registrable domain, or the hosted site`() {
+        assertEquals("wikipedia", UrlDisplay.siteName("https://pt.wikipedia.org/wiki/Zen"))
+        assertEquals("folha", UrlDisplay.siteName("https://www.folha.uol.com.br/"))
+        assertEquals("uol", UrlDisplay.siteName("https://www.uol.com.br/"))
+        assertEquals("g1", UrlDisplay.siteName("https://g1.globo.com/"))
+        assertEquals("zeno", UrlDisplay.siteName("https://zeno.github.io/docs"))
+        assertEquals("nhk", UrlDisplay.siteName("https://www.nhk.or.jp/"))
+        assertEquals("localhost", UrlDisplay.siteName("http://localhost:8080/"))
+        assertEquals("F", UrlDisplay.sealLetter("https://www.folha.uol.com.br/"))
     }
 
     @Test

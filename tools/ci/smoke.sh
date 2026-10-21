@@ -11,8 +11,6 @@ set -uo pipefail
 apk_dir="$1"
 out="smoke-report"
 mkdir -p "$out/screenshots"
-pkg="com.blackcocadastudios.zeno.debug"
-activity="$pkg/com.blackcocadastudios.zeno.MainActivity"
 ui="python3 tools/ci/ui.py"
 failures=0
 steps="$out/steps.md"
@@ -35,11 +33,19 @@ shot() {
   adb exec-out screencap -p > "$out/screenshots/$1.png"
 }
 
-apk="$(find "$apk_dir" -name '*x86_64*debug*.apk' | head -1)"
+# The release build is what people install: R8-shrunk, with the startup profile.
+# Testing it also proves R8 kept everything the app needs.
+apk="$(find "$apk_dir" -name '*x86_64*release*.apk' | head -1)"
+pkg="com.blackcocadastudios.zeno"
 if [ -z "$apk" ]; then
-  echo "- ✗ no x86_64 debug APK in $apk_dir" >> "$steps"
+  apk="$(find "$apk_dir" -name '*x86_64*debug*.apk' | head -1)"
+  pkg="com.blackcocadastudios.zeno.debug"
+fi
+if [ -z "$apk" ]; then
+  echo "- ✗ no x86_64 APK in $apk_dir" >> "$steps"
   exit 1
 fi
+activity="$pkg/com.blackcocadastudios.zeno.MainActivity"
 
 adb wait-for-device
 adb shell input keyevent KEYCODE_WAKEUP
@@ -47,8 +53,11 @@ adb shell wm dismiss-keyguard || true
 step "install $(basename "$apk")" adb install -r -g "$apk"
 adb logcat -c
 
-# 1. Cold start to the home page.
+# 1. First launch, then a measured cold start (the first one also pays for installing).
+adb shell am start -W -a android.intent.action.MAIN -c android.intent.category.LAUNCHER -n "$activity" > "$out/start-first.txt"
+sleep 8
 adb shell am force-stop "$pkg"
+sleep 2
 adb shell am start -W -a android.intent.action.MAIN -c android.intent.category.LAUNCHER -n "$activity" > "$out/start-cold.txt"
 step "home page shows the wordmark and the uBlock card" $ui wait "Sem anúncios" 20
 sleep 2
@@ -135,6 +144,8 @@ grep -E "FATAL EXCEPTION|ANR in|Fatal signal" "$out/logcat.txt" > "$out/crashes.
   echo "## Measurements"
   echo
   echo '```'
+  echo "apk: $(basename "$apk")"
+  grep -E "TotalTime" "$out/start-first.txt" | sed 's/^/first launch: /'
   grep -E "TotalTime|WaitTime" "$out/start-cold.txt" | sed 's/^/cold start: /'
   grep -E "TotalTime" "$out/start-warm.txt" | sed 's/^/warm start: /'
   grep -E "TOTAL PSS|TOTAL RSS|TOTAL:" "$out/meminfo-main.txt" | head -3 | sed 's/^/main process: /'

@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -13,13 +14,15 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.graphics.lerp
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.blackcocadastudios.zeno.design.theme.SealTones
 import com.blackcocadastudios.zeno.design.theme.Zeno
-import com.blackcocadastudios.zeno.design.theme.ZenoShapes
+
+/** A hanko's square with softened corners, in proportion at any size (a small seal must not turn into a circle). */
+private val SealShape = RoundedCornerShape(percent = 25)
 
 /** Stable tone for a key (e.g. a site's host): the same site always gets the same seal. */
 fun sealTone(key: String): Color = SealTones[Math.floorMod(key.hashCode(), SealTones.size)]
@@ -42,19 +45,23 @@ fun Seal(
     val tone = remember(key) { sealTone(key) }
     val container = tone.copy(alpha = if (colors.isDark) 0.24f else 0.12f).compositeOver(colors.paperRaised)
     val ink = if (colors.isDark) lerp(tone, Color.White, 0.55f) else lerp(tone, Color.Black, 0.22f)
+    // The letter is sized from the box, not from the user's font scale, so it always fits the stamp.
+    val density = LocalDensity.current
+    val fontSize = with(density) { (size * 0.44f).toSp() }
+    val lineHeight = with(density) { (size * 0.5f).toSp() }
     Box(
         modifier = modifier
             .size(size)
-            .clip(ZenoShapes.seal)
+            .clip(SealShape)
             .background(container)
-            .border(1.dp, ink.copy(alpha = 0.16f), ZenoShapes.seal),
+            .border(1.dp, ink.copy(alpha = 0.16f), SealShape),
         contentAlignment = Alignment.Center,
     ) {
         Text(
             text = letter.take(1).uppercase(),
             style = Zeno.type.display.copy(
-                fontSize = (size.value * 0.44f).sp,
-                lineHeight = (size.value * 0.5f).sp,
+                fontSize = fontSize,
+                lineHeight = lineHeight,
                 color = ink,
                 textAlign = TextAlign.Center,
             ),

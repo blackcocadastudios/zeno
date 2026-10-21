@@ -623,6 +623,24 @@ object ZenoIcons {
         )
     }
 
+    val Code: ImageVector by lazy {
+        lineIcon(
+            "Code",
+            "m16 18 6-6-6-6",
+            "m8 6-6 6 6 6",
+        )
+    }
+
+    val ZoomIn: ImageVector by lazy {
+        lineIcon(
+            "ZoomIn",
+            "M3 11a8 8 0 1 0 16 0a8 8 0 1 0 -16 0Z",
+            "m21 21-4.35-4.35",
+            "M11 8v6",
+            "M8 11h6",
+        )
+    }
+
     /** Every icon with its name, for galleries and tests. */
     val all: List<Pair<String, ImageVector>>
         get() = listOf(
@@ -696,5 +714,7 @@ object ZenoIcons {
             "Waves" to Waves,
             "Wind" to Wind,
             "Flame" to Flame,
+            "Code" to Code,
+            "ZoomIn" to ZoomIn,
         )
 }
