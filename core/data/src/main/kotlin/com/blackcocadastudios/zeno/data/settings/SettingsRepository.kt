@@ -41,6 +41,7 @@ class SettingsRepository(context: Context) {
         val httpsOnly = stringPreferencesKey("https_only")
         val gpc = booleanPreferencesKey("gpc")
         val blockAutoplay = booleanPreferencesKey("block_audible_autoplay")
+        val siteNotifications = booleanPreferencesKey("site_notifications")
         val javascript = booleanPreferencesKey("javascript")
         val desktopDefault = booleanPreferencesKey("desktop_default")
         val automaticFontSize = booleanPreferencesKey("font_auto")
@@ -67,6 +68,7 @@ class SettingsRepository(context: Context) {
             httpsOnly = enumOr(p[Keys.httpsOnly], d.httpsOnly),
             globalPrivacyControl = p[Keys.gpc] ?: d.globalPrivacyControl,
             blockAudibleAutoplay = p[Keys.blockAutoplay] ?: d.blockAudibleAutoplay,
+            siteNotifications = p[Keys.siteNotifications] ?: d.siteNotifications,
             javascriptEnabled = p[Keys.javascript] ?: d.javascriptEnabled,
             desktopModeByDefault = p[Keys.desktopDefault] ?: d.desktopModeByDefault,
             automaticFontSize = p[Keys.automaticFontSize] ?: d.automaticFontSize,
@@ -92,6 +94,7 @@ class SettingsRepository(context: Context) {
         p[Keys.httpsOnly] = s.httpsOnly.name
         p[Keys.gpc] = s.globalPrivacyControl
         p[Keys.blockAutoplay] = s.blockAudibleAutoplay
+        p[Keys.siteNotifications] = s.siteNotifications
         p[Keys.javascript] = s.javascriptEnabled
         p[Keys.desktopDefault] = s.desktopModeByDefault
         p[Keys.automaticFontSize] = s.automaticFontSize

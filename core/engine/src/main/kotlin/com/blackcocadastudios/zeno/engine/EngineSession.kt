@@ -75,6 +75,9 @@ interface EngineSession {
         fun onAppPermissionRequest(request: AppPermissionRequest) {}
         fun onWindowRequest(request: WindowRequest) {}
         fun onFindResult(result: FindResult) {}
+
+        /** The page asks to be shown (`window.focus()`, e.g. after a click on its notification). */
+        fun onFocusRequest() {}
         fun onTranslationState(state: TranslationState) {}
         fun onFirstContentfulPaint() {}
         fun onCrash() {}

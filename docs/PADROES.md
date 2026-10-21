@@ -37,7 +37,7 @@ Toda dependência custa tamanho e superfície de ataque, então cada uma precisa
 | --- | --- |
 | GeckoView | o motor; extensões reais, proteção contra rastreamento, Firefox de verdade |
 | Jetpack Compose + Material 3 | interface declarativa; Material só como base, sempre com os tokens do Zeno |
-| AndroidX Activity, Core, Lifecycle, SplashScreen | integração básica com o Android |
+| AndroidX Activity, Annotation Experimental, Core, Lifecycle, SplashScreen | integração básica com o Android (Annotation Experimental: aceitar as APIs experimentais do GeckoView com `@OptIn`) |
 | Room (+ KSP) | histórico, favoritos e downloads com SQL verificado na compilação |
 | DataStore | preferências com escrita atômica e assíncrona |
 | kotlinx.coroutines | concorrência estruturada |
@@ -61,9 +61,9 @@ Sem bibliotecas de rede (o GeckoView já faz requisições), sem bibliotecas de 
 | Permissão | Por quê | Quando é pedida |
 | --- | --- | --- |
 | `INTERNET` | navegar | nunca (concedida na instalação) |
-| `ACCESS_COARSE_LOCATION`, `ACCESS_FINE_LOCATION` | sites de mapas e entregas | só quando um site pede e você permite no Zeno |
+| `ACCESS_COARSE_LOCATION`, `ACCESS_FINE_LOCATION` | sites de mapas e entregas | só quando um site pede e você permite no Zeno (as duas juntas: o Android 12+ exige; o Gecko precisa da precisa) |
 | `CAMERA`, `RECORD_AUDIO` | videochamadas e leitura de códigos na web | idem |
-| `POST_NOTIFICATIONS` | progresso e fim de downloads | no primeiro download (Android 13+) |
+| `POST_NOTIFICATIONS` | progresso e fim de downloads; avisos dos sites que você permitiu | no primeiro download, ou ao ligar as notificações de sites (Android 13+) |
 | `FOREGROUND_SERVICE`, `FOREGROUND_SERVICE_DATA_SYNC` | um download continua com a tela apagada | nunca (concedida na instalação) |
 
 ## Interface

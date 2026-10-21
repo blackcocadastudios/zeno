@@ -8,6 +8,7 @@ ksp = "2.3.12"
 geckoview = "158.0.20261019185856"
 
 androidxActivity = "1.13.0"
+androidxAnnotationExperimental = "1.4.1"
 androidxComposeBom = "2026.09.00"
 androidxCore = "1.19.1"
 androidxCoreSplashscreen = "1.2.0"
@@ -39,6 +40,7 @@ geckoview = { group = "org.mozilla.geckoview", name = "geckoview", version.ref =
 
 # AndroidX
 androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "androidxActivity" }
+androidx-annotation-experimental = { group = "androidx.annotation", name = "annotation-experimental", version.ref = "androidxAnnotationExperimental" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "androidxCore" }
 androidx-core-splashscreen = { group = "androidx.core", name = "core-splashscreen", version.ref = "androidxCoreSplashscreen" }
 androidx-datastore-preferences = { group = "androidx.datastore", name = "datastore-preferences", version.ref = "androidxDatastore" }

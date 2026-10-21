@@ -3,12 +3,14 @@ package com.blackcocadastudios.zeno.engine.gecko
 import android.Manifest
 import android.content.pm.PackageManager
 import android.net.Uri
+import androidx.annotation.OptIn
 import com.blackcocadastudios.zeno.engine.AppPermissionRequest
 import com.blackcocadastudios.zeno.engine.EngineSession
 import com.blackcocadastudios.zeno.engine.PermissionKind
 import com.blackcocadastudios.zeno.engine.PermissionRequest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
+import org.mozilla.geckoview.ExperimentalGeckoViewApi
 import org.mozilla.geckoview.GeckoResult
 import org.mozilla.geckoview.GeckoSession
 import org.mozilla.geckoview.GeckoSession.PermissionDelegate
@@ -54,11 +56,11 @@ internal class GeckoPermissionDelegate(
             PermissionDelegate.PERMISSION_AUTOPLAY_AUDIBLE -> return answer(
                 if (engine.settings.blockAudibleAutoplay) ContentPermission.VALUE_DENY else ContentPermission.VALUE_ALLOW,
             )
-            // Zeno does not show site notifications: refused without leaving a decision behind.
-            PermissionDelegate.PERMISSION_DESKTOP_NOTIFICATION -> return answer(ContentPermission.VALUE_PROMPT)
             PermissionDelegate.PERMISSION_XR -> return answer(ContentPermission.VALUE_PROMPT)
             PermissionDelegate.PERMISSION_TRACKING -> return answer(perm.value)
             PermissionDelegate.PERMISSION_GEOLOCATION -> PermissionKind.Location
+            // The app refuses these while site notifications are off in the settings.
+            PermissionDelegate.PERMISSION_DESKTOP_NOTIFICATION -> PermissionKind.Notifications
             PermissionDelegate.PERMISSION_PERSISTENT_STORAGE -> PermissionKind.PersistentStorage
             PermissionDelegate.PERMISSION_MEDIA_KEY_SYSTEM_ACCESS -> PermissionKind.ProtectedMedia
             PermissionDelegate.PERMISSION_STORAGE_ACCESS -> PermissionKind.StorageAccess
@@ -100,6 +102,8 @@ internal class GeckoPermissionDelegate(
             ?.value
             ?.takeIf { it == ContentPermission.VALUE_ALLOW || it == ContentPermission.VALUE_DENY }
 
+    // notifyShown (experimental) lets Gecko leave fullscreen while the question is on screen.
+    @OptIn(markerClass = [ExperimentalGeckoViewApi::class])
     private suspend fun ask(
         target: EngineSession.Observer,
         perm: ContentPermission,

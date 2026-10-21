@@ -44,6 +44,7 @@ interface SettingsActions {
     fun openUrl(url: String)
     fun makeDefaultBrowser()
     fun sitePermissions()
+    fun requestNotificationPermission()
     fun back()
 }
 
@@ -178,6 +179,16 @@ fun SettingsScreen(settings: UserSettings, versions: String, actions: SettingsAc
             )
 
             SectionLabel(stringResource(R.string.settings_sites))
+            ZenoSwitchRow(
+                title = stringResource(R.string.settings_site_notifications),
+                subtitle = stringResource(R.string.settings_site_notifications_desc),
+                icon = ZenoIcons.Bell,
+                checked = settings.siteNotifications,
+                onCheckedChange = { on ->
+                    actions.update { it.copy(siteNotifications = on) }
+                    if (on) actions.requestNotificationPermission()
+                },
+            )
             ZenoSwitchRow(
                 title = stringResource(R.string.settings_javascript),
                 icon = ZenoIcons.Code,

@@ -18,6 +18,8 @@ data class UserSettings(
     val httpsOnly: HttpsOnly = HttpsOnly.PrivateTabs,
     val globalPrivacyControl: Boolean = true,
     val blockAudibleAutoplay: Boolean = true,
+    /** Sites the user allows may notify while they are open. Off by default: silence. */
+    val siteNotifications: Boolean = false,
     val javascriptEnabled: Boolean = true,
     val desktopModeByDefault: Boolean = false,
     val automaticFontSize: Boolean = true,

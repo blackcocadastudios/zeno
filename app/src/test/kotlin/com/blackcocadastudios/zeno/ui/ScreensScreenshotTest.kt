@@ -499,6 +499,7 @@ private object NoSettingsActions : SettingsActions {
     override fun openUrl(url: String) = Unit
     override fun makeDefaultBrowser() = Unit
     override fun sitePermissions() = Unit
+    override fun requestNotificationPermission() = Unit
     override fun back() = Unit
 }
 

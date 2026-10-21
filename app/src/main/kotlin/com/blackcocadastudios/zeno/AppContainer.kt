@@ -6,6 +6,7 @@ import com.blackcocadastudios.zeno.browser.BrowserExtensionTabs
 import com.blackcocadastudios.zeno.browser.search.SearchEngine
 import com.blackcocadastudios.zeno.browser.search.SearchEngines
 import com.blackcocadastudios.zeno.browser.session.SessionSnapshot
+import com.blackcocadastudios.zeno.browser.state.TabOrigin
 import com.blackcocadastudios.zeno.data.bookmarks.BookmarksRepository
 import com.blackcocadastudios.zeno.data.ZenoStorage
 import com.blackcocadastudios.zeno.data.downloads.DownloadsRepository
@@ -15,7 +16,9 @@ import com.blackcocadastudios.zeno.data.settings.SettingsRepository
 import com.blackcocadastudios.zeno.data.settings.UserSettings
 import com.blackcocadastudios.zeno.download.DownloadCoordinator
 import com.blackcocadastudios.zeno.engine.BrowsingData
+import com.blackcocadastudios.zeno.engine.WindowOpener
 import com.blackcocadastudios.zeno.engine.gecko.GeckoEngine
+import com.blackcocadastudios.zeno.notify.SiteNotifications
 import com.blackcocadastudios.zeno.web.ExternalAppInterceptor
 import com.blackcocadastudios.zeno.web.SuggestionProvider
 import com.blackcocadastudios.zeno.web.ThumbnailStore
@@ -53,6 +56,7 @@ class AppContainer(val app: Application) {
     private val sessionStore = SessionStore(app.filesDir)
 
     val thumbnails = ThumbnailStore()
+    val siteNotifications = SiteNotifications(app) { userSettings.value.siteNotifications }
     val suggestions by lazy { SuggestionProvider(engine, history, bookmarks) }
     val downloadCoordinator by lazy { DownloadCoordinator(app, downloads, scope) }
 
@@ -70,11 +74,22 @@ class AppContainer(val app: Application) {
         engine.historyTracker = history
         engine.requestInterceptor = ExternalAppInterceptor(app)
         engine.extensions.tabs = BrowserExtensionTabs(controller)
+        engine.notificationHandler = siteNotifications
+        engine.windowOpener = WindowOpener { session, url ->
+            controller.adoptSession(session, url, private = false, origin = TabOrigin.Link)
+            true
+        }
 
         scope.launch {
             settings.settings.collect { s ->
                 engine.applySettings(s.toEngineSettings())
                 controller.desktopModeByDefault = s.desktopModeByDefault
+            }
+        }
+        scope.launch {
+            // Turning site notifications off clears the ones on screen.
+            userSettings.map { it.siteNotifications }.distinctUntilChanged().drop(1).collect { on ->
+                if (!on) siteNotifications.cancelAll()
             }
         }
         scope.launch { controller.downloads.collect(downloadCoordinator::enqueue) }

@@ -27,6 +27,12 @@ interface Engine {
     /** Permissions sites were given or refused, and where tracking protection is off. */
     val sitePermissions: SitePermissionStore
 
+    /** Receives notifications from sites; without one, they are not shown. */
+    var notificationHandler: WebNotificationHandler?
+
+    /** Opens tabs that sites' service workers ask for; without one, they are refused. */
+    var windowOpener: WindowOpener?
+
     /** Clears stored browsing data held by the engine (cookies, cache, site data…). */
     suspend fun clearData(data: Set<BrowsingData>)
 

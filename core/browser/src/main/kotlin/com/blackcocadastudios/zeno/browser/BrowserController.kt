@@ -520,6 +520,11 @@ class BrowserController(
 
         override fun onFindResult(result: FindResult) = updateContent(tabId) { it.copy(find = result) }
 
+        /** Not `window.focus()`, which GeckoView ignores: a service worker showing its page after a notification click. */
+        override fun onFocusRequest() {
+            if (state.value.tab(tabId) != null && state.value.selectedTabId != tabId) selectTab(tabId)
+        }
+
         override fun onTranslationState(state: TranslationState) =
             updateContent(tabId) { it.copy(translation = state) }
 

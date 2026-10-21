@@ -28,6 +28,7 @@ Primeira versão utilizável.
 - Permissões de sites lembradas: ao permitir ou bloquear, “Lembrar para este site” (marcado por padrão) guarda a escolha. Sem marcar, a permissão vale só enquanto você está no site e é desfeita ao sair dele ou fechar a aba, mesmo se o Zeno for fechado antes. Câmera e microfone são perguntados toda vez; nas abas privadas nada é lembrado.
 - Configurações → Permissões dos sites mostra o que cada site pode usar e onde a proteção está desligada, e permite mudar ou esquecer cada escolha.
 - Localização para sites no Android 12 e mais novos: o Zeno pede a localização aproximada junto com a precisa, como o sistema exige.
+- Notificações de sites, desligadas por padrão. Ligadas em Configurações → Sites, um site pode notificar se você permitir, enquanto está aberto (sem serviço de push); tocar na notificação traz a aba do site. Com elas desligadas, um site que pede recebe uma recusa silenciosa e o Zeno avisa onde ligar.
 
 ### Extensões
 - Extensões do addons.mozilla.org, com pedido de permissões, ativar/desativar, abas privadas e remover.
@@ -38,4 +39,4 @@ Primeira versão utilizável.
 - CI com build debug e release, testes, capturas de tela (Roborazzi), lint e teste de fumaça num emulador.
 
 ### Ainda não
-- Modo leitura, gerenciador de senhas, notificações de sites. A barra fica embaixo, de propósito (uma mão).
+- Modo leitura, gerenciador de senhas. Notificações de sites com a página fechada (push). A barra fica embaixo, de propósito (uma mão).

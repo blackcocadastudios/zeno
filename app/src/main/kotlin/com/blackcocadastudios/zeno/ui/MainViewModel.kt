@@ -223,6 +223,18 @@ class MainViewModel(val container: AppContainer) : ViewModel() {
         popToBrowser()
     }
 
+    /** A tap on a site's notification: its tab comes forward and the site learns of the tap. */
+    fun openSiteNotification(tag: String?, token: String?) {
+        val notification = container.siteNotifications.tapped(tag, token) ?: return
+        val host = (notification.source ?: notification.origin)?.let(UrlDisplay::host)
+        val tab = state.value.tabs.firstOrNull { !it.isPrivate && it.url == notification.source }
+            ?: state.value.tabs.firstOrNull { !it.isPrivate && host != null && it.url?.let(UrlDisplay::host) == host }
+        tab?.let { controller.selectTab(it.id) }
+        closeOverlays()
+        popToBrowser()
+        notification.click()
+    }
+
     suspend fun suggest(text: String): Suggestions {
         val s = settings.value
         return container.suggestions.suggest(

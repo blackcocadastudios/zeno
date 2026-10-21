@@ -44,6 +44,9 @@ interface AppHost {
 
     /** Asks Android to make Zeno the default browser. */
     fun makeDefaultBrowser()
+
+    /** Android 13+: asks to show notifications (needed for sites' notifications). */
+    fun requestNotificationPermission()
 }
 
 /**
@@ -115,6 +118,8 @@ private fun LibraryOrSettings(vm: MainViewModel, screen: Screen, settings: UserS
                     override fun makeDefaultBrowser() = host.makeDefaultBrowser()
 
                     override fun sitePermissions() = vm.open(Screen.SitePermissions)
+
+                    override fun requestNotificationPermission() = host.requestNotificationPermission()
 
                     override fun back() = goBack()
                 }

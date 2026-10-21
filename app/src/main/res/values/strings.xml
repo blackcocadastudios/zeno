@@ -136,6 +136,9 @@
     <string name="permission_other">%1$s quer uma permissão especial.</string>
     <string name="permission_denied_system">Permita o acesso nas configurações do Android para que sites possam usar este recurso.</string>
     <string name="permission_remember">Lembrar para este site</string>
+    <string name="permission_notifications_off">Notificações de sites estão desligadas</string>
+    <string name="notification_channel_sites">Sites</string>
+    <string name="notification_channel_sites_description">Avisos dos sites que você permitiu</string>
 
     <!-- Site panel (the lock in the address bar) -->
     <string name="site_insecure_body">O que você envia ou recebe neste site pode ser visto por outros na rede.</string>
@@ -302,6 +305,8 @@
     <string name="settings_clear_now_desc">Histórico, cookies, cache e dados de sites</string>
     <string name="settings_cleared">Dados apagados</string>
     <string name="settings_sites">Sites</string>
+    <string name="settings_site_notifications">Notificações de sites</string>
+    <string name="settings_site_notifications_desc">Sites que você permitir podem avisar você enquanto estão abertos</string>
     <string name="settings_site_permissions">Permissões dos sites</string>
     <string name="settings_site_permissions_desc">O que cada site pode usar e onde a proteção está desligada</string>
     <string name="site_permissions_empty">Nada guardado</string>

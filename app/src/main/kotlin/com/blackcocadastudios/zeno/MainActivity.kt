@@ -105,6 +105,7 @@ class MainActivity : ComponentActivity(), AppHost {
             when (val action = IntentProcessor.parse(intent, container.searchEngine)) {
                 is IntentAction.Open -> vm.openExternal(action.url)
                 is IntentAction.NewTab -> vm.newTab(action.private)
+                is IntentAction.SiteNotification -> vm.openSiteNotification(action.tag, action.token)
                 IntentAction.None -> Unit
             }
         }
@@ -134,6 +135,12 @@ class MainActivity : ComponentActivity(), AppHost {
         }
         runCatching { startActivity(Intent(Settings.ACTION_MANAGE_DEFAULT_APPS_SETTINGS)) }
             .onFailure { runCatching { startActivity(Intent(Settings.ACTION_SETTINGS)) } }
+    }
+
+    override fun requestNotificationPermission() {
+        if (Build.VERSION.SDK_INT < 33) return
+        val granted = ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED
+        if (!granted) runCatching { notificationPermission.launch(Manifest.permission.POST_NOTIFICATIONS) }
     }
 
     /** Download progress lives in a notification; ask for it the first time it matters, once per run. */

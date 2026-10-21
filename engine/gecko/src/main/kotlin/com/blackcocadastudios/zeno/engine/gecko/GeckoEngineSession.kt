@@ -242,6 +242,10 @@ class GeckoEngineSession internal constructor(
         override fun onCloseRequest(session: GeckoSession) {
             observer?.onWindowRequest(WindowRequest.Close)
         }
+
+        override fun onFocusRequest(session: GeckoSession) {
+            observer?.onFocusRequest()
+        }
     }
 
     private inner class ProgressDelegate : GeckoSession.ProgressDelegate {

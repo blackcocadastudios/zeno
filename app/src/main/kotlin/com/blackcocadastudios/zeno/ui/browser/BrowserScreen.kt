@@ -86,6 +86,7 @@ import com.blackcocadastudios.zeno.engine.TrackingProtection
 import com.blackcocadastudios.zeno.engine.gecko.GeckoEngineView
 import com.blackcocadastudios.zeno.ui.MainViewModel
 import com.blackcocadastudios.zeno.ui.Screen
+import com.blackcocadastudios.zeno.ui.UiMessage
 import com.blackcocadastudios.zeno.ui.common.MessageHost
 import com.blackcocadastudios.zeno.ui.home.HomeScreen
 import com.blackcocadastudios.zeno.ui.home.UblockCard
@@ -481,8 +482,19 @@ fun BrowserScreen(vm: MainViewModel, engineView: GeckoEngineView, active: Boolea
     content?.prompts?.firstOrNull()?.let { prompt ->
         PromptHost(prompt, origin) { vm.controller.consumePrompt(tab.id, it) }
     }
+    val notificationsOff = stringResource(R.string.permission_notifications_off)
+    val settingsLabel = stringResource(R.string.menu_settings)
     content?.permissionRequests?.firstOrNull()?.let { request ->
-        PermissionHost(request) { vm.controller.consumePermissionRequest(tab.id, it) }
+        if (request.kind == PermissionKind.Notifications && !settings.siteNotifications) {
+            // Off in the settings: refused without a question (the site may ask again once they are on).
+            LaunchedEffect(request) {
+                request.deny()
+                vm.controller.consumePermissionRequest(tab.id, request)
+                vm.message(UiMessage(notificationsOff, settingsLabel) { vm.open(Screen.Settings) })
+            }
+        } else {
+            PermissionHost(request) { vm.controller.consumePermissionRequest(tab.id, it) }
+        }
     }
     content?.appPermissionRequests?.firstOrNull()?.let { request ->
         AppPermissionHost(request, onDenied = { vm.message(deniedBySystem) }) { vm.controller.consumeAppPermissionRequest(tab.id, it) }

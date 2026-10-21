@@ -13,6 +13,9 @@ sealed interface IntentAction {
     /** The launcher shortcuts: Zeno's home page with the address bar ready. */
     data class NewTab(val private: Boolean) : IntentAction
 
+    /** A tap on a site's notification; [token] proves Zeno made it. */
+    data class SiteNotification(val tag: String?, val token: String?) : IntentAction
+
     data object None : IntentAction
 }
 
@@ -23,6 +26,9 @@ sealed interface IntentAction {
 object IntentProcessor {
     const val ACTION_NEW_TAB = "com.blackcocadastudios.zeno.action.NEW_TAB"
     const val ACTION_NEW_PRIVATE_TAB = "com.blackcocadastudios.zeno.action.NEW_PRIVATE_TAB"
+    const val ACTION_SITE_NOTIFICATION = "com.blackcocadastudios.zeno.action.SITE_NOTIFICATION"
+    const val EXTRA_NOTIFICATION_TAG = "tag"
+    const val EXTRA_NOTIFICATION_TOKEN = "token"
 
     fun parse(intent: Intent, searchEngine: SearchEngine): IntentAction = when (intent.action) {
         Intent.ACTION_VIEW -> {
@@ -35,6 +41,10 @@ object IntentProcessor {
         Intent.ACTION_PROCESS_TEXT -> text(intent.getCharSequenceExtra(Intent.EXTRA_PROCESS_TEXT)?.toString(), searchEngine)
         ACTION_NEW_TAB -> IntentAction.NewTab(private = false)
         ACTION_NEW_PRIVATE_TAB -> IntentAction.NewTab(private = true)
+        ACTION_SITE_NOTIFICATION -> IntentAction.SiteNotification(
+            tag = intent.getStringExtra(EXTRA_NOTIFICATION_TAG),
+            token = intent.getStringExtra(EXTRA_NOTIFICATION_TOKEN),
+        )
         else -> IntentAction.None
     }
 

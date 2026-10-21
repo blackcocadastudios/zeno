@@ -17,6 +17,8 @@ import com.blackcocadastudios.zeno.engine.LoadFlags
 import com.blackcocadastudios.zeno.engine.RequestInterceptor
 import com.blackcocadastudios.zeno.engine.SitePermission
 import com.blackcocadastudios.zeno.engine.SitePermissionStore
+import com.blackcocadastudios.zeno.engine.WebNotificationHandler
+import com.blackcocadastudios.zeno.engine.WindowOpener
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -29,6 +31,8 @@ class FakeEngine : Engine {
     override var historyTracker: HistoryTracker? = null
     override val extensions = FakeExtensions()
     override val sitePermissions = FakeSitePermissions()
+    override var notificationHandler: WebNotificationHandler? = null
+    override var windowOpener: WindowOpener? = null
 
     override fun createSession(private: Boolean): EngineSession = FakeSession(private).also { created += it }
     override fun applySettings(settings: EngineSettings) = Unit

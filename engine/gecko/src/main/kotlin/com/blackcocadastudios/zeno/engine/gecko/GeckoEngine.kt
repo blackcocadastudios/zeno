@@ -15,17 +15,24 @@ import com.blackcocadastudios.zeno.engine.SecureDns
 import com.blackcocadastudios.zeno.engine.SitePermissionStore
 import com.blackcocadastudios.zeno.engine.TrackingProtection
 import com.blackcocadastudios.zeno.engine.WebContentTheme
+import com.blackcocadastudios.zeno.engine.WebNotification
+import com.blackcocadastudios.zeno.engine.WebNotificationHandler
+import com.blackcocadastudios.zeno.engine.WindowOpener
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
 import org.mozilla.geckoview.ContentBlocking
+import org.mozilla.geckoview.GeckoResult
 import org.mozilla.geckoview.GeckoRuntime
 import org.mozilla.geckoview.GeckoRuntimeSettings
+import org.mozilla.geckoview.GeckoSession
 import org.mozilla.geckoview.GeckoWebExecutor
 import org.mozilla.geckoview.StorageController
+import org.mozilla.geckoview.WebNotificationDelegate
 import org.mozilla.geckoview.WebRequest
+import org.mozilla.geckoview.WebNotification as GeckoWebNotification
 import java.io.File
 
 /**
@@ -55,6 +62,8 @@ class GeckoEngine(context: Context, private val debug: Boolean = false) : Engine
 
     override var requestInterceptor: RequestInterceptor? = null
     override var historyTracker: HistoryTracker? = null
+    override var notificationHandler: WebNotificationHandler? = null
+    override var windowOpener: WindowOpener? = null
 
     private val liveSessions = LinkedHashSet<GeckoEngineSession>()
 
@@ -201,7 +210,46 @@ class GeckoEngine(context: Context, private val debug: Boolean = false) : Engine
         val rt = GeckoRuntime.create(appContext, builder.build())
         applySecureDns(rt.settings, settings.secureDns)
         oneTimeGrants.revokeLeftovers(rt.storageController)
+        rt.webNotificationDelegate = NotificationDelegate()
+        rt.serviceWorkerDelegate = GeckoRuntime.ServiceWorkerDelegate(::openServiceWorkerWindow)
         return rt
+    }
+
+    /** Sites' notifications go to the app, which shows them or not. */
+    private inner class NotificationDelegate : WebNotificationDelegate {
+        override fun onShowNotification(notification: GeckoWebNotification) {
+            val handler = notificationHandler
+            if (handler == null) {
+                notification.dismiss()
+                return
+            }
+            handler.show(
+                WebNotification(
+                    tag = notification.tag,
+                    title = notification.title.orEmpty(),
+                    body = notification.text?.takeIf { it.isNotBlank() },
+                    origin = notification.origin,
+                    source = notification.source,
+                    silent = notification.silent,
+                    private = notification.privateBrowsing,
+                    onClick = { notification.click() },
+                    onDismiss = { notification.dismiss() },
+                ),
+            )
+        }
+
+        override fun onCloseNotification(notification: GeckoWebNotification) {
+            notificationHandler?.close(notification.tag)
+        }
+    }
+
+    /** `clients.openWindow()` from a service worker, e.g. after a click on its notification. */
+    private fun openServiceWorkerWindow(url: String): GeckoResult<GeckoSession> {
+        val opener = windowOpener ?: return GeckoResult.fromValue(null)
+        val session = createUnopenedSession(private = false)
+        if (opener.open(session, url)) return GeckoResult.fromValue(session.geckoSession)
+        session.close()
+        return GeckoResult.fromValue(null)
     }
 
     private fun applySecureDns(s: GeckoRuntimeSettings, dns: SecureDns) {

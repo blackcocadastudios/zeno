@@ -190,8 +190,8 @@ probe "page text is visible to UI Automator" $ui wait "geo: (granted|error)" 20
 step "reload the page" $ui tap "^Recarregar$" 10
 step "the kept answer is used: no second question" absent "quer saber sua localização" 8
 step "the lock opens the site panel" $ui tap "Informações do site" 10
-step "the panel shows tracking protection" $ui wait "^Proteção contra rastreamento$" 10
-step "the panel lists the location as allowed" $ui wait "^Localização$" 5
+step "the panel shows tracking protection" $ui wait "^Proteção contra rastreamento" 10
+step "the panel lists the location as allowed" $ui wait "^Localização.*Permitido" 5
 shot 14-site-panel
 adb shell input keyevent KEYCODE_BACK
 sleep 1
@@ -202,21 +202,56 @@ sleep 1
 # The row is in the privacy section, below the first screenful.
 adb shell input swipe 540 1700 540 900 300
 sleep 1
-step "open site permissions" $ui tap "^Permissões dos sites$" 10
-step "settings list the site" $ui wait "^localhost$" 10
+step "open site permissions" $ui tap "^Permissões dos sites" 10
+# The browser stays composed under the settings: look for the permission row, not the host.
+step "settings list the site's location permission" $ui wait "^Localização.*Permitido" 10
 shot 15-site-permissions
 adb shell input keyevent KEYCODE_BACK
 sleep 1
 adb shell input keyevent KEYCODE_BACK
 sleep 1
+
+# 10. Site notifications: off by default, so a site asking is refused without a question; then on.
+adb shell am start -a android.intent.action.VIEW -d "http://localhost:8765/notify.html" -n "$activity"
+sleep 5
+# The page is one big button; a request for notifications needs a tap.
+adb shell input tap 540 1000
+step "notifications off: refused quietly, with a way to the settings" $ui wait "Notificações de sites estão desligadas" 10
+shot 16-notifications-off
+sleep 4
+step "open the menu to turn them on" $ui tap "^Menu$" 10
+sleep 1
+step "open settings for notifications" $ui tap "^Configurações$" 10
+sleep 1
+adb shell input swipe 540 1700 540 500 300
+adb shell input swipe 540 1700 540 500 300
+sleep 1
+step "turn site notifications on" $ui tap "^Notificações de sites(?! estão)" 10
+sleep 1
+shot 17-notifications-setting
+adb shell input keyevent KEYCODE_BACK
+sleep 2
+adb shell input tap 540 1000
+step "notifications on: the site asks" $ui wait "quer mostrar notificações" 15
+shot 18-notifications-question
+step "allow notifications" $ui tap "^Permitir$" 10
+sleep 3
+step "the site's notification is on Android's list" grep -q "Olá do site de teste" <(adb shell dumpsys notification --noredact)
+adb shell cmd statusbar expand-notifications
+sleep 2
+shot 19-notification-shade
+step "tap the site's notification" $ui tap "Olá do site de teste" 10
+sleep 2
+step "Zeno comes back on the site's tab" $ui wait "^localhost$" 10
+adb shell cmd statusbar collapse || true
 kill "$http_pid" 2>/dev/null || true
 
-# 10. Background and back: the session survives.
+# 11. Background and back: the session survives.
 adb shell input keyevent KEYCODE_HOME
 sleep 3
 adb shell am start -W -n "$activity" > "$out/start-warm.txt"
 sleep 3
-shot 16-back
+shot 20-back
 
 # Measurements.
 adb shell dumpsys meminfo "$pkg" > "$out/meminfo-main.txt" 2>&1
