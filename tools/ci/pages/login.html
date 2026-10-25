@@ -13,4 +13,10 @@
   <label>Senha <input name="password" type="password" autocomplete="current-password"></label>
   <button>Entrar</button>
 </form>
+<script>
+  // The smoke test passes the e-mail in the address (?u=…): typed through adb on a
+  // slow emulator, its letters can arrive out of order. The password is still typed.
+  const u = new URLSearchParams(location.search).get("u");
+  if (u) document.querySelector("[name=email]").value = u;
+</script>
 </html>

@@ -281,11 +281,13 @@ step "the book goes back to the page" $ui tap "Modo leitura. Voltar para a pági
 step "the page is back" $ui wait "Menu do site de teste" 15
 
 # 12. Passwords: sign in on a local form, save the login, find it in the settings.
-adb shell am start -a android.intent.action.VIEW -d "http://localhost:8765/login.html" -n "$activity"
+adb shell am start -a android.intent.action.VIEW -d "'http://localhost:8765/login.html?u=hana@teste.example'" -n "$activity"
 step "the sign-in page opens" $ui wait "Entrar no site de teste" 20
 sleep 2
-# The e-mail field has autofocus; Tab moves to the password, Enter sends the form.
-adb shell input text "hana@teste.example"
+# The page fills in the e-mail (adb can scramble typed letters on a slow emulator:
+# once it saved "ha@teste.examplena"). The password is typed, as a person would:
+# Gecko offers to save only what was typed. The e-mail field has autofocus; Tab
+# moves to the password, Enter sends the form.
 adb shell input keyevent KEYCODE_TAB
 adb shell input text "zen-1234"
 adb shell input keyevent KEYCODE_ENTER
