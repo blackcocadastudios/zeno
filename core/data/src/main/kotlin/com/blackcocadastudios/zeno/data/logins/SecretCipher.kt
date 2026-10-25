@@ -3,6 +3,7 @@ package com.blackcocadastudios.zeno.data.logins
 import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties
 import android.util.Base64
+import android.util.Log
 import java.security.KeyStore
 import javax.crypto.Cipher
 import javax.crypto.KeyGenerator
@@ -26,7 +27,9 @@ interface SecretCipher {
  * passwords in the settings asks for the screen lock instead.
  */
 class KeystoreCipher(private val alias: String = "zeno-logins") : SecretCipher {
-    private val key: SecretKey by lazy { existing() ?: generate() }
+    private val key: SecretKey by lazy {
+        existing() ?: generate().also { Log.i(TAG, "Created the key for saved logins") }
+    }
 
     override fun encrypt(plain: String): String {
         val cipher = Cipher.getInstance(TRANSFORMATION)
@@ -41,7 +44,7 @@ class KeystoreCipher(private val alias: String = "zeno-logins") : SecretCipher {
         val cipher = Cipher.getInstance(TRANSFORMATION)
         cipher.init(Cipher.DECRYPT_MODE, key, GCMParameterSpec(TAG_BITS, bytes, 0, IV_BYTES))
         String(cipher.doFinal(bytes, IV_BYTES, bytes.size - IV_BYTES), Charsets.UTF_8)
-    }.getOrNull()
+    }.onFailure { Log.w(TAG, "A saved value could not be decrypted", it) }.getOrNull()
 
     private fun existing(): SecretKey? {
         val store = KeyStore.getInstance(KEYSTORE).apply { load(null) }
@@ -58,6 +61,7 @@ class KeystoreCipher(private val alias: String = "zeno-logins") : SecretCipher {
     }
 
     private companion object {
+        const val TAG = "Zeno"
         const val KEYSTORE = "AndroidKeyStore"
         const val TRANSFORMATION = "AES/GCM/NoPadding"
 

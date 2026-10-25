@@ -26,8 +26,14 @@ step() {
     echo "- ✓ $name" >> "$steps"
   else
     echo "- ✗ $name" >> "$steps"
+    on_screen
     failures=$((failures + 1))
   fi
+}
+
+on_screen() {
+  # What the screen showed when a step failed: the report is often all there is to go on.
+  echo "  - on screen: $($ui texts 2>/dev/null | cut -c1-900)" >> "$steps"
 }
 
 probe() {
@@ -38,6 +44,7 @@ probe() {
     echo "- ✓ $name (probe)" >> "$steps"
   else
     echo "- ○ $name (probe: no)" >> "$steps"
+    on_screen
   fi
 }
 
@@ -336,6 +343,15 @@ cat "$out"/logcat-before-pull.txt "$out/logcat.txt" 2>/dev/null | grep -E "FATAL
   awk '/Total PSS by process/{on=1; next} on && /^$/{exit} on' "$out/meminfo-all.txt" | grep -F "$pkg" | head -12
   echo '```'
   echo
+  # Zeno's own log lines (warnings name what failed and why).
+  if grep -qE " [IWE] Zeno +:" "$out/logcat.txt"; then
+    echo "## Zeno's log"
+    echo
+    echo '```'
+    grep -E " [IWE] Zeno +:" "$out/logcat.txt" | head -40 | cut -c1-300
+    echo '```'
+    echo
+  fi
   if [ -s "$out/crashes.txt" ]; then
     echo "## Crashes"
     echo

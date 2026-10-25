@@ -3,7 +3,11 @@
 description (UI Automator dump) and taps it, or waits for it.
 
 usage: ui.py tap|wait|gone <regex> [timeout-seconds]
+       ui.py texts
 Exit code 1 when the element does not show up (or, for `gone`, does not leave).
+A tap waits until the element is in the same place in two dumps in a row, so a
+list still moving after a swipe is not tapped in the wrong place. `texts`
+prints what the screen shows, for the report of a failed step.
 """
 import re
 import subprocess
@@ -62,13 +66,33 @@ def find(pattern):
     return None
 
 
+def texts():
+    root = dump()
+    if root is None:
+        return "(no UI dump)"
+    seen = []
+    for node in root.iter("node"):
+        for value in (node.get("text"), node.get("content-desc")):
+            value = " ".join((value or "").split())
+            if value and value not in seen:
+                seen.append(value)
+    return " | ".join(seen)
+
+
 def main():
+    if len(sys.argv) == 2 and sys.argv[1] == "texts":
+        try:
+            print(texts())
+        except subprocess.TimeoutExpired:
+            print("(no UI dump)")
+        return
     if len(sys.argv) < 3:
         print(__doc__)
         sys.exit(2)
     cmd, pattern = sys.argv[1], sys.argv[2]
     timeout = float(sys.argv[3]) if len(sys.argv) > 3 else 10
     deadline = time.time() + timeout
+    last = None
     while True:
         try:
             pos = find(pattern)
@@ -78,12 +102,16 @@ def main():
             if pos is None:
                 print(f"gone: {pattern}")
                 return
-        elif pos is not None:
+        elif pos is not None and (cmd != "tap" or pos == last):
             break
         if time.time() > deadline:
+            if cmd == "tap" and pos is not None:
+                break  # still moving at the deadline: tap where it is now
             print(f"{cmd}: timed out waiting for {pattern!r}")
             sys.exit(1)
-        time.sleep(1)
+        if pos is None:
+            time.sleep(1)
+        last = pos
     if cmd == "tap":
         subprocess.run(["adb", "shell", "input", "tap", str(pos[0]), str(pos[1])], timeout=30)
     print(f"{cmd}: {pattern!r} at {pos}")

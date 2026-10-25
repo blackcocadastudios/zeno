@@ -1,5 +1,6 @@
 package com.blackcocadastudios.zeno.engine.gecko
 
+import android.util.Log
 import com.blackcocadastudios.zeno.engine.Login
 import kotlinx.coroutines.launch
 import org.mozilla.geckoview.Autocomplete
@@ -20,22 +21,32 @@ internal class GeckoLoginStorage(private val engine: GeckoEngine) : Autocomplete
 
     override fun onLoginSave(login: Autocomplete.LoginEntry) {
         val store = engine.loginStore ?: return
-        engine.scope.launch { runCatching { store.save(login.toLogin()) } }
+        engine.scope.launch {
+            runCatching { store.save(login.toLogin()) }.onFailure { Log.w(TAG, "Saving a login failed", it) }
+        }
     }
 
     override fun onLoginUsed(login: Autocomplete.LoginEntry, usedFields: Int) {
         val store = engine.loginStore ?: return
-        engine.scope.launch { runCatching { store.used(login.toLogin()) } }
+        engine.scope.launch {
+            runCatching { store.used(login.toLogin()) }.onFailure { Log.w(TAG, "Marking a login used failed", it) }
+        }
     }
 
     private fun fetch(query: suspend (com.blackcocadastudios.zeno.engine.LoginStore) -> List<Login>): GeckoResult<Array<Autocomplete.LoginEntry>> {
         val store = engine.loginStore ?: return GeckoResult.fromValue(emptyArray())
         val result = GeckoResult<Array<Autocomplete.LoginEntry>>()
         engine.scope.launch {
-            val logins = runCatching { query(store) }.getOrDefault(emptyList())
+            val logins = runCatching { query(store) }
+                .onFailure { Log.w(TAG, "Reading saved logins failed", it) }
+                .getOrDefault(emptyList())
             result.complete(logins.map { it.toEntry() }.toTypedArray())
         }
         return result
+    }
+
+    private companion object {
+        const val TAG = "Zeno"
     }
 }
 
