@@ -1,0 +1,11 @@
+{
+  "manifest_version": 2,
+  "name": "Zeno: modo leitura",
+  "version": "1.0.0",
+  "description": "O modo leitura do Zeno: o texto de um artigo, sem o resto da página.",
+  "browser_specific_settings": {
+    "gecko": { "id": "reader@zeno.blackcocadastudios.com" }
+  },
+  "permissions": ["<all_urls>"],
+  "content_security_policy": "default-src 'self'; img-src http: https: data:; media-src http: https:; connect-src http: https:; object-src 'none'; frame-src 'none'; form-action 'none'"
+}

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 白練 shironeri: paper background -->
+    <color name="zeno_background">#FFFCFAF2</color>
+    <!-- 水色 mizuiro: launcher tile -->
+    <color name="zeno_icon_background">#FFBCE2E8</color>
+</resources>

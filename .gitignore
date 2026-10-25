@@ -9,6 +9,8 @@ local.properties
 keystore.properties
 *.keystore
 *.jks
+# Shared debug key (public on purpose, see README "Assinatura")
+!app/debug.keystore
 
 # Android Studio / IntelliJ
 .idea/
@@ -20,3 +22,6 @@ captures/
 # OS
 .DS_Store
 Thumbs.db
+
+# Python
+__pycache__/

@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Error pages rendered by the engine -->
+    <string name="error_retry">Tentar de novo</string>
+    <string name="error_advanced">Avançado</string>
+    <string name="error_accept_risk">Aceitar o risco e continuar</string>
+    <string name="error_continue_http">Continuar no site sem HTTPS</string>
+
+    <string name="error_generic_title">Não foi possível abrir esta página</string>
+    <string name="error_generic_body">Algo deu errado ao carregar o endereço.</string>
+    <string name="error_unknown_host_title">Site não encontrado</string>
+    <string name="error_unknown_host_body">Confira se o endereço está certo e se há conexão com a internet.</string>
+    <string name="error_offline_title">Sem conexão</string>
+    <string name="error_offline_body">O aparelho parece estar fora da internet. Quando a conexão voltar, tente de novo.</string>
+    <string name="error_refused_title">O site recusou a conexão</string>
+    <string name="error_refused_body">O servidor pode estar fora do ar ou ocupado demais agora.</string>
+    <string name="error_timeout_title">O site demorou demais</string>
+    <string name="error_timeout_body">O servidor não respondeu a tempo. Pode ser algo passageiro.</string>
+    <string name="error_interrupted_title">A conexão caiu</string>
+    <string name="error_interrupted_body">A conexão foi interrompida enquanto a página carregava.</string>
+    <string name="error_redirect_loop_title">Redirecionamento sem fim</string>
+    <string name="error_redirect_loop_body">Esta página fica mandando para ela mesma. Limpar os cookies do site costuma resolver.</string>
+    <string name="error_insecure_title">Conexão não segura</string>
+    <string name="error_insecure_body">O certificado deste site não é confiável. Alguém pode estar tentando se passar por ele para ler o que você envia.</string>
+    <string name="error_hsts_body">Este site exige conexão segura e o certificado apresentado não é válido. Não é possível continuar.</string>
+    <string name="error_https_only_title">Este site não oferece conexão segura</string>
+    <string name="error_https_only_body">O modo Somente HTTPS está ligado. A versão sem criptografia pode ser vista por quem estiver na mesma rede.</string>
+    <string name="error_dangerous_title">Site perigoso bloqueado</string>
+    <string name="error_dangerous_body">Este endereço foi denunciado por roubar informações ou instalar programas nocivos.</string>
+    <string name="error_malformed_title">Endereço inválido</string>
+    <string name="error_malformed_body">O endereço digitado não está em um formato que o navegador entenda.</string>
+    <string name="error_protocol_title">Endereço não suportado</string>
+    <string name="error_protocol_body">Nenhum aplicativo sabe abrir este tipo de endereço.</string>
+    <string name="error_file_title">Arquivo não encontrado</string>
+    <string name="error_file_body">O arquivo pode ter sido movido, renomeado ou apagado.</string>
+    <string name="error_port_title">Porta bloqueada</string>
+    <string name="error_port_body">Este endereço usa uma porta que os navegadores bloqueiam por segurança.</string>
+    <string name="error_content_title">A página não pôde ser exibida</string>
+    <string name="error_content_body">O site enviou um conteúdo corrompido ou inválido.</string>
+    <string name="error_crashed_title">A página parou de responder</string>
+    <string name="error_crashed_body">O processo que exibia esta página foi encerrado.</string>
+    <string name="error_proxy_title">Problema com o proxy</string>
+    <string name="error_proxy_body">O servidor proxy configurado não está respondendo.</string>
+    <string name="error_local_network_title">Acesso à rede local bloqueado</string>
+    <string name="error_local_network_body">Este site tentou acessar aparelhos da sua rede local sem permissão.</string>
+</resources>
