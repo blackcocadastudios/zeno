@@ -89,10 +89,13 @@ def signer(apk):
                             capture_output=True, text=True)
     if result.returncode != 0:
         fail("apksigner rejected the APK:\n" + (result.stderr or result.stdout)[-3000:])
-    digests = re.findall(r"^Signer #\d+ certificate SHA-256 digest: ([0-9a-f]{64})$", result.stdout, re.M)
-    if len(digests) != 1:
-        fail(f"expected one signer, apksigner reported {len(digests)}:\n{result.stdout[-3000:]}")
-    return digests[0]
+    # Older apksigner prints "Signer #1 certificate …", newer prints it per scheme ("V2 Signer: certificate …").
+    found = re.findall(r"^(.*)certificate SHA-256 digest: ([0-9a-f]{64})$", result.stdout, re.M)
+    digests = {digest for prefix, digest in found if "Source Stamp" not in prefix}
+    count = re.search(r"^Number of signers: (\d+)$", result.stdout, re.M)
+    if len(digests) != 1 or (count and count.group(1) != "1"):
+        fail(f"expected one signer with one certificate; apksigner printed:\n{result.stdout[-3000:]}")
+    return digests.pop()
 
 
 def keytool():
