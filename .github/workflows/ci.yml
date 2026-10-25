@@ -122,14 +122,18 @@ jobs:
           path: smoke-report
           if-no-files-found: warn
 
-  # A tag vX.Y.Z publishes the phone APK on Releases, only once the build
-  # (tests and lint included) and the smoke test passed on that commit.
-  # See tools/ci/release.py.
+  # Publishes the phone APK on Releases, only once the build (tests and lint
+  # included) and the smoke test passed on that commit: on main when the
+  # CHANGELOG dates a version that has no release yet, or for a pushed tag
+  # vX.Y.Z. See tools/ci/release.py.
   release:
     needs: [build, smoke]
-    if: startsWith(github.ref, 'refs/tags/v')
+    if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    concurrency:
+      group: release
+      cancel-in-progress: false
     permissions:
       contents: write
     steps:
@@ -141,14 +145,28 @@ jobs:
           path: apks
 
       - name: Prepare the release
-        run: python3 tools/ci/release.py apks dist --tag "$GITHUB_REF_NAME"
+        run: |
+          if [ "$GITHUB_REF_TYPE" = tag ]; then mode=(--tag "$GITHUB_REF_NAME"); else mode=(--main); fi
+          python3 tools/ci/release.py apks dist "${mode[@]}"
 
       - name: Publish
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           source dist/release.env
-          flags=()
-          if [ "$PRERELEASE" = true ]; then flags+=(--prerelease); fi
-          gh release create "$GITHUB_REF_NAME" "dist/$ASSET" --repo "$GITHUB_REPOSITORY" \
-            --verify-tag --title "$TITLE" --notes-file dist/notes.md "${flags[@]}"
+          if [ "$PUBLISH" != true ]; then exit 0; fi
+          repo=(--repo "$GITHUB_REPOSITORY")
+          if gh release view "$TAG" "${repo[@]}" > /dev/null 2>&1; then
+            if [ "$GITHUB_REF_TYPE" != tag ]; then
+              echo "::notice title=Release::$TAG is already published."
+              exit 0
+            fi
+            # The tag's release already exists (made on GitHub, or a re-run): give it the APK and the notes.
+            gh release upload "$TAG" "dist/$ASSET" --clobber "${repo[@]}"
+            gh release edit "$TAG" --title "$TITLE" --notes-file dist/notes.md --prerelease="$PRERELEASE" "${repo[@]}"
+          else
+            flags=()
+            if [ "$PRERELEASE" = true ]; then flags+=(--prerelease); fi
+            gh release create "$TAG" "dist/$ASSET" --target "$GITHUB_SHA" --title "$TITLE" \
+              --notes-file dist/notes.md "${flags[@]}" "${repo[@]}"
+          fi

@@ -1,20 +1,23 @@
 #!/usr/bin/env python3
-"""Prepares the GitHub release of a tag from the phone APK built by CI.
+"""Prepares the GitHub release of a version from the phone APK built by CI.
 
-usage: release.py <apk-dir> <out-dir> [--tag vX.Y.Z]
+usage: release.py <apk-dir> <out-dir> [--tag vX.Y.Z | --main]
 
 Checks the APK's signature with apksigner, then writes into <out-dir>:
   zeno-<version>-arm64.apk  the APK under the name people download
   notes.md                  how to install and check it, then the version's
                             CHANGELOG section
-  release.env               TITLE, ASSET and PRERELEASE for the publish step
+  release.env               TAG, TITLE, ASSET, PRERELEASE and PUBLISH for the
+                            publish step in ci.yml
 
 An APK signed with the repository's public debug key (no ZENO_* secrets) is
 published as a pre-release whose notes say so at the top.
 
-With --tag, the tag must be v<versionName> and the CHANGELOG section dated.
-Without it (every CI run) this is a rehearsal: the same checks and files,
-nothing published, and a notice of what a tag would publish from the commit.
+A version is published when main has a dated CHANGELOG section for it (--main;
+the publish step skips versions already released), or when its tag is pushed
+(--tag: it must be v<versionName>, and the section dated). Without either
+(every CI run) this is a rehearsal: the same checks and files, PUBLISH=false,
+and a notice of what releasing the commit would publish.
 """
 import argparse
 import glob
@@ -162,16 +165,20 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("apk_dir")
     parser.add_argument("out_dir")
-    parser.add_argument("--tag", help="the tag being published; without it, a rehearsal")
+    mode = parser.add_mutually_exclusive_group()
+    mode.add_argument("--tag", help="a pushed tag, published as it is")
+    mode.add_argument("--main", action="store_true", help="main: publish the version once its section is dated")
     args = parser.parse_args()
 
     version = version_name()
+    tag = f"v{version}"
     changes, dated = changelog(version)
     if args.tag is not None:
-        if args.tag != f"v{version}":
-            fail(f"tag {args.tag} does not match versionName {version} (expected v{version})")
+        if args.tag != tag:
+            fail(f"tag {args.tag} does not match versionName {version} (expected {tag})")
         if not dated:
             fail(f"date the {version} section of CHANGELOG.md before publishing it")
+    publish = args.tag is not None or (args.main and dated)
 
     apk = find_apk(args.apk_dir)
     certificate = signer(apk)
@@ -185,12 +192,14 @@ def main():
     with open(os.path.join(args.out_dir, "notes.md"), "w", encoding="utf-8") as fh:
         fh.write(notes(asset, megabytes, apk_digest, certificate, debug, changes))
     title = f"Zeno {version}" + (" (teste)" if debug else "")
+    env = {"TAG": tag, "TITLE": title, "ASSET": asset,
+           "PRERELEASE": "true" if debug else "false", "PUBLISH": "true" if publish else "false"}
     with open(os.path.join(args.out_dir, "release.env"), "w", encoding="utf-8") as fh:
-        fh.write(f"TITLE={shlex.quote(title)}\nASSET={shlex.quote(asset)}\nPRERELEASE={'true' if debug else 'false'}\n")
+        fh.writelines(f"{name}={shlex.quote(value)}\n" for name, value in env.items())
 
     key = "the public debug key, as a pre-release" if debug else f"certificate {fingerprint(certificate)}"
-    what = "Publishing" if args.tag is not None else f"A tag v{version} would publish"
-    undated = "" if dated else " The CHANGELOG section is not dated yet."
+    what = f"Publishing {tag}:" if publish else f"Releasing {tag} would publish"
+    undated = "" if dated else f" Nothing is published until the {version} section of CHANGELOG.md has a date."
     message = f"{what} {asset} ({megabytes} MB), signed with {key}. SHA-256 {apk_digest}.{undated}"
     print(f"::notice title=Release::{escape(message)}")
 

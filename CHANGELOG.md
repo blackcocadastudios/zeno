@@ -43,7 +43,7 @@ Primeira versão utilizável.
 ### Desenvolvimento
 - Módulos: `:core:engine`, `:core:browser` (Kotlin puro), `:core:design`, `:core:data`, `:engine:gecko`, `:app`.
 - CI com build debug e release, testes, capturas de tela (Roborazzi), lint e teste de fumaça num emulador, que usa páginas locais (localização, notificações, modo leitura, login) e publica o resultado como anotações da execução.
-- Uma tag `vX.Y.Z` publica o APK de celular em Releases quando o build e o teste de fumaça passam naquele commit; assinado com a chave de testes, sai como versão de teste.
+- Uma versão com data neste arquivo é publicada em Releases quando chega ao `main` (ou pela tag `vX.Y.Z`), se o build e o teste de fumaça passarem naquele commit; assinada com a chave de testes, sai como versão de teste.
 
 ### Ainda não
 - Notificações de sites com a página fechada (push). Exportar e importar senhas. A barra fica embaixo, de propósito (uma mão).

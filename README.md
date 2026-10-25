@@ -25,7 +25,7 @@ No celular, baixe o APK em [Releases](https://github.com/blackcocadastudios/zeno
 
 Cada push também gera o APK no GitHub Actions: abra a execução mais recente do fluxo **ci**, desça até *Artifacts* e baixe `zeno-arm64` (um zip com o APK para celular).
 
-Para publicar uma versão: suba `versionName` e `versionCode` em `app/build.gradle.kts`, ponha a data na seção do `CHANGELOG.md` e envie a tag `v<versionName>`. O CI publica o release se o build e o teste de fumaça passarem naquele commit; sem chave própria (veja “Assinatura”), ele sai como versão de teste.
+Para publicar uma versão: suba `versionName` e `versionCode` em `app/build.gradle.kts`, ponha a data na seção do `CHANGELOG.md` e leve ao `main` (ou envie a tag `v<versionName>`). O CI publica o release se o build e o teste de fumaça passarem naquele commit; sem chave própria (veja “Assinatura”), ele sai como versão de teste.
 
 Para compilar em casa:
 
