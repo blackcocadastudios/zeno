@@ -2,7 +2,7 @@
 
 Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/); versões seguem [SemVer](https://semver.org/lang/pt-BR/).
 
-## [0.1.0] — não lançada
+## [0.1.0] — 2026-10-25
 
 Primeira versão utilizável.
 
@@ -43,6 +43,9 @@ Primeira versão utilizável.
 ### Desenvolvimento
 - Módulos: `:core:engine`, `:core:browser` (Kotlin puro), `:core:design`, `:core:data`, `:engine:gecko`, `:app`.
 - CI com build debug e release, testes, capturas de tela (Roborazzi), lint e teste de fumaça num emulador, que usa páginas locais (localização, notificações, modo leitura, login) e publica o resultado como anotações da execução.
+- Uma tag `vX.Y.Z` publica o APK de celular em Releases quando o build e o teste de fumaça passam naquele commit; assinado com a chave de testes, sai como versão de teste.
 
 ### Ainda não
 - Notificações de sites com a página fechada (push). Exportar e importar senhas. A barra fica embaixo, de propósito (uma mão).
+
+[0.1.0]: https://github.com/blackcocadastudios/zeno/releases/tag/v0.1.0

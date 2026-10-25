@@ -21,7 +21,11 @@ O que já existe está em [`CHANGELOG.md`](CHANGELOG.md).
 
 ## Instalar
 
-Cada push gera o APK no GitHub Actions: abra a execução mais recente do fluxo **ci**, desça até *Artifacts* e baixe `zeno-arm64` (um zip com o APK para celular). No Android, permita instalar apps do navegador ou do gerenciador de arquivos e abra o APK.
+No celular, baixe o APK em [Releases](https://github.com/blackcocadastudios/zeno/releases) (`zeno-<versão>-arm64.apk`), permita que o navegador ou o gerenciador de arquivos instale apps e abra o arquivo. Se o Android recusar por ser de um desenvolvedor não verificado (no Brasil, desde 30/09/2026), instale pelo computador com `adb install`, ou ligue *Opções do desenvolvedor → Apps de desenvolvedores não verificados*, que pede uma espera única de 24 horas.
+
+Cada push também gera o APK no GitHub Actions: abra a execução mais recente do fluxo **ci**, desça até *Artifacts* e baixe `zeno-arm64` (um zip com o APK para celular).
+
+Para publicar uma versão: suba `versionName` e `versionCode` em `app/build.gradle.kts`, ponha a data na seção do `CHANGELOG.md` e envie a tag `v<versionName>`. O CI publica o release se o build e o teste de fumaça passarem naquele commit; sem chave própria (veja “Assinatura”), ele sai como versão de teste.
 
 Para compilar em casa:
 
@@ -54,7 +58,7 @@ keyAlias=zeno
 keyPassword=…
 ```
 
-No GitHub, os mesmos valores vão em *Settings → Secrets and variables → Actions*: `ZENO_KEYSTORE_BASE64` (o arquivo em base64: `base64 -w0 zeno-release.jks`), `ZENO_KEYSTORE_PASSWORD`, `ZENO_KEY_ALIAS` e `ZENO_KEY_PASSWORD`. Guarde a chave e as senhas em lugar seguro: o Android só aceita atualizar o app com a mesma chave.
+No GitHub, os mesmos valores vão em *Settings → Secrets and variables → Actions*: `ZENO_KEYSTORE_BASE64` (o arquivo em base64: `base64 -w0 zeno-release.jks`), `ZENO_KEYSTORE_PASSWORD`, `ZENO_KEY_ALIAS` e `ZENO_KEY_PASSWORD`. Com eles, o CI e os releases passam a usar a sua chave. Guarde a chave e as senhas em lugar seguro: o Android só aceita atualizar o app com a mesma chave.
 
 ## Como é feito
 
