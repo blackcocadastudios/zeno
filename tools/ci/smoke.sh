@@ -286,8 +286,8 @@ step "the sign-in page opens" $ui wait "Entrar no site de teste" 20
 sleep 2
 # The page fills in the e-mail (adb can scramble typed letters on a slow emulator:
 # once it saved "ha@teste.examplena"). The password is typed, as a person would:
-# Gecko offers to save only what was typed. The e-mail field has autofocus; Tab
-# moves to the password, Enter sends the form.
+# Gecko offers to save a login only after the user typed in the form. The e-mail
+# field has autofocus; Tab moves to the password, Enter sends the form.
 adb shell input keyevent KEYCODE_TAB
 adb shell input text "zen-1234"
 adb shell input keyevent KEYCODE_ENTER
